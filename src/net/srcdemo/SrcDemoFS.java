@@ -26,7 +26,7 @@ public class SrcDemoFS extends LoopbackFS
 	private final Map<String, SrcDemo> demos = new HashMap<String, SrcDemo>();
 	private final int shutterAngle;
 
-	protected SrcDemoFS(final String backingStorage, final int blendRate, final int shutterAngle)
+	public SrcDemoFS(final String backingStorage, final int blendRate, final int shutterAngle)
 	{
 		super(backingStorage);
 		this.blendRate = blendRate;

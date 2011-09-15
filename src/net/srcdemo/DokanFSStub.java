@@ -22,6 +22,7 @@ public abstract class DokanFSStub implements DokanOperations
 	private static final int volumeSerialNumber = 1337;
 	private long currentFileHandle = 1;
 	private boolean logging = true;
+	private String mountPoint;
 
 	protected abstract void closeFile(String fileName);
 
@@ -88,11 +89,20 @@ public abstract class DokanFSStub implements DokanOperations
 		}
 	}
 
-	protected void mount(final String mountPoint)
+	public void mount(final String mountPoint)
 	{
-		final DokanOptions dokanOptions = new DokanOptions(mountPoint, 0, 0);
-		final int result = Dokan.mount(dokanOptions, this);
-		log("Mount", "Mounting result: " + result);
+		final DokanFSStub oldThis = this;
+		new Thread("Dokan filesystem thread")
+		{
+			@Override
+			public void run()
+			{
+				oldThis.mountPoint = mountPoint;
+				final DokanOptions dokanOptions = new DokanOptions(mountPoint, 0, 0);
+				final int result = Dokan.mount(dokanOptions, oldThis);
+				log("Mount", "Mounting result: " + result);
+			}
+		}.start();
 	}
 
 	protected abstract void moveFile(String existingFileName, String newFileName, boolean replaceExisiting);
@@ -272,7 +282,6 @@ public abstract class DokanFSStub implements DokanOperations
 	public void onUnmount(final DokanFileInfo fileInfo) throws DokanOperationException
 	{
 		log("Unmount", "Unmounting.");
-		unmount();
 	}
 
 	@Override
@@ -297,9 +306,9 @@ public abstract class DokanFSStub implements DokanOperations
 		// Do nothing
 	}
 
-	protected void unmount()
+	public void unmount()
 	{
-		System.exit(0);
+		Dokan.removeMountPoint(mountPoint);
 	}
 
 	protected abstract int writeFile(String fileName, ByteBuffer buffer, long offset);
