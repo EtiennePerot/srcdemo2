@@ -11,17 +11,6 @@ import net.decasdev.dokan.CreationDispositionEnum;
 public class SrcDemoFS extends LoopbackFS
 {
 	private static final Pattern demoNamePattern = Pattern.compile("(\\d+)\\.tga$", Pattern.CASE_INSENSITIVE);
-
-	public static void main(final String[] args)
-	{
-		final String mountPoint = "S:\\";
-		final SrcDemoFS fs = new SrcDemoFS("D:\\Output", 45, 180);
-		fs.setLogging(false);
-		fs.mount(mountPoint);
-		System.out.println("Terminated.");
-		System.exit(0);
-	}
-
 	private final int blendRate;
 	private final Map<String, SrcDemo> demos = new HashMap<String, SrcDemo>();
 	private final int shutterAngle;

@@ -25,7 +25,7 @@ public class SrcDemo
 	private int framesMerged = -1;
 	private int maxAcceptedFrame;
 	private int maxEncounteredByteSize = 1048576;
-	private int minAcceptedFrame;
+	private int minAcceptedFrame = 0;
 
 	SrcDemo(final File backingDirectory, final String prefix, final int blendRate, final int shutterAngle)
 	{
@@ -33,7 +33,11 @@ public class SrcDemo
 		demoPrefix = prefix;
 		demoPrefixLength = demoPrefix.length();
 		this.blendRate = blendRate;
-		final int numAcceptedFrame = ((int) Math.ceil((shutterAngle * blendRate) / 360.0)) - 1;
+		maxAcceptedFrame = (int) Math.ceil((shutterAngle * blendRate) / 360.0) - 1;
+		if (maxAcceptedFrame < blendRate - 1) { // Offset by 1
+			maxAcceptedFrame++;
+			minAcceptedFrame = 1;
+		}
 	}
 
 	void closeFile(final String fileName)
@@ -107,7 +111,7 @@ public class SrcDemo
 		final int numPixels = tga.getNumPixels();
 		final int totalNeededSize = numPixels * 3;
 		frameLock.lock();
-		if (framePosition == 0) { // First frame of the sequence
+		if (framePosition == minAcceptedFrame) { // First frame of the sequence
 			if (totalNeededSize != currentAllocatedSize) {
 				currentMergedFrame = new int[totalNeededSize];
 				currentAllocatedSize = totalNeededSize;
@@ -123,7 +127,7 @@ public class SrcDemo
 		}
 		tga.addToArray(currentMergedFrame);
 		framesMerged++;
-		if (framePosition == blendRate - 1) { // Last frame of the sequence
+		if (framePosition == maxAcceptedFrame) { // Last frame of the sequence
 			final int[] finalPixels = new int[numPixels];
 			for (int i = 0; i < numPixels; i++) {
 				final int rPosition = i * 3;
@@ -190,6 +194,7 @@ public class SrcDemo
 			}
 			return toRead;
 		}
-		return 0;
+		// Pretend write was OK anyway
+		return buffer.remaining();
 	}
 }

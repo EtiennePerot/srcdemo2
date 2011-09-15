@@ -294,7 +294,7 @@ public abstract class DokanFSStub implements DokanOperations
 
 	protected abstract int readFile(String fileName, ByteBuffer buffer, long offset);
 
-	protected void setLogging(final boolean enabled)
+	public void setLogging(final boolean enabled)
 	{
 		logging = enabled;
 	}

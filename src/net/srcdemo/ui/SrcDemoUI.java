@@ -189,7 +189,8 @@ public class SrcDemoUI extends QWidget
 
 	private void onMount()
 	{
-		mountedFS = new SrcDemoFS(getBackingDirectory().getAbsolutePath(), blendRate.value(), 180);
+		mountedFS = new SrcDemoFS(getBackingDirectory().getAbsolutePath(), blendRate.value(), shutterAngle.value());
+		mountedFS.setLogging(false);
 		mountedFS.mount(getMountpoint().getAbsolutePath());
 		updateStatus();
 	}
