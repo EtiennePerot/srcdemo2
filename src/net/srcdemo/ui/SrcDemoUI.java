@@ -25,6 +25,7 @@ public class SrcDemoUI extends QWidget
 		final SrcDemoUI ui = new SrcDemoUI();
 		QApplication.exec();
 		ui.unmount();
+		System.exit(0);
 	}
 
 	private QLineEdit backingDirectory;
