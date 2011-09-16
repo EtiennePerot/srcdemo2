@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="SrcDemo2">
+	<property name="src.dir" value="src"/>
+	<property name="lib.dir" value="lib"/>
+	<property name="jdk.dir" value="jdk"/>
+	<property name="build.dir" value="build"/>
+	<path id="classpath">
+		<fileset dir="${lib.dir}" includes="**/*.jar"/>
+	</path>
+	<property name="classes.dir" value="${build.dir}/classes"/>
+	<property name="jre.dir" value="${jdk.dir}/jre"/>
+	<property name="jsmooth.dir" location="${jdk.dir}/jsmooth" />
+	<property name="jsmooth.antjar" location="${jsmooth.dir}/lib/jsmoothgen-ant.jar" />
+	<property name="jsmooth.skeletons" location="${jsmooth.dir}/skeletons" />
+	<property name="jsmooth.config" location="${jsmooth.dir}/config.jsmooth" />
+	<property name="jar.dir" value="${build.dir}/jar"/>
+	<property name="jar.file" value="${jar.dir}/${ant.project.name}.jar"/>
+	<property name="exe.file" value="${jar.dir}/${ant.project.name}.exe"/>
+	<property name="jar.libdir" value="${jar.dir}/lib"/>
+	<property name="exe.jredir" value="${jar.dir}/jre"/>
+	<property name="main-class" value="net.srcdemo.ui.SrcDemoUI"/>
+	<target name="clean">
+		<delete dir="${build.dir}"/>
+	</target>
+	<target name="compile">
+		<mkdir dir="${classes.dir}"/>
+		<javac srcdir="${src.dir}" destdir="${classes.dir}" classpathref="classpath"/>
+	</target>
+	<target name="jar">
+		<mkdir dir="${jar.dir}"/>
+		<copy todir="${jar.libdir}">
+			<fileset dir="${lib.dir}" excludes="**/*.svn"/>
+		</copy>
+		<path id="jar-classpath">
+			<fileset dir="${jar.libdir}" includes="**/*.jar"/>
+		</path>
+		<manifestclasspath property="lib.list" jarfile="${jar.file}">
+			<classpath refid="jar-classpath"/>
+		</manifestclasspath>
+		<jar destfile="${jar.file}" basedir="${classes.dir}">
+			<manifest>
+				<attribute name="Main-Class" value="${main-class}"/>
+				<attribute name="Class-Path" value="${lib.list}"/>
+			</manifest>
+		</jar>
+	</target>
+	<target name="run">
+		<java jar="build/jar/HelloWorld.jar" fork="true"/>
+	</target>
+</project>

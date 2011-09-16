@@ -7,8 +7,8 @@
 		</attributes>
 	</classpathentry>
 	<classpathentry kind="lib" path="lib/commons-io-1.4.jar"/>
+	<classpathentry kind="lib" path="lib/qtjambi-4.7.1.jar"/>
+	<classpathentry kind="lib" path="lib/qtjambi-win32-msvc2008-4.7.1.jar"/>
 	<classpathentry kind="lib" path="lib/trove-2.0.3.jar"/>
-	<classpathentry kind="lib" path="lib/qtjambi/qtjambi-4.7.1.jar"/>
-	<classpathentry kind="lib" path="lib/qtjambi/qtjambi-win32-msvc2008-4.7.1.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

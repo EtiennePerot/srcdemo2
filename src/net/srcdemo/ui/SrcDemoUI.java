@@ -57,13 +57,13 @@ public class SrcDemoUI extends QWidget implements SrcDemoListener
 
 	private String badSettings()
 	{
-		if (backingDirectory.text().length() == 0 || !getBackingDirectory().isDirectory()) {
+		if (backingDirectory.text().length() == 0 || getBackingDirectory() == null || !getBackingDirectory().isDirectory()) {
 			return Strings.errInvalidBacking;
 		}
-		if (mountpoint.text().length() == 0 || !getMountpoint().isDirectory()) {
+		if (mountpoint.text().length() == 0 || getMountpoint() == null || !getMountpoint().isDirectory()) {
 			return Strings.errInvalidMountpoint;
 		}
-		if (getMountpoint().list().length != 0) {
+		if (getMountpoint().list() == null || getMountpoint().list().length != 0) {
 			return Strings.errMountpointNotEmpty;
 		}
 		if (getBackingDirectory().equals(getMountpoint())) {
@@ -198,6 +198,7 @@ public class SrcDemoUI extends QWidget implements SrcDemoListener
 		setLayout(vbox);
 	}
 
+	@SuppressWarnings("unused")
 	private void onBrowseBackingDirectory()
 	{
 		final String selectedFolder = QFileDialog.getExistingDirectory(this, Strings.step1Dialog, backingDirectory.text());
@@ -211,6 +212,7 @@ public class SrcDemoUI extends QWidget implements SrcDemoListener
 		updateStatus();
 	}
 
+	@SuppressWarnings("unused")
 	private void onBrowseMountpoint()
 	{
 		final String selectedFolder = QFileDialog.getExistingDirectory(this, Strings.step2Dialog, mountpoint.text());
@@ -224,14 +226,18 @@ public class SrcDemoUI extends QWidget implements SrcDemoListener
 		updateStatus();
 	}
 
+	@SuppressWarnings("unused")
 	private void onExit()
 	{
 		close();
 	}
 
 	@Override
-	public void onFrameProcessed(final String frameName)
+	public void onFrameProcessed(String frameName)
 	{
+		while (frameName.charAt(0) == File.separatorChar) {
+			frameName = frameName.substring(1);
+		}
 		lastFrameProcessedUpdater.update(frameName);
 	}
 
@@ -241,6 +247,7 @@ public class SrcDemoUI extends QWidget implements SrcDemoListener
 		lastFrameSavedUpdated.update(savedFrame.getName());
 	}
 
+	@SuppressWarnings("unused")
 	private void onMount()
 	{
 		mountedFS = new SrcDemoFS(getBackingDirectory().getAbsolutePath(), blendRate.value(), shutterAngle.value());

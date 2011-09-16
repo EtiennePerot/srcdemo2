@@ -24,7 +24,7 @@ public class DokanVolumeInformation
 			final int serialNumber)
 	{
 		this.volumeName = volumeName;
-		this.fileSystemName = this.fileSystemName;
+		this.fileSystemName = fileSystemName;
 		this.maximumComponentLength = maximumComponentLength;
 		volumeSerialNumber = serialNumber;
 	}
