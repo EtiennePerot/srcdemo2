@@ -3,7 +3,9 @@ package net.srcdemo.ui;
 import java.io.File;
 
 import net.srcdemo.SrcDemoFS;
+import net.srcdemo.SrcDemoListener;
 
+import com.trolltech.qt.core.Qt.AlignmentFlag;
 import com.trolltech.qt.gui.QApplication;
 import com.trolltech.qt.gui.QFileDialog;
 import com.trolltech.qt.gui.QFrame;
@@ -17,7 +19,7 @@ import com.trolltech.qt.gui.QSpinBox;
 import com.trolltech.qt.gui.QVBoxLayout;
 import com.trolltech.qt.gui.QWidget;
 
-public class SrcDemoUI extends QWidget
+public class SrcDemoUI extends QWidget implements SrcDemoListener
 {
 	public static void main(final String[] args)
 	{
@@ -35,18 +37,39 @@ public class SrcDemoUI extends QWidget
 	private QPushButton btnMount;
 	private QLabel effectiveRecordingFps;
 	private QLabel effectiveRecordingFpsCommand;
+	private LabelUpdater lastFrameProcessedUpdater;
+	private LabelUpdater lastFrameSavedUpdated;
 	private QLabel lblStatus;
 	private SrcDemoFS mountedFS = null;
 	private QLineEdit mountpoint;
 	private QPushButton mountpointBrowse;
+	private final SrcSettings settings;
 	private QSpinBox shutterAngle;
 	private QSpinBox targetFps;
 
 	SrcDemoUI()
 	{
 		setWindowTitle(Strings.windowTitle);
+		settings = new SrcSettings();
 		initUI();
 		show();
+	}
+
+	private String badSettings()
+	{
+		if (backingDirectory.text().length() == 0 || !getBackingDirectory().isDirectory()) {
+			return Strings.errInvalidBacking;
+		}
+		if (mountpoint.text().length() == 0 || !getMountpoint().isDirectory()) {
+			return Strings.errInvalidMountpoint;
+		}
+		if (getMountpoint().list().length != 0) {
+			return Strings.errMountpointNotEmpty;
+		}
+		if (getBackingDirectory().equals(getMountpoint())) {
+			return Strings.errDirectoriesEqual;
+		}
+		return null;
 	}
 
 	private File getBackingDirectory()
@@ -66,7 +89,7 @@ public class SrcDemoUI extends QWidget
 			final QLabel label = new QLabel(Strings.step1);
 			vbox.addWidget(label);
 			final QHBoxLayout hbox = new QHBoxLayout();
-			mountpoint = new QLineEdit();
+			mountpoint = new QLineEdit(settings.getLastMountpoint());
 			mountpoint.textChanged.connect(this, "updateStatus()");
 			hbox.addWidget(mountpoint);
 			mountpointBrowse = new QPushButton(Strings.btnBrowse);
@@ -78,7 +101,7 @@ public class SrcDemoUI extends QWidget
 			final QLabel label = new QLabel(Strings.step2);
 			vbox.addWidget(label);
 			final QHBoxLayout hbox = new QHBoxLayout();
-			backingDirectory = new QLineEdit();
+			backingDirectory = new QLineEdit(settings.getLastBackingDirectory());
 			backingDirectory.textChanged.connect(this, "updateStatus()");
 			hbox.addWidget(backingDirectory);
 			backingDirectoryBrowse = new QPushButton(Strings.btnBrowse);
@@ -150,37 +173,55 @@ public class SrcDemoUI extends QWidget
 			btnExit.clicked.connect(this, "onExit()");
 			hbox.addWidget(btnExit);
 			vbox.addLayout(hbox);
-			updateStatus();
 		}
+		{
+			{
+				final QHBoxLayout hbox = new QHBoxLayout();
+				hbox.addWidget(new QLabel(Strings.lblLastFrameProcessed));
+				final QLabel lblLastFrameProcessed = new QLabel(Strings.lblLastFrameProcessedDefault);
+				lblLastFrameProcessed.setAlignment(AlignmentFlag.AlignRight);
+				hbox.addWidget(lblLastFrameProcessed);
+				vbox.addLayout(hbox);
+				lastFrameProcessedUpdater = new LabelUpdater(lblLastFrameProcessed);
+			}
+			{
+				final QHBoxLayout hbox = new QHBoxLayout();
+				hbox.addWidget(new QLabel(Strings.lblLastFrameSaved));
+				final QLabel lblLastFrameSaved = new QLabel(Strings.lblLastFrameSavedDefault);
+				lblLastFrameSaved.setAlignment(AlignmentFlag.AlignRight);
+				hbox.addWidget(lblLastFrameSaved);
+				vbox.addLayout(hbox);
+				lastFrameSavedUpdated = new LabelUpdater(lblLastFrameSaved);
+			}
+		}
+		updateStatus();
 		setLayout(vbox);
-	}
-
-	private boolean isValidSettings()
-	{
-		return backingDirectory.text().length() > 0 && getBackingDirectory().isDirectory() && mountpoint.text().length() > 0
-				&& getMountpoint().isDirectory() && !getBackingDirectory().equals(getMountpoint());
 	}
 
 	private void onBrowseBackingDirectory()
 	{
-		final String selectedFolder = QFileDialog.getExistingDirectory(this, Strings.step1Dialog);
+		final String selectedFolder = QFileDialog.getExistingDirectory(this, Strings.step1Dialog, backingDirectory.text());
 		if (selectedFolder.length() > 0) {
 			backingDirectory.setText(selectedFolder);
+			settings.setLastBackingDirectory(selectedFolder);
 		}
 		if (!getBackingDirectory().isDirectory()) {
 			backingDirectory.setText("");
 		}
+		updateStatus();
 	}
 
 	private void onBrowseMountpoint()
 	{
-		final String selectedFolder = QFileDialog.getExistingDirectory(this, Strings.step2Dialog);
+		final String selectedFolder = QFileDialog.getExistingDirectory(this, Strings.step2Dialog, mountpoint.text());
 		if (selectedFolder.length() > 0) {
 			mountpoint.setText(selectedFolder);
+			settings.setLastMountpoint(selectedFolder);
 		}
 		if (!getMountpoint().isDirectory()) {
 			mountpoint.setText("");
 		}
+		updateStatus();
 	}
 
 	private void onExit()
@@ -188,9 +229,22 @@ public class SrcDemoUI extends QWidget
 		close();
 	}
 
+	@Override
+	public void onFrameProcessed(final String frameName)
+	{
+		lastFrameProcessedUpdater.update(frameName);
+	}
+
+	@Override
+	public void onFrameSaved(final File savedFrame)
+	{
+		lastFrameSavedUpdated.update(savedFrame.getName());
+	}
+
 	private void onMount()
 	{
 		mountedFS = new SrcDemoFS(getBackingDirectory().getAbsolutePath(), blendRate.value(), shutterAngle.value());
+		mountedFS.addListener(this);
 		mountedFS.setLogging(false);
 		mountedFS.mount(getMountpoint().getAbsolutePath());
 		updateStatus();
@@ -200,6 +254,7 @@ public class SrcDemoUI extends QWidget
 	{
 		if (mountedFS != null) {
 			mountedFS.unmount();
+			mountedFS.removeListener(this);
 		}
 	}
 
@@ -218,12 +273,12 @@ public class SrcDemoUI extends QWidget
 			w.setEnabled(mountedFS == null);
 		}
 		if (mountedFS == null) {
-			if (isValidSettings()) {
+			if (badSettings() == null) {
 				lblStatus.setText(Strings.lblPressWhenReady);
 				btnMount.setEnabled(true);
 			}
 			else {
-				lblStatus.setText(Strings.lblInvalidSettings);
+				lblStatus.setText(Strings.lblInvalidSettings + badSettings());
 				btnMount.setEnabled(false);
 			}
 			btnExit.setEnabled(false);

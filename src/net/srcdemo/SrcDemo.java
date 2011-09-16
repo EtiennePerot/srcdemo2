@@ -15,6 +15,7 @@ import javax.imageio.ImageIO;
 public class SrcDemo
 {
 	private final File backingDirectory;
+	private final SrcDemoFS backingFS;
 	private final int blendRate;
 	private int currentAllocatedSize = -1;
 	private int[] currentMergedFrame;
@@ -27,8 +28,10 @@ public class SrcDemo
 	private int maxEncounteredByteSize = 1048576;
 	private int minAcceptedFrame = 0;
 
-	SrcDemo(final File backingDirectory, final String prefix, final int blendRate, final int shutterAngle)
+	SrcDemo(final SrcDemoFS backingFS, final File backingDirectory, final String prefix, final int blendRate,
+			final int shutterAngle)
 	{
+		this.backingFS = backingFS;
 		this.backingDirectory = backingDirectory;
 		demoPrefix = prefix;
 		demoPrefixLength = demoPrefix.length();
@@ -46,11 +49,11 @@ public class SrcDemo
 		if (shouldIgnoreFrame(frameNumber)) {
 			return;
 		}
-		System.out.println("Processing frame: " + frameNumber);
 		final ByteArrayOutputStream buffer = getFrameByte(frameNumber);
 		maxEncounteredByteSize = Math.max(maxEncounteredByteSize, buffer.size());
 		frameData.remove(frameNumber);
 		handleFrame(frameNumber, buffer.toByteArray());
+		backingFS.notifyFrameProcessed(fileName);
 	}
 
 	void createFile(final String fileName)
@@ -149,6 +152,7 @@ public class SrcDemo
 					final File outputFile = new File(backingDirectory, demoPrefix + sequenceIndex + ".png");
 					try {
 						ImageIO.write(finalImage, "png", outputFile);
+						backingFS.notifyFrameSaved(outputFile);
 					}
 					catch (final IOException e) {
 						System.err.println("Error while writing PNG image: " + outputFile);

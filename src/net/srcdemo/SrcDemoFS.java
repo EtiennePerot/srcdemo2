@@ -1,8 +1,11 @@
 package net.srcdemo;
 
+import java.io.File;
 import java.nio.ByteBuffer;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -12,6 +15,7 @@ public class SrcDemoFS extends LoopbackFS
 {
 	private static final Pattern demoNamePattern = Pattern.compile("(\\d+)\\.tga$", Pattern.CASE_INSENSITIVE);
 	private final int blendRate;
+	private final Set<SrcDemoListener> demoListeners = new HashSet<SrcDemoListener>();
 	private final Map<String, SrcDemo> demos = new HashMap<String, SrcDemo>();
 	private final int shutterAngle;
 
@@ -20,6 +24,11 @@ public class SrcDemoFS extends LoopbackFS
 		super(backingStorage);
 		this.blendRate = blendRate;
 		this.shutterAngle = shutterAngle;
+	}
+
+	public void addListener(final SrcDemoListener listener)
+	{
+		demoListeners.add(listener);
 	}
 
 	@Override
@@ -54,7 +63,7 @@ public class SrcDemoFS extends LoopbackFS
 		}
 		final String demoName = fileName.substring(0, match.start());
 		if (!demos.containsKey(demoName)) {
-			demos.put(demoName, new SrcDemo(getBackingStorage(), demoName, blendRate, shutterAngle));
+			demos.put(demoName, new SrcDemo(this, getBackingStorage(), demoName, blendRate, shutterAngle));
 		}
 		return demos.get(demoName);
 	}
@@ -67,6 +76,25 @@ public class SrcDemoFS extends LoopbackFS
 			return super.getFileInfo(fileName);
 		}
 		return demo.getFileInfo(fileName);
+	}
+
+	void notifyFrameProcessed(final String frameName)
+	{
+		for (final SrcDemoListener listener : demoListeners) {
+			listener.onFrameProcessed(frameName);
+		}
+	}
+
+	void notifyFrameSaved(final File savedFrame)
+	{
+		for (final SrcDemoListener listener : demoListeners) {
+			listener.onFrameSaved(savedFrame);
+		}
+	}
+
+	public void removeListener(final SrcDemoListener listener)
+	{
+		demoListeners.remove(listener);
 	}
 
 	@Override
