@@ -18,6 +18,9 @@ public class DokanMessage extends QWidget
 			}
 			return Strings.errInvalidDokan;
 		}
+		catch (final Error e) {
+			return Strings.errDokanNotInstalled;
+		}
 		catch (final Exception e) {
 			return Strings.errDokanNotInstalled;
 		}
