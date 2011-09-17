@@ -143,7 +143,7 @@ public class SrcDemoUI extends QWidget implements SrcDemoListener
 				targetFps = new QSpinBox();
 				targetFps.setRange(12, 300);
 				targetFps.setSuffix(Strings.spnTargetFps);
-				targetFps.setValue(30);
+				targetFps.setValue(settings.getLastTargetFps());
 				targetFps.valueChanged.connect(this, "updateEffectiveRecordingFps()");
 				hbox.addWidget(targetFps);
 				vbox.addLayout(hbox);
@@ -154,7 +154,7 @@ public class SrcDemoUI extends QWidget implements SrcDemoListener
 				blendRate = new QSpinBox();
 				blendRate.setRange(1, 99);
 				blendRate.setSuffix(Strings.spnBlendRate);
-				blendRate.setValue(25);
+				blendRate.setValue(settings.getLastBlendRate());
 				blendRate.valueChanged.connect(this, "updateEffectiveRecordingFps()");
 				hbox.addWidget(blendRate);
 				vbox.addLayout(hbox);
@@ -165,7 +165,8 @@ public class SrcDemoUI extends QWidget implements SrcDemoListener
 				shutterAngle = new QSpinBox();
 				shutterAngle.setRange(1, 360);
 				shutterAngle.setSuffix(Strings.spnShutterAngle);
-				shutterAngle.setValue(180);
+				shutterAngle.setValue(settings.getLastShutterAngle());
+				blendRate.valueChanged.connect(this, "saveFrameSettings()");
 				hbox.addWidget(shutterAngle);
 				vbox.addLayout(hbox);
 			}
@@ -282,6 +283,13 @@ public class SrcDemoUI extends QWidget implements SrcDemoListener
 		updateStatus();
 	}
 
+	private void saveFrameSettings()
+	{
+		settings.setLastTargetFps(targetFps.value());
+		settings.setLastBlendRate(blendRate.value());
+		settings.setLastShutterAngle(shutterAngle.value());
+	}
+
 	private void unmount()
 	{
 		if (mountedFS != null) {
@@ -295,6 +303,7 @@ public class SrcDemoUI extends QWidget implements SrcDemoListener
 		final int effectiveFps = blendRate.value() * targetFps.value();
 		effectiveRecordingFps.setText("" + effectiveFps);
 		effectiveRecordingFpsCommand.setText(Strings.cmdHostFramerate + effectiveFps);
+		saveFrameSettings();
 	}
 
 	private void updateStatus()

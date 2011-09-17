@@ -11,12 +11,27 @@ public class SrcSettings extends QSettings
 
 	String getLastBackingDirectory()
 	{
-		return (String) this.value("backingDirectory", "");
+		return (String) value("backingDirectory", "");
+	}
+
+	int getLastBlendRate()
+	{
+		return (Integer) value("blendRate", 25);
 	}
 
 	String getLastMountpoint()
 	{
-		return (String) this.value("mountpoint", "");
+		return (String) value("mountpoint", "");
+	}
+
+	int getLastShutterAngle()
+	{
+		return (Integer) value("shutterAngle", 180);
+	}
+
+	int getLastTargetFps()
+	{
+		return (Integer) value("targetFps", 30);
 	}
 
 	void setLastBackingDirectory(final String backingDirectory)
@@ -24,8 +39,23 @@ public class SrcSettings extends QSettings
 		setValue("backingDirectory", backingDirectory);
 	}
 
+	void setLastBlendRate(final int blendRate)
+	{
+		setValue("blendRate", blendRate);
+	}
+
 	void setLastMountpoint(final String mountpoint)
 	{
 		setValue("mountpoint", mountpoint);
+	}
+
+	void setLastShutterAngle(final int shutterAngle)
+	{
+		setValue("shutterAngle", shutterAngle);
+	}
+
+	void setLastTargetFps(final int targetFps)
+	{
+		setValue("targetFps", targetFps);
 	}
 }
