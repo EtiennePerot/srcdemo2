@@ -24,9 +24,18 @@ public class SrcDemoUI extends QWidget implements SrcDemoListener
 	public static void main(final String[] args)
 	{
 		QApplication.initialize(args);
-		final SrcDemoUI ui = new SrcDemoUI();
+		SrcDemoUI ui = null;
+		final String dokanMessage = DokanMessage.check();
+		if (dokanMessage == null) {
+			ui = new SrcDemoUI();
+		}
+		else {
+			new DokanMessage(dokanMessage).show();
+		}
 		QApplication.exec();
-		ui.unmount();
+		if (ui != null) {
+			ui.unmount();
+		}
 		System.exit(0);
 	}
 

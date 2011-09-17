@@ -7,7 +7,10 @@ public interface Strings
 	final String btnExit = "Exit";
 	final String cmdHostFramerate = "host_framerate ";
 	final String errDirectoriesEqual = "Directories must not be equal";
+	final String errDokanNotInstalled = "Dokan is not installed.";
+	final String errDokanTitle = "Dokan error";
 	final String errInvalidBacking = "Invalid folder to save frames.";
+	final String errInvalidDokan = "The version of Dokan installed is not the correct one.\nThis application required Dokan 0.6.";
 	final String errInvalidMountpoint = "Invalid folder where the game will save frames.";
 	final String errMountpointNotEmpty = "Folder where the game will save frames is not empty.";
 	final String lblBlendRate = "Motion blur blend rate: ";
