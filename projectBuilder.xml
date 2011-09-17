@@ -3,7 +3,8 @@
 	<property name="src.dir" value="src"/>
 	<property name="lib.dir" value="lib"/>
 	<property name="build.dir" value="build"/>
-	<property name="launcher.dir" value="launcher"/>
+    <property name="launcher.dir" value="launcher"/>
+    <property name="installer.dir" value="installer"/>
 	<path id="classpath">
 		<fileset dir="${lib.dir}" includes="**/*.jar"/>
 	</path>
@@ -14,7 +15,11 @@
 	<property name="main-class" value="net.srcdemo.ui.SrcDemoUI"/>
 	<property name="launcher.builddir" value="${launcher.dir}/build"/>
 	<property name="launcher.distdir" value="${launcher.dir}/dist"/>
-	<property name="launcher.script" value="${launcher.dir}/setup.py"/>
+    <property name="launcher.script" value="${launcher.dir}/setup.py"/>
+    <property name="installer.ant" value="${installer.dir}/nsisant.jar"/>
+    <property name="installer.script" value="${installer.dir}/setup.nsi"/>
+    <property name="installer.file" value="${ant.project.name}-setup.exe"/>
+    <property name="svn.excludes" value="**/*.svn"/>
 	<target name="clean">
 		<delete dir="${build.dir}"/>
 	</target>
@@ -25,7 +30,7 @@
 	<target name="jar">
 		<mkdir dir="${jar.dir}"/>
 		<copy todir="${jar.libdir}">
-			<fileset dir="${lib.dir}" excludes="**/*.svn"/>
+			<fileset dir="${lib.dir}" excludes="${svn.excludes}"/>
 		</copy>
 		<path id="jar-classpath">
 			<fileset dir="${jar.libdir}" includes="**/*.jar"/>
@@ -41,15 +46,22 @@
 		</jar>
 	</target>
 	<target name="launcher">
+		<!-- Assumes python is in the path and has modules py2exe and win32all -->
 		<delete dir="${launcher.builddir}"/>
 		<delete dir="${launcher.distdir}"/>
 		<exec executable="python">
 			<arg value="${launcher.script}"/>
 		</exec>
 		<copy todir="${jar.dir}">
-			<fileset dir="${launcher.distdir}" excludes="**/*.svn"/>
+			<fileset dir="${launcher.distdir}" excludes="${svn.excludes}"/>
 		</copy>
 		<delete dir="${launcher.builddir}"/>
 		<delete dir="${launcher.distdir}"/>
 	</target>
+    <target name="installer">
+    	<!-- Assumes makensis.exe is in the path -->
+        <delete file="${installer.file}"/>
+        <taskdef name="nsis" classname="com.danielreese.nsisant.Task" classpath="${installer.ant}"/>
+    	<nsis script="${installer.script}"/>
+    </target>
 </project>
