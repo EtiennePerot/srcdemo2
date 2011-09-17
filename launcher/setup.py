@@ -8,20 +8,27 @@ os.chdir(os.path.abspath(os.path.dirname(__file__)))
 import sys
 sys.argv.append('py2exe')
 
-py2exe_options = {
-	'excludes': ['_ssl', 'pyreadline', 'difflib', 'doctest', 'locale', 'optparse', 'pickle', 'calendar'],
-	'dll_excludes': ['msvcr71.dll'],
-	'compressed': True
-}
-
 setup(
 	name = 'SrcDemo2',
 	version = '1.0',
 	description = 'SrcDemo2',
 	author = 'Etienne Perot',
-	windows = ['SrcDemo2.py'],
+	windows = [
+		{
+			'script': 'SrcDemo2.py',
+			'icon_resources': [
+				(1, '..' + os.sep + 'img' + os.sep + 'icon.ico')
+			]
+		}
+	],
 	options = {
-		'py2exe': py2exe_options
+		'py2exe': {
+			'compressed': 1,
+			'optimize': 2,
+			'bundle_files': 3,
+			'excludes': ['_ssl', 'pyreadline', 'difflib', 'doctest', 'locale', 'optparse', 'pickle', 'calendar'],
+			'dll_excludes': ['msvcr71.dll']
+        }
 	}
 )
 os.chdir(oldPath)

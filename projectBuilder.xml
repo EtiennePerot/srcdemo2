@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project name="SrcDemo2">
 	<property name="src.dir" value="src"/>
-	<property name="lib.dir" value="lib"/>
+    <property name="lib.dir" value="lib"/>
+    <property name="img.dir" value="img"/>
 	<property name="build.dir" value="build"/>
     <property name="launcher.dir" value="launcher"/>
     <property name="installer.dir" value="installer"/>
@@ -11,7 +12,8 @@
 	<property name="classes.dir" value="${build.dir}/classes"/>
 	<property name="jar.dir" value="${build.dir}/jar"/>
 	<property name="jar.file" value="${jar.dir}/${ant.project.name}.jar"/>
-	<property name="jar.libdir" value="${jar.dir}/lib"/>
+    <property name="jar.libdir" value="${jar.dir}/lib"/>
+    <property name="jar.imgdir" value="${jar.dir}/img"/>
 	<property name="main-class" value="net.srcdemo.ui.SrcDemoUI"/>
 	<property name="launcher.builddir" value="${launcher.dir}/build"/>
 	<property name="launcher.distdir" value="${launcher.dir}/dist"/>
@@ -29,9 +31,12 @@
 	</target>
 	<target name="jar">
 		<mkdir dir="${jar.dir}"/>
-		<copy todir="${jar.libdir}">
-			<fileset dir="${lib.dir}" excludes="${svn.excludes}"/>
-		</copy>
+        <copy todir="${jar.libdir}">
+            <fileset dir="${lib.dir}" excludes="${svn.excludes}"/>
+        </copy>
+        <copy todir="${jar.imgdir}">
+            <fileset dir="${img.dir}" excludes="${svn.excludes}"/>
+        </copy>
 		<path id="jar-classpath">
 			<fileset dir="${jar.libdir}" includes="**/*.jar"/>
 		</path>

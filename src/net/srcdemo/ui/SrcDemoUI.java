@@ -13,6 +13,7 @@ import com.trolltech.qt.gui.QFrame;
 import com.trolltech.qt.gui.QFrame.Shadow;
 import com.trolltech.qt.gui.QFrame.Shape;
 import com.trolltech.qt.gui.QHBoxLayout;
+import com.trolltech.qt.gui.QIcon;
 import com.trolltech.qt.gui.QLabel;
 import com.trolltech.qt.gui.QLineEdit;
 import com.trolltech.qt.gui.QPushButton;
@@ -73,6 +74,7 @@ public class SrcDemoUI extends QWidget implements SrcDemoListener
 	SrcDemoUI()
 	{
 		setWindowTitle(Strings.windowTitle);
+		setWindowIcon(new QIcon("img/icon-512.png"));
 		settings = new SrcSettings();
 		initUI();
 		show();

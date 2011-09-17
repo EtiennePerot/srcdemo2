@@ -12,16 +12,18 @@ RequestExecutionLevel admin
 !define VERSION 1.0
 !define COMPANY ""
 !define URL http://code.google.com/p/srcdemo2/
-!define BUILDDIR "build\jar"
+!define PROJECTDIR ".."
+!define BUILDDIR "${PROJECTDIR}\build\jar"
+!define ICONDIR "${PROJECTDIR}\img"
 
 # MUI Symbol Definitions
-!define MUI_ICON "${NSISDIR}\Contrib\Graphics\Icons\win-install.ico"
+!define MUI_ICON "${ICONDIR}\install.ico"
 !define MUI_STARTMENUPAGE_REGISTRY_ROOT HKLM
 !define MUI_STARTMENUPAGE_REGISTRY_KEY ${REGKEY}
 !define MUI_STARTMENUPAGE_REGISTRY_VALUENAME StartMenuGroup
 !define MUI_STARTMENUPAGE_DEFAULTFOLDER SrcDemo2
 !define MUI_FINISHPAGE_RUN $INSTDIR\$(^Name).exe
-!define MUI_UNICON "${NSISDIR}\Contrib\Graphics\Icons\win-uninstall.ico"
+!define MUI_UNICON "${ICONDIR}\uninstall.ico"
 !define MUI_UNFINISHPAGE_NOAUTOCLOSE
 
 # Included files
@@ -63,7 +65,7 @@ ShowUninstDetails show
 Section -Main SEC0000
     SetOutPath $INSTDIR
     SetOverwrite on
-    File /r "..\${BUILDDIR}\*"
+    File /r "${BUILDDIR}\*"
     WriteRegStr HKLM "${REGKEY}\Components" Main 1
 SectionEnd
 
