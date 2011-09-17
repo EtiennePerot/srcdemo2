@@ -2,23 +2,19 @@
 <project name="SrcDemo2">
 	<property name="src.dir" value="src"/>
 	<property name="lib.dir" value="lib"/>
-	<property name="jdk.dir" value="jdk"/>
 	<property name="build.dir" value="build"/>
+	<property name="launcher.dir" value="launcher"/>
 	<path id="classpath">
 		<fileset dir="${lib.dir}" includes="**/*.jar"/>
 	</path>
 	<property name="classes.dir" value="${build.dir}/classes"/>
-	<property name="jre.dir" value="${jdk.dir}/jre"/>
-	<property name="jsmooth.dir" location="${jdk.dir}/jsmooth" />
-	<property name="jsmooth.antjar" location="${jsmooth.dir}/lib/jsmoothgen-ant.jar" />
-	<property name="jsmooth.skeletons" location="${jsmooth.dir}/skeletons" />
-	<property name="jsmooth.config" location="${jsmooth.dir}/config.jsmooth" />
 	<property name="jar.dir" value="${build.dir}/jar"/>
 	<property name="jar.file" value="${jar.dir}/${ant.project.name}.jar"/>
-	<property name="exe.file" value="${jar.dir}/${ant.project.name}.exe"/>
 	<property name="jar.libdir" value="${jar.dir}/lib"/>
-	<property name="exe.jredir" value="${jar.dir}/jre"/>
 	<property name="main-class" value="net.srcdemo.ui.SrcDemoUI"/>
+	<property name="launcher.builddir" value="${launcher.dir}/build"/>
+	<property name="launcher.distdir" value="${launcher.dir}/dist"/>
+	<property name="launcher.script" value="${launcher.dir}/setup.py"/>
 	<target name="clean">
 		<delete dir="${build.dir}"/>
 	</target>
@@ -44,7 +40,16 @@
 			</manifest>
 		</jar>
 	</target>
-	<target name="run">
-		<java jar="build/jar/HelloWorld.jar" fork="true"/>
+	<target name="launcher">
+		<delete dir="${launcher.builddir}"/>
+		<delete dir="${launcher.distdir}"/>
+		<exec executable="python">
+			<arg value="${launcher.script}"/>
+		</exec>
+		<copy todir="${jar.dir}">
+			<fileset dir="${launcher.distdir}" excludes="**/*.svn"/>
+		</copy>
+		<delete dir="${launcher.builddir}"/>
+		<delete dir="${launcher.distdir}"/>
 	</target>
 </project>

@@ -1,6 +1,7 @@
 package net.srcdemo.ui;
 
 import java.io.File;
+import java.lang.reflect.Field;
 
 import net.srcdemo.SrcDemoFS;
 import net.srcdemo.SrcDemoListener;
@@ -23,6 +24,19 @@ public class SrcDemoUI extends QWidget implements SrcDemoListener
 {
 	public static void main(final String[] args)
 	{
+		final String newLibPath = "lib" + File.pathSeparator + System.getProperty("java.library.path");
+		System.setProperty("java.library.path", newLibPath);
+		Field fieldSysPath;
+		try {
+			fieldSysPath = ClassLoader.class.getDeclaredField("sys_paths");
+			fieldSysPath.setAccessible(true);
+			if (fieldSysPath != null) {
+				fieldSysPath.set(System.class.getClassLoader(), null);
+			}
+		}
+		catch (final Exception e) {
+			// Oh well
+		}
 		QApplication.initialize(args);
 		SrcDemoUI ui = null;
 		final String dokanMessage = DokanMessage.check();
