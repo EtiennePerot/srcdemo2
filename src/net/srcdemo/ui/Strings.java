@@ -33,5 +33,5 @@ public interface Strings
 	final String step2 = "2. Select the folder where you want the final frames to be saved.\n(Must be a different directory!)";
 	final String step2Dialog = "Select the folder where the game will save frames.";
 	final String step3 = "3. Set parameters";
-	final String windowTitle = "SrcDemo2";
+	final String windowTitle = "SrcDemo²";
 }
