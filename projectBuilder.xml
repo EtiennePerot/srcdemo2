@@ -31,6 +31,7 @@
 	</target>
 	<target name="jar">
 		<mkdir dir="${jar.dir}"/>
+        <copy todir="${jar.dir}" file="LICENSE"/>
         <copy todir="${jar.libdir}">
             <fileset dir="${lib.dir}" excludes="${svn.excludes}"/>
         </copy>
