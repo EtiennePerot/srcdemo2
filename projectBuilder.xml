@@ -17,6 +17,7 @@
 	<property name="main-class" value="net.srcdemo.ui.SrcDemoUI"/>
 	<property name="launcher.builddir" value="${launcher.dir}/build"/>
 	<property name="launcher.distdir" value="${launcher.dir}/dist"/>
+    <property name="launcher.precompileddir" value="${launcher.dir}/precompiled"/>
     <property name="launcher.script" value="${launcher.dir}/setup.py"/>
     <property name="installer.ant" value="${installer.dir}/nsisant.jar"/>
     <property name="installer.script" value="${installer.dir}/setup.nsi"/>
@@ -51,18 +52,24 @@
 			</manifest>
 		</jar>
 	</target>
-	<target name="launcher">
+	<target name="mklauncher">
 		<!-- Assumes python is in the path and has modules py2exe and win32all -->
 		<delete dir="${launcher.builddir}"/>
-		<delete dir="${launcher.distdir}"/>
+        <delete dir="${launcher.distdir}"/>
+        <delete dir="${launcher.precompileddir}"/>
 		<exec executable="python">
 			<arg value="${launcher.script}"/>
 		</exec>
-		<copy todir="${jar.dir}">
+		<copy todir="${launcher.precompileddir}">
 			<fileset dir="${launcher.distdir}" excludes="${svn.excludes}"/>
 		</copy>
 		<delete dir="${launcher.builddir}"/>
 		<delete dir="${launcher.distdir}"/>
+	</target>
+	<target name="launcher">
+        <copy todir="${jar.dir}">
+            <fileset dir="${launcher.precompileddir}" excludes="${svn.excludes}"/>
+        </copy>
 	</target>
     <target name="installer">
     	<!-- Assumes makensis.exe is in the path -->
