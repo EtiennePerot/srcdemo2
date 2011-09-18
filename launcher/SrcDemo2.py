@@ -43,4 +43,4 @@ if foundJre is None:
 	win32api.MessageBox(0, 'A 32-bit Java runtime (JRE) was not found.\nPlease download it from http://java.com/.\nEven if you are on 64-bit Windows, this program needs a 32-bit Java runtime to run.\n\nIf you are sure you have installed it already, please copy the jre folder next to SrcDemo2.exe.', 'Java not found.')
 	sys.exit(1)
 
-subprocess.call([foundJre, '-jar', 'SrcDemo2.jar'], cwd=selfDir, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE, creationflags=win32process.CREATE_NO_WINDOW)
+subprocess.call([foundJre, '-Xmx2048m', '-jar', 'SrcDemo2.jar'], cwd=selfDir, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE, creationflags=win32process.CREATE_NO_WINDOW)
