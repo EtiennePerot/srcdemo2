@@ -5,4 +5,4 @@ try:
     SrcDemo2Launcher.launch(True)
 except:
     traceback.print_exc()
-raw_input('Press any key to close this window...')
+raw_input('Press Enter to close this window...')
