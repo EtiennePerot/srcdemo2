@@ -63,10 +63,11 @@ def launch(debugMode=False):
         print 'JRE not found.'
         win32api.MessageBox(0, 'A 32-bit Java runtime (JRE) was not found.\nPlease download it from http://java.com/.\nEven if you are on 64-bit Windows, this program needs a 32-bit Java runtime to run.\n\nIf you are sure you have installed it already, please copy the jre folder next to SrcDemo2.exe.', 'Java not found.')
         return
-    command = [foundJre, '-jar', 'SrcDemo2.jar'] + sys.argv[1:]
+    command = [foundJre, '-jar', 'SrcDemo2.jar']
     outStreams = [sys.stdout]
     errStreams = [sys.stderr]
     if debugMode:
+        command.append('--srcdemo-debug')
         print 'Debug mode allows the console output to be logged to a file.'
         print 'You may enter the complete path of the file to log to below.'
         print 'Make sure it is writable (i.e. don\'t put it in Program Files).'
@@ -85,6 +86,7 @@ def launch(debugMode=False):
                     print 'Please make sure the file is writable.'
             else:
                 break
+    command.extend(sys.argv[1:])
     while True:
         print 'Running', command
         p = subprocess.Popen(command, cwd=selfDir, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE, creationflags=win32process.CREATE_NO_WINDOW)
