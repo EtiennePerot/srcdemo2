@@ -72,7 +72,7 @@
         </copy>
 	</target>
     <target name="installer">
-    	<!-- Assumes makensis.exe is in the path -->
+    	<!-- Assumes makensis.exe is in the path. Note: Use Unicode NSIS, not regular NSIS! -->
         <delete file="${installer.file}"/>
         <taskdef name="nsis" classname="com.danielreese.nsisant.Task" classpath="${installer.ant}"/>
     	<nsis script="${installer.script}"/>

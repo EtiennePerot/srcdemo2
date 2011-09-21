@@ -16,7 +16,7 @@ public class SrcSettings extends QSettings
 
 	int getLastBlendRate()
 	{
-		return (Integer) value("blendRate", 25);
+		return (Integer) value("blendRate", 32);
 	}
 
 	String getLastMountpoint()

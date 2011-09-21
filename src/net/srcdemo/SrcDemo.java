@@ -1,6 +1,5 @@
 package net.srcdemo;
 
-import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
@@ -10,13 +9,12 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.locks.ReentrantLock;
 
-import javax.imageio.ImageIO;
-
 public class SrcDemo
 {
 	private final File backingDirectory;
 	private final SrcDemoFS backingFS;
 	private final int blendRate;
+	private final ReentrantLock bufferLock = new ReentrantLock();
 	private int currentAllocatedSize = -1;
 	private int[] currentMergedFrame;
 	private final String demoPrefix;
@@ -24,9 +22,12 @@ public class SrcDemo
 	private final Map<Integer, ByteArrayOutputStream> frameData = new HashMap<Integer, ByteArrayOutputStream>();
 	private final ReentrantLock frameLock = new ReentrantLock();
 	private int framesMerged = -1;
+	private SrcKeepAlive keepAlive;
+	private long lastClosedFrameTime = -1L;
 	private int maxAcceptedFrame;
 	private int maxEncounteredByteSize = 1048576;
 	private int minAcceptedFrame = 0;
+	private PNGSaver pngSaver;
 
 	SrcDemo(final SrcDemoFS backingFS, final File backingDirectory, final String prefix, final int blendRate,
 			final int shutterAngle)
@@ -41,25 +42,53 @@ public class SrcDemo
 			maxAcceptedFrame++;
 			minAcceptedFrame = 1;
 		}
+		pngSaver = new PNGSaver(backingFS, demoPrefix);
+		keepAlive = new SrcKeepAlive(this);
 	}
 
 	void closeFile(final String fileName)
 	{
 		final Integer frameNumber = getFrameNumber(fileName);
 		if (shouldIgnoreFrame(frameNumber)) {
+			SrcLogger.log("Frame " + fileName + " is being closed. Ignoring.");
 			return;
 		}
+		lastClosedFrameTime = System.currentTimeMillis();
+		SrcLogger.log("Frame " + fileName + " is being closed. Processing.");
+		bufferLock.lock();
 		final ByteArrayOutputStream buffer = getFrameByte(frameNumber);
 		maxEncounteredByteSize = Math.max(maxEncounteredByteSize, buffer.size());
 		frameData.remove(frameNumber);
+		bufferLock.unlock();
 		handleFrame(frameNumber, buffer.toByteArray());
 		backingFS.notifyFrameProcessed(fileName);
+		SrcLogger.log("Finished processing frame: " + fileName);
 	}
 
 	void createFile(final String fileName)
 	{
 		// Just create it
 		getFrameByte(fileName);
+	}
+
+	void destroy()
+	{
+		SrcLogger.log("Destroying SrcDemo object: " + this);
+		// Do some preemptive null-ification
+		bufferLock.lock();
+		frameLock.lock();
+		frameData.clear();
+		currentMergedFrame = null;
+		pngSaver.interrupt();
+		pngSaver = null;
+		keepAlive.cancel();
+		keepAlive = null;
+		bufferLock.unlock();
+		frameLock.unlock();
+		// Notify the upper layer that we're dead, Jim
+		backingFS.destroy(this);
+		System.gc();
+		SrcLogger.log("Fully destroyed SrcDemo object: " + this);
 	}
 
 	public FileInfo getFileInfo(final String fileName)
@@ -76,12 +105,16 @@ public class SrcDemo
 		if (number == null) {
 			return null;
 		}
+		bufferLock.lock();
 		if (!frameData.containsKey(number)) {
 			final ByteArrayOutputStream buffer = new ByteArrayOutputStream(maxEncounteredByteSize);
 			frameData.put(number, buffer);
+			bufferLock.unlock();
 			return buffer;
 		}
-		return frameData.get(number);
+		final ByteArrayOutputStream buffer = frameData.get(number);
+		bufferLock.unlock();
+		return buffer;
 	}
 
 	private ByteArrayOutputStream getFrameByte(final String fileName)
@@ -107,6 +140,16 @@ public class SrcDemo
 		}
 	}
 
+	long getLastClosedFrameTime()
+	{
+		return lastClosedFrameTime;
+	}
+
+	public String getPrefix()
+	{
+		return demoPrefix;
+	}
+
 	private void handleFrame(final int frameNumber, final byte[] frameData)
 	{
 		final int framePosition = frameNumber % blendRate;
@@ -115,7 +158,10 @@ public class SrcDemo
 		final int totalNeededSize = numPixels * 3;
 		frameLock.lock();
 		if (framePosition == minAcceptedFrame) { // First frame of the sequence
+			SrcLogger.log("This is the first frame of the sequence. Allocating memory.");
 			if (totalNeededSize != currentAllocatedSize) {
+				SrcLogger.log("Memmory allocation size is different. Needed: " + totalNeededSize + " / Current: "
+						+ currentAllocatedSize);
 				currentMergedFrame = new int[totalNeededSize];
 				currentAllocatedSize = totalNeededSize;
 			}
@@ -123,14 +169,16 @@ public class SrcDemo
 			framesMerged = 0;
 		}
 		if (totalNeededSize != currentAllocatedSize) {
-			System.err.println("Invalid frame size for frame #" + frameNumber + "! Allocated = " + currentAllocatedSize
+			SrcLogger.error("Invalid frame size for frame #" + frameNumber + "! Allocated = " + currentAllocatedSize
 					+ "; Frame = " + totalNeededSize);
 			frameLock.unlock();
 			return;
 		}
+		SrcLogger.log("Merging frame: " + frameNumber);
 		tga.addToArray(currentMergedFrame);
 		framesMerged++;
 		if (framePosition == maxAcceptedFrame) { // Last frame of the sequence
+			SrcLogger.log("This was the last frame of the sequence. Computing final image.");
 			final int[] finalPixels = new int[numPixels];
 			for (int i = 0; i < numPixels; i++) {
 				final int rPosition = i * 3;
@@ -139,29 +187,14 @@ public class SrcDemo
 						| (currentMergedFrame[rPosition] / framesMerged);
 			}
 			// At this point, we made a full copy, no need to keep the rest waiting
-			new Thread()
-			{
-				@Override
-				public void run()
-				{
-					final int width = tga.getWidth();
-					final int height = tga.getHeight();
-					final BufferedImage finalImage = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
-					finalImage.setRGB(0, 0, width, height, finalPixels, 0, width);
-					final int sequenceIndex = frameNumber / blendRate;
-					final File outputFile = new File(backingDirectory, demoPrefix + sequenceIndex + ".png");
-					try {
-						ImageIO.write(finalImage, "png", outputFile);
-						backingFS.notifyFrameSaved(outputFile);
-					}
-					catch (final IOException e) {
-						System.err.println("Error while writing PNG image: " + outputFile);
-						e.printStackTrace();
-					}
-				}
-			}.start();
+			pngSaver.add(new PNGSavingTask(frameNumber / blendRate, finalPixels, tga.getWidth(), tga.getHeight()));
 		}
 		frameLock.unlock();
+	}
+
+	boolean isLocked()
+	{
+		return bufferLock.isLocked() || frameLock.isLocked();
 	}
 
 	private boolean shouldIgnoreFrame(final Integer frameNumber)
@@ -173,12 +206,18 @@ public class SrcDemo
 		return framePosition < minAcceptedFrame || framePosition > maxAcceptedFrame;
 	}
 
+	@Override
+	public String toString()
+	{
+		return "SrcDemo(Prefix = " + demoPrefix + ")";
+	}
+
 	void truncateFile(final String fileName, final long length)
 	{
 		final ByteArrayOutputStream buffer = getFrameByte(fileName);
 		if (buffer != null && buffer.size() != length) {
-			System.err.println("Buffer size does not match truncate call for frame: " + fileName + "!");
-			System.err.println("Buffer size: " + buffer.size() + " / Truncate call: " + length);
+			SrcLogger.error("Buffer size does not match truncate call for frame: " + fileName + "!");
+			SrcLogger.error("Buffer size: " + buffer.size() + " / Truncate call: " + length);
 		}
 	}
 
@@ -193,8 +232,7 @@ public class SrcDemo
 				output.write(gotten);
 			}
 			catch (final IOException e) {
-				System.err.println("Error while copying data to frame: " + fileName);
-				e.printStackTrace();
+				SrcLogger.error("Error while copying data to frame: " + fileName, e);
 			}
 			return toRead;
 		}

@@ -1,6 +1,7 @@
 package net.srcdemo.ui;
 
 import net.decasdev.dokan.Dokan;
+import net.srcdemo.SrcLogger;
 
 import com.trolltech.qt.core.Qt.AlignmentFlag;
 import com.trolltech.qt.gui.QLabel;
@@ -14,14 +15,14 @@ public class DokanMessage extends QWidget
 	{
 		try {
 			if (Dokan.getVersion() == 600) {
+				SrcLogger.log("Starting with version = " + Dokan.getVersion() + " / Driver = " + Dokan.getDriverVersion() + ".");
 				return null;
 			}
+			SrcLogger.error("Invalid Dokan version: " + Dokan.getVersion());
 			return Strings.errInvalidDokan;
 		}
-		catch (final Error e) {
-			return Strings.errDokanNotInstalled;
-		}
-		catch (final Exception e) {
+		catch (final Throwable e) {
+			SrcLogger.error("Error caught while initializing Dokan", e);
 			return Strings.errDokanNotInstalled;
 		}
 	}
@@ -31,7 +32,7 @@ public class DokanMessage extends QWidget
 		setWindowTitle(Strings.errDokanTitle);
 		final QVBoxLayout vbox = new QVBoxLayout();
 		vbox.addWidget(new QLabel(dokanMessage));
-		final QPushButton exitButton = new QPushButton(Strings.btnExit);
+		final QPushButton exitButton = new QPushButton(Strings.btnDeactivate);
 		exitButton.clicked.connect(this, "onExit()");
 		vbox.addWidget(exitButton, 0, AlignmentFlag.AlignCenter);
 		setLayout(vbox);

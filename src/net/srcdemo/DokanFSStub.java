@@ -98,6 +98,12 @@ public abstract class DokanFSStub implements DokanOperations
 			public void run()
 			{
 				oldThis.mountPoint = mountPoint;
+				try {
+					Dokan.removeMountPoint(mountPoint);
+				}
+				catch (final Throwable e) {
+					// Too bad
+				}
 				final DokanOptions dokanOptions = new DokanOptions(mountPoint, 0, 0);
 				final int result = Dokan.mount(dokanOptions, oldThis);
 				log("Mount", "Mounting result: " + result);

@@ -4,10 +4,10 @@ public interface Strings
 {
 	final String btnActivate = "Activate";
 	final String btnBrowse = "Browse...";
-	final String btnExit = "Exit";
+	final String btnDeactivate = "Deactivate";
 	final String cmdHostFramerate = "host_framerate ";
 	final String errDirectoriesEqual = "Directories must not be equal";
-	final String errDokanNotInstalled = "Dokan is not installed.";
+	final String errDokanNotInstalled = "Dokan is not installed.\n\nMore information will be available if you start in debug mode.";
 	final String errDokanTitle = "Dokan error";
 	final String errInvalidBacking = "Invalid folder to save frames.";
 	final String errInvalidDokan = "The version of Dokan installed is not the correct one.\nThis application required Dokan 0.6.";
@@ -25,9 +25,12 @@ public interface Strings
 	final String lblReadyToRender = "Ready to render.";
 	final String lblShutterAngle = "Simulated shutter angle: ";
 	final String lblTargetFps = "Final video FPS: ";
-	final String spnBlendRate = " frames per frame";
-	final String spnShutterAngle = " degrees";
-	final String spnTargetFps = " frames per second";
+	final String spnBlendRatePlural = " frames per frame";
+	final String spnBlendRateSingular = " frame (identity)";
+	final String spnShutterAnglePlural = " degrees";
+	final String spnShutterAngleSingular = " degree";
+	final String spnTargetFpsPlural = " frames per second";
+	final String spnTargetFpsSingular = " frame per second";
 	final String step1 = "1. Select the folder where the game will save frames.";
 	final String step1Dialog = "Select the folder where you want the final frames to be saved.";
 	final String step2 = "2. Select the folder where you want the final frames to be saved.\n(Must be a different directory!)";

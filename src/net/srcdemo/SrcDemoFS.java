@@ -55,6 +55,23 @@ public class SrcDemoFS extends LoopbackFS
 		return true;
 	}
 
+	void destroy(final SrcDemo srcDemo)
+	{
+		if (srcDemo == null) {
+			return;
+		}
+		String toDelete = null;
+		for (final String demoPrefix : demos.keySet()) {
+			if (srcDemo.equals(demos.get(demoPrefix))) {
+				toDelete = demoPrefix;
+				break;
+			}
+		}
+		if (toDelete != null) {
+			demos.remove(toDelete);
+		}
+	}
+
 	private SrcDemo getDemo(final String fileName)
 	{
 		final Matcher match = demoNamePattern.matcher(fileName);

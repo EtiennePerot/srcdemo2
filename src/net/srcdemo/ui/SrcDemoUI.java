@@ -2,9 +2,11 @@ package net.srcdemo.ui;
 
 import java.io.File;
 import java.lang.reflect.Field;
+import java.util.concurrent.locks.ReentrantLock;
 
 import net.srcdemo.SrcDemoFS;
 import net.srcdemo.SrcDemoListener;
+import net.srcdemo.SrcLogger;
 
 import com.trolltech.qt.core.Qt.AlignmentFlag;
 import com.trolltech.qt.gui.QApplication;
@@ -23,6 +25,10 @@ import com.trolltech.qt.gui.QWidget;
 
 public class SrcDemoUI extends QWidget implements SrcDemoListener
 {
+	private static boolean debugMode = false;
+	private static final int relaunchStatusCode = 1337;
+	private static int returnCode = 0;
+
 	public static void main(final String[] args)
 	{
 		final String newLibPath = "lib" + File.pathSeparator + System.getProperty("java.library.path");
@@ -38,20 +44,30 @@ public class SrcDemoUI extends QWidget implements SrcDemoListener
 		catch (final Exception e) {
 			// Oh well
 		}
+		for (final String arg : args) {
+			if (arg.equals("--srcdemo-debug")) {
+				debugMode = true;
+				SrcLogger.setLogAll(true);
+			}
+		}
 		QApplication.initialize(args);
-		SrcDemoUI ui = null;
 		final String dokanMessage = DokanMessage.check();
 		if (dokanMessage == null) {
-			ui = new SrcDemoUI();
+			final SrcDemoUI ui = new SrcDemoUI();
+			Runtime.getRuntime().addShutdownHook(new Thread("Unmount shtudown hook")
+			{
+				@Override
+				public void run()
+				{
+					ui.unmount();
+				}
+			});
 		}
 		else {
 			new DokanMessage(dokanMessage).show();
 		}
 		QApplication.exec();
-		if (ui != null) {
-			ui.unmount();
-		}
-		System.exit(0);
+		System.exit(returnCode);
 	}
 
 	private QLineEdit backingDirectory;
@@ -61,6 +77,7 @@ public class SrcDemoUI extends QWidget implements SrcDemoListener
 	private QPushButton btnMount;
 	private QLabel effectiveRecordingFps;
 	private QLabel effectiveRecordingFpsCommand;
+	private final ReentrantLock fsLock = new ReentrantLock();
 	private LabelUpdater lastFrameProcessedUpdater;
 	private LabelUpdater lastFrameSavedUpdated;
 	private QLabel lblStatus;
@@ -74,7 +91,12 @@ public class SrcDemoUI extends QWidget implements SrcDemoListener
 	SrcDemoUI()
 	{
 		setWindowTitle(Strings.windowTitle);
-		setWindowIcon(new QIcon("img/icon-512.png"));
+		if (debugMode) {
+			setWindowIcon(new QIcon("img/debug-256.png"));
+		}
+		else {
+			setWindowIcon(new QIcon("img/icon-512.png"));
+		}
 		settings = new SrcSettings();
 		initUI();
 		show();
@@ -95,6 +117,13 @@ public class SrcDemoUI extends QWidget implements SrcDemoListener
 			return Strings.errDirectoriesEqual;
 		}
 		return null;
+	}
+
+	void exit(final int returnCode)
+	{
+		SrcDemoUI.returnCode = returnCode;
+		unmount();
+		close();
 	}
 
 	private File getBackingDirectory()
@@ -141,8 +170,7 @@ public class SrcDemoUI extends QWidget implements SrcDemoListener
 				final QHBoxLayout hbox = new QHBoxLayout();
 				hbox.addWidget(new QLabel(Strings.lblTargetFps));
 				targetFps = new QSpinBox();
-				targetFps.setRange(12, 300);
-				targetFps.setSuffix(Strings.spnTargetFps);
+				targetFps.setRange(1, 600);
 				targetFps.setValue(settings.getLastTargetFps());
 				targetFps.valueChanged.connect(this, "updateEffectiveRecordingFps()");
 				hbox.addWidget(targetFps);
@@ -152,8 +180,7 @@ public class SrcDemoUI extends QWidget implements SrcDemoListener
 				final QHBoxLayout hbox = new QHBoxLayout();
 				hbox.addWidget(new QLabel(Strings.lblBlendRate));
 				blendRate = new QSpinBox();
-				blendRate.setRange(1, 99);
-				blendRate.setSuffix(Strings.spnBlendRate);
+				blendRate.setRange(1, 1000);
 				blendRate.setValue(settings.getLastBlendRate());
 				blendRate.valueChanged.connect(this, "updateEffectiveRecordingFps()");
 				hbox.addWidget(blendRate);
@@ -164,9 +191,8 @@ public class SrcDemoUI extends QWidget implements SrcDemoListener
 				hbox.addWidget(new QLabel(Strings.lblShutterAngle));
 				shutterAngle = new QSpinBox();
 				shutterAngle.setRange(1, 360);
-				shutterAngle.setSuffix(Strings.spnShutterAngle);
 				shutterAngle.setValue(settings.getLastShutterAngle());
-				blendRate.valueChanged.connect(this, "saveFrameSettings()");
+				shutterAngle.valueChanged.connect(this, "updateEffectiveRecordingFps()");
 				hbox.addWidget(shutterAngle);
 				vbox.addLayout(hbox);
 			}
@@ -195,8 +221,8 @@ public class SrcDemoUI extends QWidget implements SrcDemoListener
 			btnMount = new QPushButton(Strings.btnActivate);
 			btnMount.clicked.connect(this, "onMount()");
 			hbox.addWidget(btnMount);
-			btnExit = new QPushButton(Strings.btnExit);
-			btnExit.clicked.connect(this, "onExit()");
+			btnExit = new QPushButton(Strings.btnDeactivate);
+			btnExit.clicked.connect(this, "onDeactivate()");
 			hbox.addWidget(btnExit);
 			vbox.addLayout(hbox);
 		}
@@ -253,9 +279,9 @@ public class SrcDemoUI extends QWidget implements SrcDemoListener
 	}
 
 	@SuppressWarnings("unused")
-	private void onExit()
+	private void onDeactivate()
 	{
-		close();
+		exit(relaunchStatusCode);
 	}
 
 	@Override
@@ -276,10 +302,17 @@ public class SrcDemoUI extends QWidget implements SrcDemoListener
 	@SuppressWarnings("unused")
 	private void onMount()
 	{
+		SrcLogger.log("Mounting to: " + getMountpoint().getAbsolutePath());
+		SrcLogger.log("Backing directory: " + getBackingDirectory().getAbsolutePath());
+		SrcLogger.log("Target FPS: " + targetFps.value());
+		SrcLogger.log("Blendrate: " + blendRate.value());
+		SrcLogger.log("Shutter angle: " + shutterAngle.value());
+		fsLock.lock();
 		mountedFS = new SrcDemoFS(getBackingDirectory().getAbsolutePath(), blendRate.value(), shutterAngle.value());
 		mountedFS.addListener(this);
 		mountedFS.setLogging(false);
 		mountedFS.mount(getMountpoint().getAbsolutePath());
+		fsLock.unlock();
 		updateStatus();
 	}
 
@@ -292,10 +325,14 @@ public class SrcDemoUI extends QWidget implements SrcDemoListener
 
 	private void unmount()
 	{
+		fsLock.lock();
 		if (mountedFS != null) {
+			SrcLogger.log("Unmounting.");
 			mountedFS.unmount();
 			mountedFS.removeListener(this);
+			mountedFS = null;
 		}
+		fsLock.unlock();
 	}
 
 	private void updateEffectiveRecordingFps()
@@ -303,6 +340,9 @@ public class SrcDemoUI extends QWidget implements SrcDemoListener
 		final int effectiveFps = blendRate.value() * targetFps.value();
 		effectiveRecordingFps.setText("" + effectiveFps);
 		effectiveRecordingFpsCommand.setText(Strings.cmdHostFramerate + effectiveFps);
+		targetFps.setSuffix(targetFps.value() == 1 ? Strings.spnTargetFpsSingular : Strings.spnTargetFpsPlural);
+		blendRate.setSuffix(blendRate.value() == 1 ? Strings.spnBlendRateSingular : Strings.spnBlendRatePlural);
+		shutterAngle.setSuffix(shutterAngle.value() == 1 ? Strings.spnShutterAngleSingular : Strings.spnShutterAnglePlural);
 		saveFrameSettings();
 	}
 
