@@ -45,10 +45,4 @@ public class ByHandleFileInformation
 				+ volumeSerialNumber + "," + "fileSize=" + fileSize + "," + "numberOfLinks=" + numberOfLinks + ","
 				+ "fileIndex=" + fileIndex + ")";
 	}
-
-	public Win32FindData toWin32FindData(final String fileName)
-	{
-		return new Win32FindData(fileAttributes, creationTime, lastAccessTime, lastWriteTime, fileSize, 0, 0, fileName,
-				fileName);
-	}
 }

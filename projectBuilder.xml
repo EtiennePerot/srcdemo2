@@ -36,6 +36,9 @@
         <copy todir="${jar.libdir}">
             <fileset dir="${lib.dir}" excludes="${svn.excludes}"/>
         </copy>
+		<move todir="${jar.dir}">
+			<fileset dir="${jar.libdir}" includes="**/*.dll"/>
+		</move>
         <copy todir="${jar.imgdir}">
             <fileset dir="${img.dir}" excludes="${svn.excludes}"/>
         </copy>

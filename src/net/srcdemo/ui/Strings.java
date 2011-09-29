@@ -5,6 +5,7 @@ public interface Strings
 	final String btnActivate = "Activate";
 	final String btnBrowse = "Browse...";
 	final String btnDeactivate = "Deactivate";
+	final String btnQuit = "Quit";
 	final String cmdHostFramerate = "host_framerate ";
 	final String errDirectoriesEqual = "Directories must not be equal";
 	final String errDokanNotInstalled = "Dokan is not installed.\n\nMore information will be available if you start in debug mode.";

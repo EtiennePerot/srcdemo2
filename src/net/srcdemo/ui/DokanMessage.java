@@ -15,7 +15,8 @@ public class DokanMessage extends QWidget
 	{
 		try {
 			if (Dokan.getVersion() == 600) {
-				SrcLogger.log("Starting with version = " + Dokan.getVersion() + " / Driver = " + Dokan.getDriverVersion() + ".");
+				SrcLogger
+						.log("Starting with version = " + Dokan.getVersion() + " / Driver = " + Dokan.getDriverVersion() + ".");
 				return null;
 			}
 			SrcLogger.error("Invalid Dokan version: " + Dokan.getVersion());
@@ -32,7 +33,7 @@ public class DokanMessage extends QWidget
 		setWindowTitle(Strings.errDokanTitle);
 		final QVBoxLayout vbox = new QVBoxLayout();
 		vbox.addWidget(new QLabel(dokanMessage));
-		final QPushButton exitButton = new QPushButton(Strings.btnDeactivate);
+		final QPushButton exitButton = new QPushButton(Strings.btnQuit);
 		exitButton.clicked.connect(this, "onExit()");
 		vbox.addWidget(exitButton, 0, AlignmentFlag.AlignCenter);
 		setLayout(vbox);

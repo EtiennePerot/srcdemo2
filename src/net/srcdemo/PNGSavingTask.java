@@ -9,7 +9,7 @@ import javax.imageio.ImageIO;
 public class PNGSavingTask
 {
 	private final int height;
-	private final int[] pixelData;
+	private int[] pixelData;
 	private final int sequenceIndex;
 	private final int width;
 
@@ -29,14 +29,19 @@ public class PNGSavingTask
 	boolean save(final File outputFile)
 	{
 		SrcLogger.log("Spawned PNG saving task to: " + outputFile);
-		final BufferedImage finalImage = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
+		BufferedImage finalImage = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
 		finalImage.setRGB(0, 0, width, height, pixelData, 0, width);
+		pixelData = null;
 		try {
 			ImageIO.write(finalImage, "png", outputFile);
+			finalImage = null;
+			System.gc();
 			SrcLogger.log("Finished writing final PNG: " + outputFile);
 			return true;
 		}
 		catch (final IOException e) {
+			finalImage = null;
+			System.gc();
 			SrcLogger.error("Error while writing PNG image " + outputFile, e);
 			return false;
 		}

@@ -13,6 +13,7 @@ public class PNGSaver extends Thread
 
 	PNGSaver(final SrcDemoFS backingFS, final String demoPrefix)
 	{
+		super("PNG saving thread");
 		this.backingFS = backingFS;
 		backingDirectory = backingFS.getBackingStorage();
 		this.demoPrefix = demoPrefix;

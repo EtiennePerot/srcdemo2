@@ -26,8 +26,10 @@ import com.trolltech.qt.gui.QWidget;
 public class SrcDemoUI extends QWidget implements SrcDemoListener
 {
 	private static boolean debugMode = false;
+	private static boolean dokanLoggingMode = false;
 	private static final int relaunchStatusCode = 1337;
 	private static int returnCode = 0;
+	private static boolean srcDemoHideFiles = false;
 
 	public static void main(final String[] args)
 	{
@@ -46,8 +48,14 @@ public class SrcDemoUI extends QWidget implements SrcDemoListener
 		}
 		for (final String arg : args) {
 			if (arg.equals("--srcdemo-debug")) {
-				debugMode = true;
+				srcDemoHideFiles = true;
 				SrcLogger.setLogAll(true);
+			}
+			if (arg.equals("--dokan-debug")) {
+				dokanLoggingMode = true;
+			}
+			if (arg.equals("--srcdemo-hide-files")) {
+				srcDemoHideFiles = true;
 			}
 		}
 		QApplication.initialize(args);
@@ -310,7 +318,8 @@ public class SrcDemoUI extends QWidget implements SrcDemoListener
 		fsLock.lock();
 		mountedFS = new SrcDemoFS(getBackingDirectory().getAbsolutePath(), blendRate.value(), shutterAngle.value());
 		mountedFS.addListener(this);
-		mountedFS.setLogging(false);
+		mountedFS.setLogging(dokanLoggingMode);
+		mountedFS.setHideFiles(srcDemoHideFiles);
 		mountedFS.mount(getMountpoint().getAbsolutePath());
 		fsLock.unlock();
 		updateStatus();

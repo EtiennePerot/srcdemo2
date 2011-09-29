@@ -174,7 +174,7 @@ public class SrcDemo
 			frameLock.unlock();
 			return;
 		}
-		SrcLogger.log("Merging frame: " + frameNumber);
+		SrcLogger.log("Merging frame: " + frameNumber + " on thread " + Thread.currentThread().getId());
 		tga.addToArray(currentMergedFrame);
 		framesMerged++;
 		if (framePosition == maxAcceptedFrame) { // Last frame of the sequence

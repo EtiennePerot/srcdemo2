@@ -2,6 +2,8 @@ package net.srcdemo;
 
 import java.io.File;
 import java.nio.ByteBuffer;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -10,13 +12,18 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import net.decasdev.dokan.CreationDispositionEnum;
+import net.decasdev.dokan.DokanFileInfo;
+import net.decasdev.dokan.DokanOperationException;
+import net.decasdev.dokan.Win32FindData;
 
 public class SrcDemoFS extends LoopbackFS
 {
 	private static final Pattern demoNamePattern = Pattern.compile("(\\d+)\\.tga$", Pattern.CASE_INSENSITIVE);
+	private static final Win32FindData[] emptyWin32FindData = new Win32FindData[0];
 	private final int blendRate;
 	private final Set<SrcDemoListener> demoListeners = new HashSet<SrcDemoListener>();
 	private final Map<String, SrcDemo> demos = new HashMap<String, SrcDemo>();
+	private boolean hideFiles = false;
 	private final int shutterAngle;
 
 	public SrcDemoFS(final String backingStorage, final int blendRate, final int shutterAngle)
@@ -72,6 +79,17 @@ public class SrcDemoFS extends LoopbackFS
 		}
 	}
 
+	@Override
+	protected Collection<String> findFiles(final String pathName)
+	{
+		if (hideFiles) {
+			return new ArrayList<String>(0);
+		}
+		else {
+			return super.findFiles(pathName);
+		}
+	}
+
 	private SrcDemo getDemo(final String fileName)
 	{
 		final Matcher match = demoNamePattern.matcher(fileName);
@@ -109,9 +127,25 @@ public class SrcDemoFS extends LoopbackFS
 		}
 	}
 
+	@Override
+	public Win32FindData[] onFindFiles(final String pathName, final DokanFileInfo fileInfo) throws DokanOperationException
+	{
+		if (hideFiles) {
+			return emptyWin32FindData;
+		}
+		else {
+			return super.onFindFiles(pathName, fileInfo);
+		}
+	}
+
 	public void removeListener(final SrcDemoListener listener)
 	{
 		demoListeners.remove(listener);
+	}
+
+	public void setHideFiles(final boolean hideFiles)
+	{
+		this.hideFiles = hideFiles;
 	}
 
 	@Override
