@@ -1,5 +1,6 @@
 package net.srcdemo.ui;
 
+
 public interface Strings
 {
 	final String btnActivate = "Activate";
@@ -14,6 +15,7 @@ public interface Strings
 	final String errInvalidDokan = "The version of Dokan installed is not the correct one.\nThis application required Dokan 0.6.";
 	final String errInvalidMountpoint = "Invalid folder where the game will save frames.";
 	final String errMountpointNotEmpty = "Folder where the game will save frames is not empty.";
+	final String lblAudioType = "Audio output:";
 	final String lblBlendRate = "Motion blur blend rate: ";
 	final String lblEffectiveFps = "Effective recording FPS: ";
 	final String lblInvalidSettings = "Invalid settings: ";
@@ -26,6 +28,7 @@ public interface Strings
 	final String lblReadyToRender = "Ready to render.";
 	final String lblShutterAngle = "Simulated shutter angle: ";
 	final String lblTargetFps = "Final video FPS: ";
+	final String lblVideoType = "Video output:";
 	final String spnBlendRatePlural = " frames per frame";
 	final String spnBlendRateSingular = " frame (identity)";
 	final String spnShutterAnglePlural = " degrees";
@@ -37,5 +40,11 @@ public interface Strings
 	final String step2 = "2. Select the folder where you want the final frames to be saved.\n(Must be a different directory!)";
 	final String step2Dialog = "Select the folder where the game will save frames.";
 	final String step3 = "3. Set parameters";
+	final String tabAudio = "Audio";
+	final String tabVideo = "Video";
+	final String videoOptDisabled = "Disabled";
+	final String videoOptJpg = "JPG";
+	final String videoOptPng = "PNG";
+	final String videoOptTga = "TGA";
 	final String windowTitle = "SrcDemo²";
 }

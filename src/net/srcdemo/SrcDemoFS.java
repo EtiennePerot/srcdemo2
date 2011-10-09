@@ -8,6 +8,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.locks.ReentrantLock;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -15,22 +16,27 @@ import net.decasdev.dokan.CreationDispositionEnum;
 import net.decasdev.dokan.DokanFileInfo;
 import net.decasdev.dokan.DokanOperationException;
 import net.decasdev.dokan.Win32FindData;
+import net.srcdemo.audio.AudioHandlerFactory;
+import net.srcdemo.video.VideoHandlerFactory;
 
 public class SrcDemoFS extends LoopbackFS
 {
-	private static final Pattern demoNamePattern = Pattern.compile("(\\d+)\\.tga$", Pattern.CASE_INSENSITIVE);
+	private static final Pattern demoNameTGAPattern = Pattern.compile("(\\d+)\\.tga$", Pattern.CASE_INSENSITIVE);
+	private static final Pattern demoNameWAVPattern = Pattern.compile("\\.wav$", Pattern.CASE_INSENSITIVE);
 	private static final Win32FindData[] emptyWin32FindData = new Win32FindData[0];
-	private final int blendRate;
+	private final AudioHandlerFactory audioHandlerFactory;
 	private final Set<SrcDemoListener> demoListeners = new HashSet<SrcDemoListener>();
+	private final ReentrantLock demoLock = new ReentrantLock();
 	private final Map<String, SrcDemo> demos = new HashMap<String, SrcDemo>();
 	private boolean hideFiles = false;
-	private final int shutterAngle;
+	private final VideoHandlerFactory videoHandlerFactory;
 
-	public SrcDemoFS(final String backingStorage, final int blendRate, final int shutterAngle)
+	public SrcDemoFS(final String backingStorage, final VideoHandlerFactory videoHandlerFactory,
+			final AudioHandlerFactory audioHandlerFactory)
 	{
 		super(backingStorage);
-		this.blendRate = blendRate;
-		this.shutterAngle = shutterAngle;
+		this.audioHandlerFactory = audioHandlerFactory;
+		this.videoHandlerFactory = videoHandlerFactory;
 	}
 
 	public void addListener(final SrcDemoListener listener)
@@ -75,7 +81,9 @@ public class SrcDemoFS extends LoopbackFS
 			}
 		}
 		if (toDelete != null) {
+			demoLock.lock();
 			demos.remove(toDelete);
+			demoLock.unlock();
 		}
 	}
 
@@ -86,20 +94,31 @@ public class SrcDemoFS extends LoopbackFS
 			return new ArrayList<String>(0);
 		}
 		else {
-			return super.findFiles(pathName);
+			final Collection<String> actualFiles = super.findFiles(pathName);
+			demoLock.lock();
+			for (final SrcDemo demo : demos.values()) {
+				demo.modifyFindResults(pathName, actualFiles);
+			}
+			demoLock.unlock();
+			return actualFiles;
 		}
 	}
 
 	private SrcDemo getDemo(final String fileName)
 	{
-		final Matcher match = demoNamePattern.matcher(fileName);
+		Matcher match = demoNameTGAPattern.matcher(fileName);
 		if (!match.find()) {
-			return null;
+			match = demoNameWAVPattern.matcher(fileName);
+			if (!match.find()) {
+				return null;
+			}
 		}
 		final String demoName = fileName.substring(0, match.start());
+		demoLock.lock();
 		if (!demos.containsKey(demoName)) {
-			demos.put(demoName, new SrcDemo(this, getBackingStorage(), demoName, blendRate, shutterAngle));
+			demos.put(demoName, new SrcDemo(this, demoName, videoHandlerFactory, audioHandlerFactory));
 		}
+		demoLock.unlock();
 		return demos.get(demoName);
 	}
 

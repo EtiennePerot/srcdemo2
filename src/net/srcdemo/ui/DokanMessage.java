@@ -39,6 +39,7 @@ public class DokanMessage extends QWidget
 		setLayout(vbox);
 	}
 
+	@SuppressWarnings("unused")
 	private void onExit()
 	{
 		close();

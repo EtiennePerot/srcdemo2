@@ -1,4 +1,4 @@
-package net.srcdemo;
+package net.srcdemo.video;
 
 class TGAReader
 {
@@ -94,12 +94,6 @@ class TGAReader
 	{
 		final int b = buf[offset++];
 		return (b < 0 ? 256 + b : b);
-	}
-
-	int readPixel()
-	{
-		// TODO Auto-generated method stub
-		return 0;
 	}
 
 	private void skip(final int bytes)

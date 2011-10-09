@@ -1,129 +1,101 @@
 package net.srcdemo;
 
-import java.io.ByteArrayOutputStream;
 import java.io.File;
-import java.io.IOException;
 import java.nio.ByteBuffer;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.concurrent.locks.ReentrantLock;
+import java.util.Collection;
+
+import net.srcdemo.audio.AudioHandler;
+import net.srcdemo.audio.AudioHandlerFactory;
+import net.srcdemo.video.VideoHandler;
+import net.srcdemo.video.VideoHandlerFactory;
 
 public class SrcDemo
 {
-	private final File backingDirectory;
+	private final AudioHandler audioHandler;
 	private final SrcDemoFS backingFS;
-	private final int blendRate;
-	private final ReentrantLock bufferLock = new ReentrantLock();
-	private int currentAllocatedSize = -1;
-	private int[] currentMergedFrame;
+	private final String demoDirectory;
 	private final String demoPrefix;
 	private final int demoPrefixLength;
-	private final Map<Integer, ByteArrayOutputStream> frameData = new HashMap<Integer, ByteArrayOutputStream>();
-	private final ReentrantLock frameLock = new ReentrantLock();
-	private int framesMerged = -1;
 	private SrcKeepAlive keepAlive;
 	private long lastClosedFrameTime = -1L;
-	private int maxAcceptedFrame;
-	private int maxEncounteredByteSize = 1048576;
-	private int minAcceptedFrame = 0;
-	private PNGSaver pngSaver;
+	private final File soundFile;
+	private final String soundFileName;
+	private final String soundFileNameLowercase;
+	private final VideoHandler videoHandler;
 
-	SrcDemo(final SrcDemoFS backingFS, final File backingDirectory, final String prefix, final int blendRate,
-			final int shutterAngle)
+	SrcDemo(final SrcDemoFS backingFS, final String prefix, final VideoHandlerFactory videoHandlerFactory,
+			final AudioHandlerFactory audioHandlerFactory)
 	{
 		this.backingFS = backingFS;
-		this.backingDirectory = backingDirectory;
 		demoPrefix = prefix;
 		demoPrefixLength = demoPrefix.length();
-		this.blendRate = blendRate;
-		maxAcceptedFrame = (int) Math.ceil((shutterAngle * blendRate) / 360.0) - 1;
-		if (maxAcceptedFrame < blendRate - 1) { // Offset by 1
-			maxAcceptedFrame++;
-			minAcceptedFrame = 1;
-		}
-		pngSaver = new PNGSaver(backingFS, demoPrefix);
+		// Will be empty string if there is no File.separator in the string, which is perfect:
+		demoDirectory = demoPrefix.substring(0, demoPrefix.indexOf(File.separator) + 1);
+		soundFile = getBackedFile(".wav");
+		soundFileName = soundFile.getName();
+		soundFileNameLowercase = soundFileName.toLowerCase();
 		keepAlive = new SrcKeepAlive(this);
+		videoHandler = videoHandlerFactory.buildHandler(this);
+		audioHandler = audioHandlerFactory.buildHandler(this);
 	}
 
 	void closeFile(final String fileName)
 	{
-		final Integer frameNumber = getFrameNumber(fileName);
-		if (shouldIgnoreFrame(frameNumber)) {
-			SrcLogger.log("Frame " + fileName + " is being closed. Ignoring.");
-			return;
+		if (isSoundFile(fileName)) {
+			audioHandler.close();
 		}
-		lastClosedFrameTime = System.currentTimeMillis();
-		SrcLogger.log("Frame " + fileName + " is being closed. Processing.");
-		bufferLock.lock();
-		final ByteArrayOutputStream buffer = getFrameByte(frameNumber);
-		maxEncounteredByteSize = Math.max(maxEncounteredByteSize, buffer.size());
-		frameData.remove(frameNumber);
-		bufferLock.unlock();
-		handleFrame(frameNumber, buffer.toByteArray());
-		backingFS.notifyFrameProcessed(fileName);
-		SrcLogger.log("Finished processing frame: " + fileName);
+		else {
+			final Integer frameNumber = getFrameNumber(fileName);
+			if (frameNumber != null) {
+				lastClosedFrameTime = System.currentTimeMillis();
+				videoHandler.close(frameNumber);
+				backingFS.notifyFrameProcessed(fileName);
+				SrcLogger.log("Finished processing frame: " + fileName);
+			}
+		}
 	}
 
 	void createFile(final String fileName)
 	{
-		// Just create it
-		getFrameByte(fileName);
+		if (isSoundFile(fileName)) {
+			audioHandler.create();
+		}
+		else {
+			final Integer frameNumber = getFrameNumber(fileName);
+			if (frameNumber != null) {
+				videoHandler.create(frameNumber);
+			}
+		}
 	}
 
 	void destroy()
 	{
 		SrcLogger.log("Destroying SrcDemo object: " + this);
-		// Do some preemptive null-ification
-		bufferLock.lock();
-		frameLock.lock();
-		frameData.clear();
-		currentMergedFrame = null;
-		pngSaver.interrupt();
-		pngSaver = null;
 		keepAlive.cancel();
 		keepAlive = null;
-		bufferLock.unlock();
-		frameLock.unlock();
+		videoHandler.destroy();
+		audioHandler.destroy();
 		// Notify the upper layer that we're dead, Jim
 		backingFS.destroy(this);
 		System.gc();
 		SrcLogger.log("Fully destroyed SrcDemo object: " + this);
 	}
 
-	public FileInfo getFileInfo(final String fileName)
+	public File getBackedFile(final String fileSuffix)
 	{
-		final ByteArrayOutputStream buffer = getFrameByte(fileName);
-		if (buffer != null) {
-			return FileInfo.fromFile(fileName, buffer.size());
+		return backingFS.getBackedFile(demoPrefix + fileSuffix);
+	}
+
+	FileInfo getFileInfo(final String fileName)
+	{
+		if (isSoundFile(fileName)) {
+			return FileInfo.fromFile(soundFileName, audioHandler.getSize());
+		}
+		final Integer frameNumber = getFrameNumber(fileName);
+		if (frameNumber != null) {
+			return FileInfo.fromFile(demoPrefix + frameNumber + ".tga", videoHandler.getFrameSize(frameNumber));
 		}
 		return FileInfo.fromFile(fileName, 0);
-	}
-
-	private ByteArrayOutputStream getFrameByte(final Integer number)
-	{
-		if (number == null) {
-			return null;
-		}
-		bufferLock.lock();
-		if (!frameData.containsKey(number)) {
-			final ByteArrayOutputStream buffer = new ByteArrayOutputStream(maxEncounteredByteSize);
-			frameData.put(number, buffer);
-			bufferLock.unlock();
-			return buffer;
-		}
-		final ByteArrayOutputStream buffer = frameData.get(number);
-		bufferLock.unlock();
-		return buffer;
-	}
-
-	private ByteArrayOutputStream getFrameByte(final String fileName)
-	{
-		final Integer frameNumber = getFrameNumber(fileName);
-		if (shouldIgnoreFrame(frameNumber)) {
-			return null;
-		}
-		return getFrameByte(frameNumber);
 	}
 
 	private Integer getFrameNumber(final String fileName)
@@ -150,60 +122,34 @@ public class SrcDemo
 		return demoPrefix;
 	}
 
-	private void handleFrame(final int frameNumber, final byte[] frameData)
+	public File getSoundFile()
 	{
-		final int framePosition = frameNumber % blendRate;
-		final TGAReader tga = new TGAReader(frameData);
-		final int numPixels = tga.getNumPixels();
-		final int totalNeededSize = numPixels * 3;
-		frameLock.lock();
-		if (framePosition == minAcceptedFrame) { // First frame of the sequence
-			SrcLogger.log("This is the first frame of the sequence. Allocating memory.");
-			if (totalNeededSize != currentAllocatedSize) {
-				SrcLogger.log("Memmory allocation size is different. Needed: " + totalNeededSize + " / Current: "
-						+ currentAllocatedSize);
-				currentMergedFrame = new int[totalNeededSize];
-				currentAllocatedSize = totalNeededSize;
-			}
-			Arrays.fill(currentMergedFrame, 0);
-			framesMerged = 0;
-		}
-		if (totalNeededSize != currentAllocatedSize) {
-			SrcLogger.error("Invalid frame size for frame #" + frameNumber + "! Allocated = " + currentAllocatedSize
-					+ "; Frame = " + totalNeededSize);
-			frameLock.unlock();
-			return;
-		}
-		SrcLogger.log("Merging frame: " + frameNumber + " on thread " + Thread.currentThread().getId());
-		tga.addToArray(currentMergedFrame);
-		framesMerged++;
-		if (framePosition == maxAcceptedFrame) { // Last frame of the sequence
-			SrcLogger.log("This was the last frame of the sequence. Computing final image.");
-			final int[] finalPixels = new int[numPixels];
-			for (int i = 0; i < numPixels; i++) {
-				final int rPosition = i * 3;
-				finalPixels[i] = ((currentMergedFrame[rPosition + 2] / framesMerged) << 16)
-						| ((currentMergedFrame[rPosition + 1] / framesMerged) << 8)
-						| (currentMergedFrame[rPosition] / framesMerged);
-			}
-			// At this point, we made a full copy, no need to keep the rest waiting
-			pngSaver.add(new PNGSavingTask(frameNumber / blendRate, finalPixels, tga.getWidth(), tga.getHeight()));
-		}
-		frameLock.unlock();
+		return soundFile;
 	}
 
 	boolean isLocked()
 	{
-		return bufferLock.isLocked() || frameLock.isLocked();
+		return videoHandler.isLocked() || audioHandler.isLocked();
 	}
 
-	private boolean shouldIgnoreFrame(final Integer frameNumber)
+	private boolean isSoundFile(final String fileName)
 	{
-		if (frameNumber == null) {
-			return true;
+		// Needs to be case-insensitive because Source Recorder sometimes like to pass all-uppercase filenames.
+		return fileName.toLowerCase().endsWith(soundFileNameLowercase);
+	}
+
+	public void modifyFindResults(final String pathName, final Collection<String> actualFiles)
+	{
+		if (!pathName.equals(demoDirectory)) {
+			return;
 		}
-		final int framePosition = frameNumber % blendRate;
-		return framePosition < minAcceptedFrame || framePosition > maxAcceptedFrame;
+		audioHandler.modifyFindResults(pathName, actualFiles);
+		videoHandler.modifyFindResults(pathName, actualFiles);
+	}
+
+	public void notifyFrameSaved(final File frame)
+	{
+		backingFS.notifyFrameSaved(frame);
 	}
 
 	@Override
@@ -214,29 +160,27 @@ public class SrcDemo
 
 	void truncateFile(final String fileName, final long length)
 	{
-		final ByteArrayOutputStream buffer = getFrameByte(fileName);
-		if (buffer != null && buffer.size() != length) {
-			SrcLogger.error("Buffer size does not match truncate call for frame: " + fileName + "!");
-			SrcLogger.error("Buffer size: " + buffer.size() + " / Truncate call: " + length);
+		if (isSoundFile(fileName)) {
+			audioHandler.truncate(length);
+		}
+		else {
+			final Integer frameNumber = getFrameNumber(fileName);
+			if (frameNumber != null) {
+				videoHandler.truncate(frameNumber, length);
+			}
 		}
 	}
 
 	int writeFile(final String fileName, final ByteBuffer buffer, final long offset)
 	{
-		final ByteArrayOutputStream output = getFrameByte(fileName);
-		if (output != null) {
-			final int toRead = buffer.remaining();
-			final byte[] gotten = new byte[toRead];
-			buffer.get(gotten);
-			try {
-				output.write(gotten);
-			}
-			catch (final IOException e) {
-				SrcLogger.error("Error while copying data to frame: " + fileName, e);
-			}
-			return toRead;
+		if (isSoundFile(fileName)) {
+			return audioHandler.write(buffer, offset);
 		}
-		// Pretend write was OK anyway
+		final Integer frameNumber = getFrameNumber(fileName);
+		if (frameNumber != null) {
+			final int w = videoHandler.write(frameNumber, buffer, offset);
+			return w;
+		}
 		return buffer.remaining();
 	}
 }

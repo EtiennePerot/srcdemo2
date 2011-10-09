@@ -1,5 +1,7 @@
 package net.srcdemo.ui;
 
+import net.srcdemo.ui.VideoUI.VideoType;
+
 import com.trolltech.qt.core.QSettings;
 
 public class SrcSettings extends QSettings
@@ -34,6 +36,11 @@ public class SrcSettings extends QSettings
 		return (Integer) value("targetFps", 30);
 	}
 
+	VideoType getLastVideoType()
+	{
+		return (VideoType) value("videoType", VideoType.PNG);
+	}
+
 	void setLastBackingDirectory(final String backingDirectory)
 	{
 		setValue("backingDirectory", backingDirectory);
@@ -57,5 +64,10 @@ public class SrcSettings extends QSettings
 	void setLastTargetFps(final int targetFps)
 	{
 		setValue("targetFps", targetFps);
+	}
+
+	void setLastVideoType(final VideoType videoType)
+	{
+		setValue("videoType", videoType);
 	}
 }

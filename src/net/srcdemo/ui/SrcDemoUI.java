@@ -11,22 +11,19 @@ import net.srcdemo.SrcLogger;
 import com.trolltech.qt.core.Qt.AlignmentFlag;
 import com.trolltech.qt.gui.QApplication;
 import com.trolltech.qt.gui.QFileDialog;
-import com.trolltech.qt.gui.QFrame;
-import com.trolltech.qt.gui.QFrame.Shadow;
-import com.trolltech.qt.gui.QFrame.Shape;
 import com.trolltech.qt.gui.QHBoxLayout;
 import com.trolltech.qt.gui.QIcon;
 import com.trolltech.qt.gui.QLabel;
 import com.trolltech.qt.gui.QLineEdit;
 import com.trolltech.qt.gui.QPushButton;
-import com.trolltech.qt.gui.QSpinBox;
+import com.trolltech.qt.gui.QTabWidget;
 import com.trolltech.qt.gui.QVBoxLayout;
 import com.trolltech.qt.gui.QWidget;
 
 public class SrcDemoUI extends QWidget implements SrcDemoListener
 {
 	private static boolean debugMode = false;
-	private static boolean dokanLoggingMode = false;
+	private static boolean dokanLoggingMode = true;
 	private static final int relaunchStatusCode = 1337;
 	private static int returnCode = 0;
 	private static boolean srcDemoHideFiles = false;
@@ -46,9 +43,10 @@ public class SrcDemoUI extends QWidget implements SrcDemoListener
 		catch (final Exception e) {
 			// Oh well
 		}
+		SrcLogger.setLogAll(true); // FIXME
 		for (final String arg : args) {
 			if (arg.equals("--srcdemo-debug")) {
-				srcDemoHideFiles = true;
+				debugMode = true;
 				SrcLogger.setLogAll(true);
 			}
 			if (arg.equals("--dokan-debug")) {
@@ -78,13 +76,12 @@ public class SrcDemoUI extends QWidget implements SrcDemoListener
 		System.exit(returnCode);
 	}
 
+	private QTabWidget allParams;
+	private AudioUI audioUi;
 	private QLineEdit backingDirectory;
 	private QPushButton backingDirectoryBrowse;
-	private QSpinBox blendRate;
 	private QPushButton btnExit;
 	private QPushButton btnMount;
-	private QLabel effectiveRecordingFps;
-	private QLabel effectiveRecordingFpsCommand;
 	private final ReentrantLock fsLock = new ReentrantLock();
 	private LabelUpdater lastFrameProcessedUpdater;
 	private LabelUpdater lastFrameSavedUpdated;
@@ -93,8 +90,7 @@ public class SrcDemoUI extends QWidget implements SrcDemoListener
 	private QLineEdit mountpoint;
 	private QPushButton mountpointBrowse;
 	private final SrcSettings settings;
-	private QSpinBox shutterAngle;
-	private QSpinBox targetFps;
+	private VideoUI videoUi;
 
 	SrcDemoUI()
 	{
@@ -144,6 +140,11 @@ public class SrcDemoUI extends QWidget implements SrcDemoListener
 		return new File(mountpoint.text());
 	}
 
+	SrcSettings getSettings()
+	{
+		return settings;
+	}
+
 	private void initUI()
 	{
 		final QVBoxLayout vbox = new QVBoxLayout();
@@ -172,55 +173,14 @@ public class SrcDemoUI extends QWidget implements SrcDemoListener
 			vbox.addLayout(hbox);
 		}
 		{
-			{
-				final QLabel label = new QLabel(Strings.step3);
-				vbox.addWidget(label);
-				final QHBoxLayout hbox = new QHBoxLayout();
-				hbox.addWidget(new QLabel(Strings.lblTargetFps));
-				targetFps = new QSpinBox();
-				targetFps.setRange(1, 600);
-				targetFps.setValue(settings.getLastTargetFps());
-				targetFps.valueChanged.connect(this, "updateEffectiveRecordingFps()");
-				hbox.addWidget(targetFps);
-				vbox.addLayout(hbox);
-			}
-			{
-				final QHBoxLayout hbox = new QHBoxLayout();
-				hbox.addWidget(new QLabel(Strings.lblBlendRate));
-				blendRate = new QSpinBox();
-				blendRate.setRange(1, 1000);
-				blendRate.setValue(settings.getLastBlendRate());
-				blendRate.valueChanged.connect(this, "updateEffectiveRecordingFps()");
-				hbox.addWidget(blendRate);
-				vbox.addLayout(hbox);
-			}
-			{
-				final QHBoxLayout hbox = new QHBoxLayout();
-				hbox.addWidget(new QLabel(Strings.lblShutterAngle));
-				shutterAngle = new QSpinBox();
-				shutterAngle.setRange(1, 360);
-				shutterAngle.setValue(settings.getLastShutterAngle());
-				shutterAngle.valueChanged.connect(this, "updateEffectiveRecordingFps()");
-				hbox.addWidget(shutterAngle);
-				vbox.addLayout(hbox);
-			}
-			{
-				final QHBoxLayout hbox = new QHBoxLayout();
-				hbox.addWidget(new QLabel(Strings.lblEffectiveFps));
-				effectiveRecordingFps = new QLabel();
-				hbox.addWidget(effectiveRecordingFps);
-				vbox.addLayout(hbox);
-				vbox.addWidget(new QLabel(Strings.lblMakeSureFramerate));
-				effectiveRecordingFpsCommand = new QLabel();
-				vbox.addWidget(effectiveRecordingFpsCommand);
-			}
-			updateEffectiveRecordingFps();
-		}
-		{
-			final QFrame hLine = new QFrame();
-			hLine.setFrameShape(Shape.HLine);
-			hLine.setFrameShadow(Shadow.Sunken);
-			vbox.addWidget(hLine);
+			final QLabel label = new QLabel(Strings.step3);
+			vbox.addWidget(label);
+			allParams = new QTabWidget();
+			videoUi = new VideoUI(this);
+			allParams.addTab(videoUi, Strings.tabVideo);
+			audioUi = new AudioUI(this);
+			allParams.addTab(audioUi, Strings.tabAudio);
+			vbox.addWidget(allParams);
 		}
 		{
 			lblStatus = new QLabel();
@@ -312,24 +272,15 @@ public class SrcDemoUI extends QWidget implements SrcDemoListener
 	{
 		SrcLogger.log("Mounting to: " + getMountpoint().getAbsolutePath());
 		SrcLogger.log("Backing directory: " + getBackingDirectory().getAbsolutePath());
-		SrcLogger.log("Target FPS: " + targetFps.value());
-		SrcLogger.log("Blendrate: " + blendRate.value());
-		SrcLogger.log("Shutter angle: " + shutterAngle.value());
+		// TODO: Print A/V options
 		fsLock.lock();
-		mountedFS = new SrcDemoFS(getBackingDirectory().getAbsolutePath(), blendRate.value(), shutterAngle.value());
+		mountedFS = new SrcDemoFS(getBackingDirectory().getAbsolutePath(), videoUi.getFactory(), audioUi.getFactory());
 		mountedFS.addListener(this);
 		mountedFS.setLogging(dokanLoggingMode);
 		mountedFS.setHideFiles(srcDemoHideFiles);
 		mountedFS.mount(getMountpoint().getAbsolutePath());
 		fsLock.unlock();
 		updateStatus();
-	}
-
-	private void saveFrameSettings()
-	{
-		settings.setLastTargetFps(targetFps.value());
-		settings.setLastBlendRate(blendRate.value());
-		settings.setLastShutterAngle(shutterAngle.value());
 	}
 
 	private void unmount()
@@ -344,25 +295,15 @@ public class SrcDemoUI extends QWidget implements SrcDemoListener
 		fsLock.unlock();
 	}
 
-	private void updateEffectiveRecordingFps()
-	{
-		final int effectiveFps = blendRate.value() * targetFps.value();
-		effectiveRecordingFps.setText("" + effectiveFps);
-		effectiveRecordingFpsCommand.setText(Strings.cmdHostFramerate + effectiveFps);
-		targetFps.setSuffix(targetFps.value() == 1 ? Strings.spnTargetFpsSingular : Strings.spnTargetFpsPlural);
-		blendRate.setSuffix(blendRate.value() == 1 ? Strings.spnBlendRateSingular : Strings.spnBlendRatePlural);
-		shutterAngle.setSuffix(shutterAngle.value() == 1 ? Strings.spnShutterAngleSingular : Strings.spnShutterAnglePlural);
-		saveFrameSettings();
-	}
-
 	private void updateStatus()
 	{
-		final QWidget[] fsOptions = { backingDirectory, backingDirectoryBrowse, blendRate, mountpoint, mountpointBrowse,
-				shutterAngle, targetFps };
+		final QWidget[] fsOptions = { backingDirectory, backingDirectoryBrowse, mountpoint, mountpointBrowse, };
+		final boolean isMounted = mountedFS != null;
 		for (final QWidget w : fsOptions) {
-			w.setEnabled(mountedFS == null);
+			w.setEnabled(!isMounted);
 		}
-		if (mountedFS == null) {
+		videoUi.enable(!isMounted);
+		if (!isMounted) {
 			if (badSettings() == null) {
 				lblStatus.setText(Strings.lblPressWhenReady);
 				btnMount.setEnabled(true);

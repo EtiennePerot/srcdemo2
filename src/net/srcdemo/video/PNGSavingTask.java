@@ -1,10 +1,12 @@
-package net.srcdemo;
+package net.srcdemo.video;
 
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 
 import javax.imageio.ImageIO;
+
+import net.srcdemo.SrcLogger;
 
 public class PNGSavingTask
 {

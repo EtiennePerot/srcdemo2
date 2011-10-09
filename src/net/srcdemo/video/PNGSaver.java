@@ -1,22 +1,21 @@
-package net.srcdemo;
+package net.srcdemo.video;
 
 import java.io.File;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 
+import net.srcdemo.SrcDemo;
+import net.srcdemo.SrcLogger;
+
 public class PNGSaver extends Thread
 {
-	private final File backingDirectory;
-	private SrcDemoFS backingFS;
-	private final String demoPrefix;
+	private SrcDemo demo;
 	private BlockingQueue<PNGSavingTask> tasks = new ArrayBlockingQueue<PNGSavingTask>(4);
 
-	PNGSaver(final SrcDemoFS backingFS, final String demoPrefix)
+	PNGSaver(final SrcDemo demo)
 	{
 		super("PNG saving thread");
-		this.backingFS = backingFS;
-		backingDirectory = backingFS.getBackingStorage();
-		this.demoPrefix = demoPrefix;
+		this.demo = demo;
 		setDaemon(true);
 		start();
 	}
@@ -36,7 +35,7 @@ public class PNGSaver extends Thread
 	public void interrupt()
 	{
 		tasks = null;
-		backingFS = null;
+		demo = null;
 		super.interrupt();
 	}
 
@@ -52,9 +51,9 @@ public class PNGSaver extends Thread
 				SrcLogger.log("PNGSaver interrupted while waiting for task.");
 				break;
 			}
-			final File outputFile = new File(backingDirectory, demoPrefix + task.getSequenceIndex() + ".png");
+			final File outputFile = demo.getBackedFile(task.getSequenceIndex() + ".png");
 			if (task.save(outputFile)) {
-				backingFS.notifyFrameSaved(outputFile);
+				demo.notifyFrameSaved(outputFile);
 			}
 		}
 	}
