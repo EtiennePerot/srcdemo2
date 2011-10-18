@@ -2,7 +2,6 @@ package net.srcdemo;
 
 import java.io.File;
 import java.nio.ByteBuffer;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -91,7 +90,7 @@ public class SrcDemoFS extends LoopbackFS
 	protected Collection<String> findFiles(final String pathName)
 	{
 		if (hideFiles) {
-			return new ArrayList<String>(0);
+			return null;
 		}
 		else {
 			final Collection<String> actualFiles = super.findFiles(pathName);

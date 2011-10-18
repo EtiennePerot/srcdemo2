@@ -167,6 +167,9 @@ public abstract class DokanFSStub implements DokanOperations
 	{
 		log("FindFiles", "Find files in: " + pathName);
 		final Collection<String> files = findFiles(pathName);
+		if (files == null) {
+			return null;
+		}
 		final Win32FindData[] data = new Win32FindData[files.size()];
 		int index = 0;
 		for (final String s : files) {
@@ -184,8 +187,7 @@ public abstract class DokanFSStub implements DokanOperations
 			final DokanFileInfo fileInfo) throws DokanOperationException
 	{
 		log("FindFilesWithPattern", "Find files in: " + pathName + " with pattern " + searchPattern);
-		final Win32FindData[] data = new Win32FindData[0];
-		return data;
+		return null;
 	}
 
 	@Override
