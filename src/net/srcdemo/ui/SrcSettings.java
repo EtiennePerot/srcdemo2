@@ -21,6 +21,11 @@ public class SrcSettings extends QSettings
 		return (Integer) value("blendRate", 32);
 	}
 
+	int getLastJPEGCompressionLevel()
+	{
+		return (Integer) value("jpegCompressionLevel", 95);
+	}
+
 	String getLastMountpoint()
 	{
 		return (String) value("mountpoint", "");
@@ -36,9 +41,19 @@ public class SrcSettings extends QSettings
 		return (Integer) value("targetFps", 30);
 	}
 
+	boolean getLastTGACompressionRLE()
+	{
+		return Boolean.parseBoolean((String) value("tgaCompressionRLE", "false"));
+	}
+
 	VideoType getLastVideoType()
 	{
-		return (VideoType) value("videoType", VideoType.PNG);
+		try {
+			return VideoType.fromIndex((Integer) value("videoType", VideoType.PNG.getIndex()));
+		}
+		catch (final Exception e) {
+			return VideoType.PNG;
+		}
 	}
 
 	void setLastBackingDirectory(final String backingDirectory)
@@ -49,6 +64,11 @@ public class SrcSettings extends QSettings
 	void setLastBlendRate(final int blendRate)
 	{
 		setValue("blendRate", blendRate);
+	}
+
+	void setLastJPEGCompressionLevel(final int compressionLevel)
+	{
+		setValue("jpegCompressionLevel", compressionLevel);
 	}
 
 	void setLastMountpoint(final String mountpoint)
@@ -66,8 +86,13 @@ public class SrcSettings extends QSettings
 		setValue("targetFps", targetFps);
 	}
 
+	void setLastTGACompressionRLE(final boolean compressionRLE)
+	{
+		setValue("tgaCompressionRLE", compressionRLE ? "true" : "false");
+	}
+
 	void setLastVideoType(final VideoType videoType)
 	{
-		setValue("videoType", videoType);
+		setValue("videoType", videoType.getIndex());
 	}
 }

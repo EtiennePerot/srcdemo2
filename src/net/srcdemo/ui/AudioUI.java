@@ -50,7 +50,7 @@ public class AudioUI extends QWidget
 			audioType.addItem("WAV (Straight to disk)");
 			audioType.addItem("WAV (Timed buffer)");
 			audioType.addItem("WAV (All in memory)");
-			audioType.addItem("Disabled");
+			audioType.addItem("Disabled (Video only)");
 			hbox.addWidget(audioType);
 			vbox.addLayout(hbox);
 		}

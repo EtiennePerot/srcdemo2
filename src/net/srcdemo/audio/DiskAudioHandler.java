@@ -53,7 +53,9 @@ public class DiskAudioHandler implements AudioHandler
 	public void destroy()
 	{
 		try {
-			fileChannel.close();
+			if (fileChannel != null) {
+				fileChannel.close();
+			}
 		}
 		catch (final IOException e) {
 			SrcLogger.log("Warning: Couldn't properly close sound file at " + file + ".");

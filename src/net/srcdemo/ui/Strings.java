@@ -1,6 +1,5 @@
 package net.srcdemo.ui;
 
-
 public interface Strings
 {
 	final String btnActivate = "Activate";
@@ -19,6 +18,7 @@ public interface Strings
 	final String lblBlendRate = "Motion blur blend rate: ";
 	final String lblEffectiveFps = "Effective recording FPS: ";
 	final String lblInvalidSettings = "Invalid settings: ";
+	final String lblJpegQuality = "JPEG quality";
 	final String lblLastFrameProcessed = "Last frame processed: ";
 	final String lblLastFrameProcessedDefault = "N/A";
 	final String lblLastFrameSaved = "Last frame saved: ";
@@ -28,6 +28,8 @@ public interface Strings
 	final String lblReadyToRender = "Ready to render.";
 	final String lblShutterAngle = "Simulated shutter angle: ";
 	final String lblTargetFps = "Final video FPS: ";
+	final String lblTgaCompressionRLE = "TGA RLE compression";
+	final String lblVideoDisabled = "When video is disabled, the video framerate doesn't matter.\nHowever, it is recommended to record at\nmore than 60 frames to avoid a bug in Source Recorder\ncausing some sounds to not be played at all when playing\na demo at a low framerate compared to the game's tickrate.";
 	final String lblVideoType = "Video output:";
 	final String spnBlendRatePlural = " frames per frame";
 	final String spnBlendRateSingular = " frame (identity)";
@@ -42,7 +44,7 @@ public interface Strings
 	final String step3 = "3. Set parameters";
 	final String tabAudio = "Audio";
 	final String tabVideo = "Video";
-	final String videoOptDisabled = "Disabled";
+	final String videoOptDisabled = "Disabled (Audio only)";
 	final String videoOptJpg = "JPG";
 	final String videoOptPng = "PNG";
 	final String videoOptTga = "TGA";

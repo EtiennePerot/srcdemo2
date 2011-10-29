@@ -11,6 +11,8 @@ import java.util.concurrent.locks.ReentrantLock;
 
 import net.srcdemo.SrcDemo;
 import net.srcdemo.SrcLogger;
+import net.srcdemo.video.image.ImageSaver;
+import net.srcdemo.video.image.ImageSavingTaskFactory;
 
 public class FrameBlender implements VideoHandler
 {
@@ -21,12 +23,14 @@ public class FrameBlender implements VideoHandler
 	private final Map<Integer, ByteArrayOutputStream> frameData = new HashMap<Integer, ByteArrayOutputStream>();
 	private final ReentrantLock frameLock = new ReentrantLock();
 	private int framesMerged = -1;
+	private ImageSaver imageSaver;
 	private int maxAcceptedFrame;
 	private int maxEncounteredByteSize = 1048576;
 	private int minAcceptedFrame = 0;
-	private PNGSaver pngSaver;
+	private final ImageSavingTaskFactory savingFactory;
 
-	public FrameBlender(final SrcDemo demo, final int blendRate, final int shutterAngle)
+	public FrameBlender(final SrcDemo demo, final ImageSavingTaskFactory savingFactory, final int blendRate,
+			final int shutterAngle)
 	{
 		this.blendRate = blendRate;
 		maxAcceptedFrame = (int) Math.ceil((shutterAngle * blendRate) / 360.0) - 1;
@@ -34,7 +38,8 @@ public class FrameBlender implements VideoHandler
 			maxAcceptedFrame++;
 			minAcceptedFrame = 1;
 		}
-		pngSaver = new PNGSaver(demo);
+		this.savingFactory = savingFactory;
+		imageSaver = new ImageSaver(demo);
 	}
 
 	@Override
@@ -67,8 +72,8 @@ public class FrameBlender implements VideoHandler
 		frameLock.lock();
 		frameData.clear();
 		currentMergedFrame = null;
-		pngSaver.interrupt();
-		pngSaver = null;
+		imageSaver.interrupt();
+		imageSaver = null;
 		frameLock.unlock();
 		bufferLock.unlock();
 	}
@@ -130,7 +135,8 @@ public class FrameBlender implements VideoHandler
 						| (currentMergedFrame[rPosition] / framesMerged);
 			}
 			// At this point, we made a full copy, no need to keep the rest waiting
-			pngSaver.add(new PNGSavingTask(frameNumber / blendRate, finalPixels, tga.getWidth(), tga.getHeight()));
+			imageSaver
+					.add(savingFactory.buildSavingTask(frameNumber / blendRate, finalPixels, tga.getWidth(), tga.getHeight()));
 		}
 		frameLock.unlock();
 	}

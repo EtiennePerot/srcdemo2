@@ -23,7 +23,7 @@ import com.trolltech.qt.gui.QWidget;
 public class SrcDemoUI extends QWidget implements SrcDemoListener
 {
 	private static boolean debugMode = false;
-	private static boolean dokanLoggingMode = true;
+	private static boolean dokanLoggingMode = false;
 	private static final int relaunchStatusCode = 1337;
 	private static int returnCode = 0;
 	private static boolean srcDemoHideFiles = false;
@@ -43,7 +43,6 @@ public class SrcDemoUI extends QWidget implements SrcDemoListener
 		catch (final Exception e) {
 			// Oh well
 		}
-		SrcLogger.setLogAll(true); // FIXME
 		for (final String arg : args) {
 			if (arg.equals("--srcdemo-debug")) {
 				debugMode = true;
