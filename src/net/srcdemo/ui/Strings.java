@@ -26,7 +26,7 @@ public interface Strings
 	final String lblMakeSureFramerate = "Make sure to set host_framerate before you start rendering!";
 	final String lblPressWhenReady = "Press \"Activate\" when ready.";
 	final String lblReadyToRender = "Ready to render.";
-	final String lblShutterAngle = "Simulated shutter angle: ";
+	final String lblShutterAngle = "Simulated <a href=\"http://www.facepunch.com/threads/1126220?p=32617404&viewfull=1#post32617404\">shutter angle</a>: ";
 	final String lblTargetFps = "Final video FPS: ";
 	final String lblTgaCompressionRLE = "TGA RLE compression";
 	final String lblVideoDisabled = "When video is disabled, the video framerate doesn't matter.\nHowever, it is recommended to record at\nmore than 60 frames to avoid a bug in Source Recorder\ncausing some sounds to not be played at all when playing\na demo at a low framerate compared to the game's tickrate.";

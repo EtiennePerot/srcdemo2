@@ -1,6 +1,7 @@
 package net.srcdemo.ui;
 
 import net.srcdemo.SrcDemo;
+import net.srcdemo.SrcLogger;
 import net.srcdemo.audio.AudioHandler;
 import net.srcdemo.audio.AudioHandlerFactory;
 import net.srcdemo.audio.DiskAudioHandler;
@@ -20,6 +21,11 @@ public class AudioUI extends QWidget
 	{
 		this.parent = parent;
 		initUI();
+	}
+
+	void enable(final boolean enable)
+	{
+		// TODO
 	}
 
 	AudioHandlerFactory getFactory()
@@ -48,12 +54,19 @@ public class AudioUI extends QWidget
 			audioType = new QComboBox();
 			// TODO: Constantify
 			audioType.addItem("WAV (Straight to disk)");
-			audioType.addItem("WAV (Timed buffer)");
-			audioType.addItem("WAV (All in memory)");
+			audioType.addItem("WAV (Buffered)");
+			audioType.addItem("FLAC (Buffered)");
 			audioType.addItem("Disabled (Video only)");
 			hbox.addWidget(audioType);
 			vbox.addLayout(hbox);
 		}
 		setLayout(vbox);
+	}
+
+	void logParams()
+	{
+		SrcLogger.log("~ Audio parameters block ~");
+		SrcLogger.log("(Uninimplemented)");
+		SrcLogger.log("~ End of audio parameters block ~");
 	}
 }

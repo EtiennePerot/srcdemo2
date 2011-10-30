@@ -4,6 +4,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 import net.srcdemo.SrcDemo;
+import net.srcdemo.SrcLogger;
 import net.srcdemo.video.FrameBlender;
 import net.srcdemo.video.NullVideoHandler;
 import net.srcdemo.video.VideoHandler;
@@ -263,7 +264,9 @@ class VideoUI extends QWidget
 			}
 			{
 				final QHBoxLayout hbox = new QHBoxLayout();
-				hbox.addWidget(registerGlobalVideoWidget(new QLabel(Strings.lblShutterAngle)));
+				final QLabel shutterAngleUI = new QLabel(Strings.lblShutterAngle);
+				shutterAngleUI.setOpenExternalLinks(true);
+				hbox.addWidget(registerGlobalVideoWidget(shutterAngleUI));
 				shutterAngle = new QSpinBox();
 				registerGlobalVideoWidget(shutterAngle);
 				shutterAngle.setRange(1, 360);
@@ -287,6 +290,25 @@ class VideoUI extends QWidget
 		}
 		setLayout(mainVbox);
 		updateVideoType();
+	}
+
+	void logParams()
+	{
+		SrcLogger.log("~ Video parameters block ~");
+		final VideoType current = getCurrentVideoType();
+		SrcLogger.log("Video type: " + current.getLabel());
+		if (current.equals(VideoType.JPEG)) {
+			SrcLogger.log("JPEG compression: " + jpegCompressionLevel.value());
+		}
+		else if (current.equals(VideoType.TGA)) {
+			SrcLogger.log("TGA RLE compression is " + (tgaCompressionRLE.isChecked() ? "enabled" : "disabled"));
+		}
+		else if (!current.equals(VideoType.DISABLED)) {
+			SrcLogger.log("Target framerate: " + targetFps.value());
+			SrcLogger.log("Blend rate: " + blendRate.value());
+			SrcLogger.log("Shutter angle: " + shutterAngle.value());
+		}
+		SrcLogger.log("~ End of video parameters block ~");
 	}
 
 	private QWidget registerGlobalVideoWidget(final QWidget widget)

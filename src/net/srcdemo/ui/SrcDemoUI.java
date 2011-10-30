@@ -223,7 +223,6 @@ public class SrcDemoUI extends QWidget implements SrcDemoListener
 		final String selectedFolder = QFileDialog.getExistingDirectory(this, Strings.step1Dialog, backingDirectory.text());
 		if (selectedFolder.length() > 0) {
 			backingDirectory.setText(selectedFolder);
-			settings.setLastBackingDirectory(selectedFolder);
 		}
 		if (!getBackingDirectory().isDirectory()) {
 			backingDirectory.setText("");
@@ -237,7 +236,6 @@ public class SrcDemoUI extends QWidget implements SrcDemoListener
 		final String selectedFolder = QFileDialog.getExistingDirectory(this, Strings.step2Dialog, mountpoint.text());
 		if (selectedFolder.length() > 0) {
 			mountpoint.setText(selectedFolder);
-			settings.setLastMountpoint(selectedFolder);
 		}
 		if (!getMountpoint().isDirectory()) {
 			mountpoint.setText("");
@@ -271,7 +269,8 @@ public class SrcDemoUI extends QWidget implements SrcDemoListener
 	{
 		SrcLogger.log("Mounting to: " + getMountpoint().getAbsolutePath());
 		SrcLogger.log("Backing directory: " + getBackingDirectory().getAbsolutePath());
-		// TODO: Print A/V options
+		videoUi.logParams();
+		audioUi.logParams();
 		fsLock.lock();
 		mountedFS = new SrcDemoFS(getBackingDirectory().getAbsolutePath(), videoUi.getFactory(), audioUi.getFactory());
 		mountedFS.addListener(this);
@@ -296,12 +295,13 @@ public class SrcDemoUI extends QWidget implements SrcDemoListener
 
 	private void updateStatus()
 	{
-		final QWidget[] fsOptions = { backingDirectory, backingDirectoryBrowse, mountpoint, mountpointBrowse, };
+		final QWidget[] fsOptions = { backingDirectory, backingDirectoryBrowse, mountpoint, mountpointBrowse };
 		final boolean isMounted = mountedFS != null;
 		for (final QWidget w : fsOptions) {
 			w.setEnabled(!isMounted);
 		}
 		videoUi.enable(!isMounted);
+		audioUi.enable(!isMounted);
 		if (!isMounted) {
 			if (badSettings() == null) {
 				lblStatus.setText(Strings.lblPressWhenReady);
@@ -318,5 +318,7 @@ public class SrcDemoUI extends QWidget implements SrcDemoListener
 			btnMount.setEnabled(false);
 			btnExit.setEnabled(true);
 		}
+		settings.setLastMountpoint(mountpoint.text());
+		settings.setLastBackingDirectory(backingDirectory.text());
 	}
 }
