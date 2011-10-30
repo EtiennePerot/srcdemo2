@@ -55,7 +55,6 @@ public class AudioUI extends QWidget
 			// TODO: Constantify
 			audioType.addItem("WAV (Straight to disk)");
 			audioType.addItem("WAV (Buffered)");
-			audioType.addItem("FLAC (Buffered)");
 			audioType.addItem("Disabled (Video only)");
 			hbox.addWidget(audioType);
 			vbox.addLayout(hbox);

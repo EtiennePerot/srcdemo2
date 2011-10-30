@@ -10,10 +10,5 @@
 	<classpathentry kind="lib" path="lib/qtjambi-4.7.1.jar"/>
 	<classpathentry kind="lib" path="lib/qtjambi-win32-msvc2008-4.7.1.jar"/>
 	<classpathentry kind="lib" path="lib/trove-2.0.3.jar"/>
-	<classpathentry kind="lib" path="lib/jflac-1.2.jar">
-		<attributes>
-			<attribute name="javadoc_location" value="jar:platform:/resource/SrcDemo2/lib/jflac-docs.zip!/docs/apidocs"/>
-		</attributes>
-	</classpathentry>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
