@@ -242,24 +242,21 @@ class VideoUI extends QWidget
 				final QHBoxLayout hbox = new QHBoxLayout();
 				hbox.addWidget(registerGlobalVideoWidget(new QLabel(Strings.lblTargetFps)));
 				targetFps = new QSpinBox();
-				registerGlobalVideoWidget(targetFps);
 				targetFps.setRange(1, 600);
 				targetFps.setValue(getSettings().getLastTargetFps());
 				targetFps.valueChanged.connect(this, "updateEffectiveRecordingFps()");
 				globalVideoOptions.add(targetFps);
-				hbox.addWidget(targetFps);
+				hbox.addWidget(registerGlobalVideoWidget(targetFps));
 				globalVideoOptionsVbox.addLayout(hbox);
 			}
 			{
 				final QHBoxLayout hbox = new QHBoxLayout();
 				hbox.addWidget(registerGlobalVideoWidget(new QLabel(Strings.lblBlendRate)));
 				blendRate = new QSpinBox();
-				registerGlobalVideoWidget(blendRate);
-				registerGlobalVideoWidget(blendRate);
 				blendRate.setRange(1, 1000);
 				blendRate.setValue(getSettings().getLastBlendRate());
 				blendRate.valueChanged.connect(this, "updateEffectiveRecordingFps()");
-				hbox.addWidget(blendRate);
+				hbox.addWidget(registerGlobalVideoWidget(blendRate));
 				globalVideoOptionsVbox.addLayout(hbox);
 			}
 			{
@@ -268,24 +265,21 @@ class VideoUI extends QWidget
 				shutterAngleUI.setOpenExternalLinks(true);
 				hbox.addWidget(registerGlobalVideoWidget(shutterAngleUI));
 				shutterAngle = new QSpinBox();
-				registerGlobalVideoWidget(shutterAngle);
 				shutterAngle.setRange(1, 360);
 				shutterAngle.setValue(getSettings().getLastShutterAngle());
 				shutterAngle.valueChanged.connect(this, "updateEffectiveRecordingFps()");
-				hbox.addWidget(shutterAngle);
+				hbox.addWidget(registerGlobalVideoWidget(shutterAngle));
 				globalVideoOptionsVbox.addLayout(hbox);
 			}
 			{
 				final QHBoxLayout hbox = new QHBoxLayout();
 				hbox.addWidget(registerGlobalVideoWidget(new QLabel(Strings.lblEffectiveFps)));
 				effectiveRecordingFps = new QLabel();
-				registerGlobalVideoWidget(effectiveRecordingFps);
-				hbox.addWidget(effectiveRecordingFps);
+				hbox.addWidget(registerGlobalVideoWidget(effectiveRecordingFps));
 				globalVideoOptionsVbox.addLayout(hbox);
 				globalVideoOptionsVbox.addWidget(registerGlobalVideoWidget(new QLabel(Strings.lblMakeSureFramerate)));
 				effectiveRecordingFpsCommand = new QLabel();
-				registerGlobalVideoWidget(effectiveRecordingFpsCommand);
-				globalVideoOptionsVbox.addWidget(effectiveRecordingFpsCommand);
+				globalVideoOptionsVbox.addWidget(registerGlobalVideoWidget(effectiveRecordingFpsCommand));
 			}
 		}
 		setLayout(mainVbox);
