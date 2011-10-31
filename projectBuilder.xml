@@ -1,11 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project name="SrcDemo2">
-	<property name="src.dir" value="src"/>
-    <property name="lib.dir" value="lib"/>
-    <property name="img.dir" value="img"/>
-	<property name="build.dir" value="build"/>
-    <property name="launcher.dir" value="launcher"/>
-    <property name="installer.dir" value="installer"/>
+    <property name="root.dir" value="."/>
+    <property name="src.dir" value="${root.dir}/src"/>
+    <property name="lib.dir" value="${root.dir}/lib"/>
+    <property name="img.dir" value="${root.dir}/img"/>
+	<property name="build.dir" value="${root.dir}/build"/>
+    <property name="launcher.dir" value="${root.dir}/launcher"/>
+    <property name="installer.dir" value="${root.dir}/installer"/>
 	<path id="classpath">
 		<fileset dir="${lib.dir}" includes="**/*.jar"/>
 	</path>
@@ -22,7 +23,10 @@
     <property name="installer.ant" value="${installer.dir}/nsisant.jar"/>
     <property name="installer.script" value="${installer.dir}/setup.nsi"/>
     <property name="installer.file" value="${ant.project.name}-setup.exe"/>
+    <property name="program.versionscript" value="${installer.dir}/buildversion.py"/>
+    <property name="program.versionfile" value="${root.dir}/version.txt"/>
     <property name="svn.excludes" value="**/*.svn"/>
+    <property name="img.excludes" value="**/*.psd"/>
 	<target name="clean">
 		<delete dir="${build.dir}"/>
 	</target>
@@ -39,8 +43,12 @@
 		<move todir="${jar.dir}">
 			<fileset dir="${jar.libdir}" includes="**/*.dll"/>
 		</move>
+		<exec executable="python">
+			<arg value="${program.versionscript}"/>
+		</exec>
+        <move todir="${jar.dir}" file="${program.versionfile}"/>
         <copy todir="${jar.imgdir}">
-            <fileset dir="${img.dir}" excludes="${svn.excludes}"/>
+            <fileset dir="${img.dir}" excludes="${svn.excludes},${img.excludes}"/>
         </copy>
 		<path id="jar-classpath">
 			<fileset dir="${jar.libdir}" includes="**/*.jar"/>

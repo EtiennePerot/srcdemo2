@@ -8,6 +8,8 @@ import net.srcdemo.SrcDemoFS;
 import net.srcdemo.SrcDemoListener;
 import net.srcdemo.SrcLogger;
 
+import org.apache.commons.io.FileUtils;
+
 import com.trolltech.qt.core.Qt.AlignmentFlag;
 import com.trolltech.qt.gui.QApplication;
 import com.trolltech.qt.gui.QFileDialog;
@@ -27,10 +29,17 @@ public class SrcDemoUI extends QWidget implements SrcDemoListener
 	private static final int relaunchStatusCode = 1337;
 	private static int returnCode = 0;
 	private static boolean srcDemoHideFiles = false;
+	private static String version = null;
+
+	public static String getVersion()
+	{
+		return version;
+	}
 
 	public static void main(final String[] args)
 	{
-		final String newLibPath = "lib" + File.pathSeparator + System.getProperty("java.library.path");
+		final String newLibPath = Files.libDirectory.getAbsolutePath() + File.pathSeparator
+				+ System.getProperty("java.library.path");
 		System.setProperty("java.library.path", newLibPath);
 		Field fieldSysPath;
 		try {
@@ -53,6 +62,14 @@ public class SrcDemoUI extends QWidget implements SrcDemoListener
 			}
 			if (arg.equals("--srcdemo-hide-files")) {
 				srcDemoHideFiles = true;
+			}
+		}
+		if (Files.versionFile.exists()) {
+			try {
+				version = FileUtils.readFileToString(Files.versionFile);
+			}
+			catch (final Exception e) {
+				// Whatever
 			}
 		}
 		QApplication.initialize(args);
@@ -93,12 +110,12 @@ public class SrcDemoUI extends QWidget implements SrcDemoListener
 
 	SrcDemoUI()
 	{
-		setWindowTitle(Strings.windowTitle);
+		setWindowTitle(Strings.windowTitle + (getVersion() == null ? "" : Strings.titleBuildPrefix + getVersion()));
 		if (debugMode) {
-			setWindowIcon(new QIcon("img/debug-256.png"));
+			setWindowIcon(new QIcon(Files.iconWindowDebug.getAbsolutePath()));
 		}
 		else {
-			setWindowIcon(new QIcon("img/icon-512.png"));
+			setWindowIcon(new QIcon(Files.iconWindowMain.getAbsolutePath()));
 		}
 		settings = new SrcSettings();
 		initUI();
@@ -175,10 +192,18 @@ public class SrcDemoUI extends QWidget implements SrcDemoListener
 			final QLabel label = new QLabel(Strings.step3);
 			vbox.addWidget(label);
 			allParams = new QTabWidget();
-			videoUi = new VideoUI(this);
-			allParams.addTab(videoUi, Strings.tabVideo);
-			audioUi = new AudioUI(this);
-			allParams.addTab(audioUi, Strings.tabAudio);
+			{
+				videoUi = new VideoUI(this);
+				allParams.addTab(videoUi, Strings.tabVideo);
+			}
+			{
+				audioUi = new AudioUI(this);
+				allParams.addTab(audioUi, Strings.tabAudio);
+			}
+			{
+				final AboutTab aboutTab = new AboutTab(this);
+				allParams.addTab(aboutTab, Strings.tabAbout);
+			}
 			vbox.addWidget(allParams);
 		}
 		{

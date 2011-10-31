@@ -11,6 +11,11 @@ public class SrcSettings extends QSettings
 		super("SrcDemo");
 	}
 
+	boolean getAutoCheckUpdates()
+	{
+		return Boolean.parseBoolean((String) value("autoCheckUpdates", "false"));
+	}
+
 	String getLastBackingDirectory()
 	{
 		return (String) value("backingDirectory", "");
@@ -54,6 +59,11 @@ public class SrcSettings extends QSettings
 		catch (final Exception e) {
 			return VideoType.PNG;
 		}
+	}
+
+	void setAutoCheckUpdates(final boolean autocheck)
+	{
+		setValue("autoCheckUpdates", autocheck ? "true" : "false");
 	}
 
 	void setLastBackingDirectory(final String backingDirectory)

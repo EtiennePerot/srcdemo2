@@ -2,10 +2,14 @@ package net.srcdemo.ui;
 
 public interface Strings
 {
+	final String aboutUnknownVersion = "Unknown";
 	final String btnActivate = "Activate";
 	final String btnBrowse = "Browse...";
 	final String btnDeactivate = "Deactivate";
 	final String btnQuit = "Quit";
+	final String btnUpdateCheck = "Check for updates";
+	final String btnUpdateChecking = "Checking...";
+	final String chkUpdateAutoCheck = "Check for updates when starting";
 	final String cmdHostFramerate = "host_framerate ";
 	final String errDirectoriesEqual = "Directories must not be equal";
 	final String errDokanNotInstalled = "Dokan is not installed.\n\nMore information will be available if you start in debug mode.";
@@ -14,8 +18,10 @@ public interface Strings
 	final String errInvalidDokan = "The version of Dokan installed is not the correct one.\nThis application required Dokan 0.6.";
 	final String errInvalidMountpoint = "Invalid folder where the game will save frames.";
 	final String errMountpointNotEmpty = "Folder where the game will save frames is not empty.";
+	final String lblAboutIcon = "SrcDemo²";
 	final String lblAudioType = "Audio output:";
 	final String lblBlendRate = "Motion blur blend rate: ";
+	final String lblBuildDate = "Build date:";
 	final String lblEffectiveFps = "Effective recording FPS: ";
 	final String lblInvalidSettings = "Invalid settings: ";
 	final String lblJpegQuality = "JPEG quality";
@@ -29,6 +35,7 @@ public interface Strings
 	final String lblShutterAngle = "Simulated <a href=\"http://www.facepunch.com/threads/1126220?p=32617404&viewfull=1#post32617404\">shutter angle</a>: ";
 	final String lblTargetFps = "Final video FPS: ";
 	final String lblTgaCompressionRLE = "TGA RLE compression";
+	final String lblUpdateChecking = "Checking for updates...";
 	final String lblVideoDisabled = "When video is disabled, the video framerate doesn't matter.\nHowever, it is recommended to record at\nmore than 60 frames to avoid a bug in Source Recorder\ncausing some sounds to not be played at all when playing\na demo at a low framerate compared to the game's tickrate.";
 	final String lblVideoType = "Video output:";
 	final String spnBlendRatePlural = " frames per frame";
@@ -42,8 +49,10 @@ public interface Strings
 	final String step2 = "2. Select the folder where you want the final frames to be saved.\n(Must be a different directory!)";
 	final String step2Dialog = "Select the folder where the game will save frames.";
 	final String step3 = "3. Set parameters";
+	final String tabAbout = "About/Updates";
 	final String tabAudio = "Audio";
 	final String tabVideo = "Video";
+	final String titleBuildPrefix = " - Build ";
 	final String videoOptDisabled = "Disabled (Audio only)";
 	final String videoOptJpg = "JPG";
 	final String videoOptPng = "PNG";
