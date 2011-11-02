@@ -21,7 +21,7 @@ public class AboutTab extends QWidget
 	{
 		this.parent = parent;
 		initUI();
-		if (getSettings().getAutoCheckUpdates()) {
+		if (getSettings().getAutoCheckUpdates() && SrcDemoUI.getVersion() != null) {
 			QCoreApplication.invokeLater(new Runnable()
 			{
 				@Override
@@ -59,10 +59,12 @@ public class AboutTab extends QWidget
 		{
 			updateButton = new QPushButton(Strings.btnUpdateCheck);
 			updateButton.clicked.connect(this, "onCheckUpdates()");
+			updateButton.setEnabled(SrcDemoUI.getVersion() != null);
 			vbox.addWidget(updateButton, 0, AlignmentFlag.AlignCenter);
 		}
 		{
-			updateStatus = new QLabel();
+			updateStatus = new QLabel(SrcDemoUI.getVersion() == null ? Strings.errUpdateInvalidVersion : "");
+			updateStatus.setOpenExternalLinks(true);
 			vbox.addWidget(updateStatus, 0, AlignmentFlag.AlignCenter);
 		}
 		{
@@ -85,6 +87,13 @@ public class AboutTab extends QWidget
 		updateButton.setEnabled(false);
 		updateButton.setText(Strings.btnUpdateChecking);
 		updateStatus.setText(Strings.lblUpdateChecking);
-		// TODO
+		new UpdateCheckThread(this).start();
+	}
+
+	void onUpdateStatus(final String error)
+	{
+		updateStatus.setText(error);
+		updateButton.setEnabled(true);
+		updateButton.setText(Strings.btnUpdateRecheck);
 	}
 }

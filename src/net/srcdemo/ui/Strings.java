@@ -9,8 +9,13 @@ public interface Strings
 	final String btnQuit = "Quit";
 	final String btnUpdateCheck = "Check for updates";
 	final String btnUpdateChecking = "Checking...";
+	final String btnUpdateRecheck = "Re-check for updates";
 	final String chkUpdateAutoCheck = "Check for updates when starting";
+	final String cmdFlagDebugMode = "--srcdemo-debug";
+	final String cmdFlagDokanDebug = "--dokan-debug";
+	final String cmdFlagHideFiles = "--srcdemo-hide-files";
 	final String cmdHostFramerate = "host_framerate ";
+	final String dateSeparator = "-";
 	final String errDirectoriesEqual = "Directories must not be equal";
 	final String errDokanNotInstalled = "Dokan is not installed.\n\nMore information will be available if you start in debug mode.";
 	final String errDokanTitle = "Dokan error";
@@ -18,10 +23,14 @@ public interface Strings
 	final String errInvalidDokan = "The version of Dokan installed is not the correct one.\nThis application required Dokan 0.6.";
 	final String errInvalidMountpoint = "Invalid folder where the game will save frames.";
 	final String errMountpointNotEmpty = "Folder where the game will save frames is not empty.";
+	final String errUpdateContact = "Error while attempting to grab update information.";
+	final String errUpdateInvalidVersion = "Cannot check for updates: This build's version is unknown.";
+	final String errUpdateReading = "Error while reading update information.";
 	final String lblAboutIcon = "SrcDemo²";
 	final String lblAudioType = "Audio output:";
 	final String lblBlendRate = "Motion blur blend rate: ";
 	final String lblBuildDate = "Build date:";
+	final String lblDefaultDownloadLink = "http://code.google.com/p/srcdemo2/downloads/list";
 	final String lblEffectiveFps = "Effective recording FPS: ";
 	final String lblInvalidSettings = "Invalid settings: ";
 	final String lblJpegQuality = "JPEG quality";
@@ -36,6 +45,9 @@ public interface Strings
 	final String lblTargetFps = "Final video FPS: ";
 	final String lblTgaCompressionRLE = "TGA RLE compression";
 	final String lblUpdateChecking = "Checking for updates...";
+	final String lblUpdateIsUpToDate = "SrcDemo² is up to date.";
+	final String lblUpdateNewVersion = "New version available: ";
+	final String lblUpdateNewVersionNoLink = " (Specific download link not found)";
 	final String lblVideoDisabled = "When video is disabled, the video framerate doesn't matter.\nHowever, it is recommended to record at\nmore than 60 frames to avoid a bug in Source Recorder\ncausing some sounds to not be played at all when playing\na demo at a low framerate compared to the game's tickrate.";
 	final String lblVideoType = "Video output:";
 	final String spnBlendRatePlural = " frames per frame";
@@ -53,6 +65,7 @@ public interface Strings
 	final String tabAudio = "Audio";
 	final String tabVideo = "Video";
 	final String titleBuildPrefix = " - Build ";
+	final String urlUpdateFeed = "http://code.google.com/feeds/p/srcdemo2/downloads/basic";
 	final String videoOptDisabled = "Disabled (Audio only)";
 	final String videoOptJpg = "JPG";
 	final String videoOptPng = "PNG";

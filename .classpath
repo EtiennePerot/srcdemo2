@@ -10,5 +10,11 @@
 	<classpathentry kind="lib" path="lib/qtjambi-4.7.1.jar"/>
 	<classpathentry kind="lib" path="lib/qtjambi-win32-msvc2008-4.7.1.jar"/>
 	<classpathentry kind="lib" path="lib/trove-2.0.3.jar"/>
+	<classpathentry kind="lib" path="lib/horrorss.jar" sourcepath="lib/horrorss.src.zip">
+		<attributes>
+			<attribute name="javadoc_location" value="jar:platform:/resource/SrcDemo2/lib/horrorss.javadoc.zip!/"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="lib" path="lib/sparta.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
