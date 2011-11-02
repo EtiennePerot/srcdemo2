@@ -90,6 +90,7 @@ class VideoUI extends QWidget
 	private QLabel tgaCompressionRLESpacer;
 	private QHBoxLayout tgaOptionsBox;
 	private QComboBox videoType;
+	private QLabel videoTypeLabel;
 	private QVBoxLayout videoTypeVbox;
 
 	VideoUI(final SrcDemoUI parent)
@@ -102,8 +103,11 @@ class VideoUI extends QWidget
 	void enable(final boolean enable)
 	{
 		updateVideoType();
+		videoTypeLabel.setEnabled(enable);
 		videoType.setEnabled(enable);
+		jpegCompressionLevelLabel.setEnabled(enable);
 		jpegCompressionLevel.setEnabled(enable);
+		tgaCompressionRLESpacer.setEnabled(enable);
 		tgaCompressionRLE.setEnabled(enable);
 		for (final QWidget widget : globalVideoOptions) {
 			widget.setEnabled(enable);
@@ -190,7 +194,8 @@ class VideoUI extends QWidget
 		{
 			videoTypeVbox = new QVBoxLayout();
 			final QHBoxLayout hbox = new QHBoxLayout();
-			hbox.addWidget(new QLabel(Strings.lblVideoType));
+			videoTypeLabel = new QLabel(Strings.lblVideoType);
+			hbox.addWidget(videoTypeLabel);
 			videoType = new QComboBox();
 			for (int i = 0; i < VideoType.values().length; i++) {
 				videoType.addItem(VideoType.fromIndex(i).getLabel(), VideoType.fromIndex(i));

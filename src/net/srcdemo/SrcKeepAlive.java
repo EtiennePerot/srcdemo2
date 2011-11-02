@@ -5,7 +5,7 @@ import java.util.TimerTask;
 
 public class SrcKeepAlive extends Timer
 {
-	private static final long deadMeat = 60000;
+	private static final long deadBeef = 60000;
 	private static final long pollingInterval = 5000;
 	private SrcDemo srcDemo;
 	private TimerTask task = new TimerTask()
@@ -14,7 +14,7 @@ public class SrcKeepAlive extends Timer
 		public void run()
 		{
 			final long lastTime = srcDemo.getLastClosedFrameTime();
-			if (lastTime != -1L && System.currentTimeMillis() - lastTime > deadMeat && !srcDemo.isLocked()) {
+			if (lastTime != -1L && System.currentTimeMillis() - lastTime > deadBeef && !srcDemo.isLocked()) {
 				srcDemo.destroy();
 				// Cancel TimerTask
 				cancel();

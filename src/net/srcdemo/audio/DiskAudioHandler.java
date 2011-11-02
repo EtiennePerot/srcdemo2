@@ -78,7 +78,6 @@ public class DiskAudioHandler implements AudioHandler
 	public void modifyFindResults(final String pathName, final Collection<String> existingFiles)
 	{
 		// No need to cheat on anything, the file exists for real.
-		return;
 	}
 
 	@Override
