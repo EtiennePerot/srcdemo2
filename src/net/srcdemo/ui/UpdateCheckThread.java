@@ -102,7 +102,7 @@ class UpdateCheckThread extends Thread
 			return;
 		}
 		if (SrcDemoUI.getVersion() == null) {
-			setStatus(Strings.errUpdateInvalidVersion);
+			setStatus(Strings.errUpdateInvalidVersion, false);
 			return;
 		}
 		final Version selfVersion = new Version(SrcDemoUI.getVersion());
@@ -110,7 +110,7 @@ class UpdateCheckThread extends Thread
 			parser.parse();
 		}
 		catch (final Exception e) {
-			setStatus(Strings.errUpdateContact);
+			setStatus(Strings.errUpdateContact, false);
 			return;
 		}
 		if (invalidated.get()) {
@@ -121,7 +121,7 @@ class UpdateCheckThread extends Thread
 			items = parser.getItems();
 		}
 		catch (final Exception e) {
-			setStatus(Strings.errUpdateReading);
+			setStatus(Strings.errUpdateReading, false);
 			return;
 		}
 		if (invalidated.get()) {
@@ -133,22 +133,22 @@ class UpdateCheckThread extends Thread
 			versions.add(new Version(item));
 		}
 		if (versions.last() == selfVersion) {
-			setStatus(Strings.lblUpdateIsUpToDate);
+			setStatus(Strings.lblUpdateIsUpToDate, false);
 			return;
 		}
 		if (versions.last().getDownloadLink() == null) {
 			setStatus("<a href=\"" + Strings.lblDefaultDownloadLink + "\">" + Strings.lblUpdateNewVersion + versions.last()
-					+ "</a>" + Strings.lblUpdateNewVersionNoLink);
+					+ "</a>" + Strings.lblUpdateNewVersionNoLink, true);
 			return;
 		}
 		{
 			setStatus("<a href=\"" + versions.last().getDownloadLink() + "\">" + Strings.lblUpdateNewVersion + versions.last()
-					+ "</a>");
+					+ "</a>", true);
 			return;
 		}
 	}
 
-	private void setStatus(final String error)
+	private void setStatus(final String status, final boolean switchNow)
 	{
 		if (!invalidated.get()) {
 			QCoreApplication.invokeLater(new Runnable()
@@ -157,7 +157,7 @@ class UpdateCheckThread extends Thread
 				public void run()
 				{
 					if (!invalidated.get()) {
-						parent.onUpdateStatus(error);
+						parent.onUpdateStatus(status, switchNow);
 					}
 				}
 			});

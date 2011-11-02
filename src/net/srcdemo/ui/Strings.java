@@ -63,6 +63,7 @@ public interface Strings
 	final String step3 = "3. Set parameters";
 	final String tabAbout = "About/Updates";
 	final String tabAudio = "Audio";
+	final String tabRender = "Rendering";
 	final String tabVideo = "Video";
 	final String titleBuildPrefix = " - Build ";
 	final String urlUpdateFeed = "http://code.google.com/feeds/p/srcdemo2/downloads/basic";

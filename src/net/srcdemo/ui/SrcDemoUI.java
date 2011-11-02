@@ -105,6 +105,7 @@ public class SrcDemoUI extends QWidget implements SrcDemoListener
 	private SrcDemoFS mountedFS = null;
 	private QLineEdit mountpoint;
 	private QPushButton mountpointBrowse;
+	private RenderingTab renderTab;
 	private final SrcSettings settings;
 	private VideoUI videoUi;
 
@@ -199,6 +200,10 @@ public class SrcDemoUI extends QWidget implements SrcDemoListener
 			{
 				audioUi = new AudioUI(this);
 				allParams.addTab(audioUi, Strings.tabAudio);
+			}
+			{
+				renderTab = new RenderingTab(this);
+				allParams.addTab(renderTab, Strings.tabRender);
 			}
 			{
 				final AboutTab aboutTab = new AboutTab(this);
@@ -306,6 +311,11 @@ public class SrcDemoUI extends QWidget implements SrcDemoListener
 		updateStatus();
 	}
 
+	void selectTab(final QWidget tab)
+	{
+		allParams.setCurrentWidget(tab);
+	}
+
 	private void unmount()
 	{
 		fsLock.lock();
@@ -327,6 +337,7 @@ public class SrcDemoUI extends QWidget implements SrcDemoListener
 		}
 		videoUi.enable(!isMounted);
 		audioUi.enable(!isMounted);
+		allParams.setTabEnabled(allParams.indexOf(renderTab), isMounted);
 		if (!isMounted) {
 			if (badSettings() == null) {
 				lblStatus.setText(Strings.lblPressWhenReady);

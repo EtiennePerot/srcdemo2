@@ -4,7 +4,7 @@ import net.srcdemo.ui.VideoUI.VideoType;
 
 import com.trolltech.qt.core.QSettings;
 
-public class SrcSettings extends QSettings
+class SrcSettings extends QSettings
 {
 	SrcSettings()
 	{

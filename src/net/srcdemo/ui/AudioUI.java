@@ -12,7 +12,7 @@ import com.trolltech.qt.gui.QLabel;
 import com.trolltech.qt.gui.QVBoxLayout;
 import com.trolltech.qt.gui.QWidget;
 
-public class AudioUI extends QWidget
+class AudioUI extends QWidget
 {
 	private QComboBox audioType;
 	private final SrcDemoUI parent;

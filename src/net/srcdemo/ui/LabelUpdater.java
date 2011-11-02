@@ -6,7 +6,7 @@ import java.util.TimerTask;
 import com.trolltech.qt.core.QCoreApplication;
 import com.trolltech.qt.gui.QLabel;
 
-public class LabelUpdater implements Runnable
+class LabelUpdater implements Runnable
 {
 	private final QLabel label;
 	private boolean needUpdate = false;

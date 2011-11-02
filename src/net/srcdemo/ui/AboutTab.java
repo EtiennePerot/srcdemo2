@@ -90,10 +90,13 @@ public class AboutTab extends QWidget
 		new UpdateCheckThread(this).start();
 	}
 
-	void onUpdateStatus(final String error)
+	void onUpdateStatus(final String status, final boolean switchNow)
 	{
-		updateStatus.setText(error);
+		updateStatus.setText(status);
 		updateButton.setEnabled(true);
 		updateButton.setText(Strings.btnUpdateRecheck);
+		if (switchNow) {
+			parent.selectTab(this);
+		}
 	}
 }

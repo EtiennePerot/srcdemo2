@@ -9,9 +9,9 @@ import com.trolltech.qt.gui.QPushButton;
 import com.trolltech.qt.gui.QVBoxLayout;
 import com.trolltech.qt.gui.QWidget;
 
-public class DokanMessage extends QWidget
+class DokanMessage extends QWidget
 {
-	public static String check()
+	static String check()
 	{
 		try {
 			if (Dokan.getVersion() == 600) {
