@@ -1,8 +1,13 @@
 package net.srcdemo.ui;
 
 import com.trolltech.qt.core.QCoreApplication;
+import com.trolltech.qt.core.QEvent;
+import com.trolltech.qt.core.QUrl;
 import com.trolltech.qt.core.Qt.AlignmentFlag;
+import com.trolltech.qt.core.Qt.CursorShape;
 import com.trolltech.qt.gui.QCheckBox;
+import com.trolltech.qt.gui.QCursor;
+import com.trolltech.qt.gui.QDesktopServices;
 import com.trolltech.qt.gui.QHBoxLayout;
 import com.trolltech.qt.gui.QLabel;
 import com.trolltech.qt.gui.QPixmap;
@@ -42,8 +47,20 @@ public class AboutTab extends QWidget
 	{
 		final QVBoxLayout vbox = new QVBoxLayout();
 		{
-			final QLabel iconLabel = new QLabel();
+			final QLabel iconLabel = new QLabel()
+			{
+				@Override
+				public boolean event(final QEvent event)
+				{
+					if (event.type().equals(QEvent.Type.MouseButtonPress)) {
+						QDesktopServices.openUrl(new QUrl(Strings.urlHomepage));
+						return true;
+					}
+					return super.event(event);
+				}
+			};
 			iconLabel.setPixmap(new QPixmap(Files.iconAbout.getAbsolutePath()));
+			iconLabel.setCursor(new QCursor(CursorShape.PointingHandCursor));
 			vbox.addWidget(iconLabel, 0, AlignmentFlag.AlignHCenter);
 		}
 		{

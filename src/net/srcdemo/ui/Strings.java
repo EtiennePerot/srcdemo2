@@ -77,6 +77,7 @@ interface Strings
 	final String tabRender = "Rendering";
 	final String tabVideo = "Video";
 	final String titleBuildPrefix = " - Build ";
+	final String urlHomepage = "http://srcdemo2.googlecode.com/";
 	final String urlUpdateFeed = "http://code.google.com/feeds/p/srcdemo2/downloads/basic";
 	final String videoOptDisabled = "Disabled (Audio only)";
 	final String videoOptJpg = "JPG";
