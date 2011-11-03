@@ -4,20 +4,21 @@ import java.io.File;
 import java.nio.ByteBuffer;
 import java.util.Collection;
 
+import net.srcdemo.Mortician.Morticianed;
 import net.srcdemo.audio.AudioHandler;
 import net.srcdemo.audio.AudioHandlerFactory;
 import net.srcdemo.video.VideoHandler;
 import net.srcdemo.video.VideoHandlerFactory;
 
-public class SrcDemo
+public class SrcDemo implements Morticianed
 {
 	private final AudioHandler audioHandler;
 	private final SrcDemoFS backingFS;
 	private final String demoDirectory;
 	private final String demoPrefix;
 	private final int demoPrefixLength;
-	private SrcKeepAlive keepAlive;
 	private long lastClosedFrameTime = -1L;
+	private final Mortician mortician;
 	private final File soundFile;
 	private final String soundFileName;
 	private final String soundFileNameLowercase;
@@ -26,6 +27,7 @@ public class SrcDemo
 	SrcDemo(final SrcDemoFS backingFS, final String prefix, final VideoHandlerFactory videoHandlerFactory,
 			final AudioHandlerFactory audioHandlerFactory)
 	{
+		SrcLogger.logDemo("Creating new SrcDemo with prefix " + prefix);
 		this.backingFS = backingFS;
 		demoPrefix = prefix;
 		demoPrefixLength = demoPrefix.length();
@@ -34,7 +36,14 @@ public class SrcDemo
 		soundFile = getBackedFile(".wav");
 		soundFileName = soundFile.getName();
 		soundFileNameLowercase = soundFileName.toLowerCase();
-		keepAlive = new SrcKeepAlive(this);
+		mortician = new Mortician(this, "Checking thread for " + prefix, new Runnable()
+		{
+			@Override
+			public void run()
+			{
+				destroy();
+			}
+		});
 		videoHandler = videoHandlerFactory.buildHandler(this);
 		audioHandler = audioHandlerFactory.buildHandler(this);
 	}
@@ -50,7 +59,7 @@ public class SrcDemo
 				lastClosedFrameTime = System.currentTimeMillis();
 				videoHandler.close(frameNumber);
 				backingFS.notifyFrameProcessed(fileName);
-				SrcLogger.log("Finished processing frame: " + fileName);
+				SrcLogger.logDemo("Finished processing frame: " + fileName);
 			}
 		}
 	}
@@ -68,17 +77,16 @@ public class SrcDemo
 		}
 	}
 
-	void destroy()
+	private void destroy()
 	{
-		SrcLogger.log("Destroying SrcDemo object: " + this);
-		keepAlive.cancel();
-		keepAlive = null;
+		SrcLogger.logDemo("Destroying SrcDemo object: " + this);
+		mortician.stopService();
 		videoHandler.destroy();
 		audioHandler.destroy();
 		// Notify the upper layer that we're dead, Jim
 		backingFS.destroy(this);
 		System.gc();
-		SrcLogger.log("Fully destroyed SrcDemo object: " + this);
+		SrcLogger.logDemo("Fully destroyed SrcDemo object: " + this);
 	}
 
 	public File getBackedFile(final String fileSuffix)
@@ -112,11 +120,6 @@ public class SrcDemo
 		}
 	}
 
-	long getLastClosedFrameTime()
-	{
-		return lastClosedFrameTime;
-	}
-
 	public String getPrefix()
 	{
 		return demoPrefix;
@@ -127,7 +130,8 @@ public class SrcDemo
 		return soundFile;
 	}
 
-	boolean isLocked()
+	@Override
+	public boolean isBusy()
 	{
 		return videoHandler.isLocked() || audioHandler.isLocked();
 	}
@@ -136,6 +140,12 @@ public class SrcDemo
 	{
 		// Needs to be case-insensitive because Source Recorder sometimes like to pass all-uppercase filenames.
 		return fileName.toLowerCase().endsWith(soundFileNameLowercase);
+	}
+
+	@Override
+	public long lastLifeSign()
+	{
+		return lastClosedFrameTime;
 	}
 
 	public void modifyFindResults(final String pathName, final Collection<String> actualFiles)

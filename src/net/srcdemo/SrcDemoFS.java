@@ -20,8 +20,7 @@ import net.srcdemo.video.VideoHandlerFactory;
 
 public class SrcDemoFS extends LoopbackFS
 {
-	private static final Pattern demoNameTGAPattern = Pattern.compile("(\\d+)\\.tga$", Pattern.CASE_INSENSITIVE);
-	private static final Pattern demoNameWAVPattern = Pattern.compile("\\.wav$", Pattern.CASE_INSENSITIVE);
+	private static final Pattern demoNamePattern = Pattern.compile("\\d+\\.tga$|\\.wav$", Pattern.CASE_INSENSITIVE);
 	private static final Win32FindData[] emptyWin32FindData = new Win32FindData[0];
 	private final AudioHandlerFactory audioHandlerFactory;
 	private final Set<SrcDemoListener> demoListeners = new HashSet<SrcDemoListener>();
@@ -105,20 +104,18 @@ public class SrcDemoFS extends LoopbackFS
 
 	private SrcDemo getDemo(final String fileName)
 	{
-		Matcher match = demoNameTGAPattern.matcher(fileName);
+		final Matcher match = demoNamePattern.matcher(fileName);
 		if (!match.find()) {
-			match = demoNameWAVPattern.matcher(fileName);
-			if (!match.find()) {
-				return null;
-			}
+			return null;
 		}
 		final String demoName = fileName.substring(0, match.start());
+		final String demoNameLowercase = demoName.toLowerCase();
 		demoLock.lock();
-		if (!demos.containsKey(demoName)) {
-			demos.put(demoName, new SrcDemo(this, demoName, videoHandlerFactory, audioHandlerFactory));
+		if (!demos.containsKey(demoNameLowercase)) {
+			demos.put(demoNameLowercase, new SrcDemo(this, demoName, videoHandlerFactory, audioHandlerFactory));
 		}
 		demoLock.unlock();
-		return demos.get(demoName);
+		return demos.get(demoNameLowercase);
 	}
 
 	@Override

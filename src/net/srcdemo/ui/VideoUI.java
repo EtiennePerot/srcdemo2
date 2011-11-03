@@ -3,6 +3,7 @@ package net.srcdemo.ui;
 import java.util.HashSet;
 import java.util.Set;
 
+import net.srcdemo.EnumUtils;
 import net.srcdemo.SrcDemo;
 import net.srcdemo.SrcLogger;
 import net.srcdemo.video.FrameBlender;
@@ -17,7 +18,6 @@ import net.srcdemo.video.image.TGASavingTask;
 
 import com.trolltech.qt.core.Qt.Orientation;
 import com.trolltech.qt.gui.QCheckBox;
-import com.trolltech.qt.gui.QComboBox;
 import com.trolltech.qt.gui.QHBoxLayout;
 import com.trolltech.qt.gui.QLabel;
 import com.trolltech.qt.gui.QSlider;
@@ -28,35 +28,16 @@ import com.trolltech.qt.gui.QWidget;
 
 class VideoUI extends QWidget
 {
-	enum VideoType
+	static enum VideoType
 	{
 		DISABLED, JPEG, PNG, TGA;
-		static VideoType fromIndex(final int index)
-		{
-			for (final VideoType type : values()) {
-				if (type.getIndex() == index) {
-					return type;
-				}
-			}
-			return null;
+		static {
+			final VideoType[] order = { PNG, TGA, JPEG, DISABLED };
+			EnumUtils.registerOrder(VideoType.class, order);
 		}
 
-		int getIndex()
-		{
-			switch (this) {
-				case PNG:
-					return 0;
-				case TGA:
-					return 1;
-				case JPEG:
-					return 2;
-				case DISABLED:
-					return 3;
-			}
-			return Integer.MAX_VALUE;
-		}
-
-		String getLabel()
+		@Override
+		public String toString()
 		{
 			switch (this) {
 				case PNG:
@@ -89,7 +70,7 @@ class VideoUI extends QWidget
 	private QCheckBox tgaCompressionRLE;
 	private QLabel tgaCompressionRLESpacer;
 	private QHBoxLayout tgaOptionsBox;
-	private QComboBox videoType;
+	private EnumComboBox<VideoType> videoType;
 	private QLabel videoTypeLabel;
 	private QVBoxLayout videoTypeVbox;
 
@@ -114,16 +95,11 @@ class VideoUI extends QWidget
 		}
 	}
 
-	private VideoType getCurrentVideoType()
-	{
-		return VideoType.fromIndex(videoType.currentIndex());
-	}
-
 	VideoHandlerFactory getFactory()
 	{
 		final int blend = blendRate.value();
 		final int shutter = shutterAngle.value();
-		final VideoType vidType = getCurrentVideoType();
+		final VideoType vidType = videoType.getCurrentItem();
 		ImageSavingTaskFactory imgFactory = null;
 		switch (vidType) {
 			case JPEG:
@@ -196,11 +172,8 @@ class VideoUI extends QWidget
 			final QHBoxLayout hbox = new QHBoxLayout();
 			videoTypeLabel = new QLabel(Strings.lblVideoType);
 			hbox.addWidget(videoTypeLabel);
-			videoType = new QComboBox();
-			for (int i = 0; i < VideoType.values().length; i++) {
-				videoType.addItem(VideoType.fromIndex(i).getLabel(), VideoType.fromIndex(i));
-			}
-			videoType.setCurrentIndex(getSettings().getLastVideoType().getIndex());
+			videoType = new EnumComboBox<VideoType>(VideoType.class);
+			videoType.setCurrentItem(getSettings().getLastVideoType());
 			videoType.currentIndexChanged.connect(this, "updateVideoType()");
 			hbox.addWidget(videoType);
 			videoTypeVbox.addLayout(hbox);
@@ -294,8 +267,8 @@ class VideoUI extends QWidget
 	void logParams()
 	{
 		SrcLogger.log("~ Video parameters block ~");
-		final VideoType current = getCurrentVideoType();
-		SrcLogger.log("Video type: " + current.getLabel());
+		final VideoType current = videoType.getCurrentItem();
+		SrcLogger.log("Video type: " + current);
 		if (current.equals(VideoType.JPEG)) {
 			SrcLogger.log("JPEG compression: " + jpegCompressionLevel.value());
 		}
@@ -318,7 +291,7 @@ class VideoUI extends QWidget
 
 	private void saveVideoSettings()
 	{
-		getSettings().setLastVideoType(getCurrentVideoType());
+		getSettings().setLastVideoType(videoType.getCurrentItem());
 		getSettings().setLastTargetFps(targetFps.value());
 		getSettings().setLastBlendRate(blendRate.value());
 		getSettings().setLastShutterAngle(shutterAngle.value());
@@ -346,7 +319,7 @@ class VideoUI extends QWidget
 
 	private void updateVideoType()
 	{
-		final VideoType current = getCurrentVideoType();
+		final VideoType current = videoType.getCurrentItem();
 		{
 			// Disabled
 			final boolean disabled = current.equals(VideoType.DISABLED);

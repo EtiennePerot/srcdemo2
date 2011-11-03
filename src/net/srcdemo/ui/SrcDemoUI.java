@@ -57,6 +57,22 @@ public class SrcDemoUI extends QWidget implements SrcDemoListener
 				debugMode = true;
 				SrcLogger.setLogAll(true);
 			}
+			if (arg.equals(Strings.cmdFlagDebugAudio)) {
+				debugMode = true;
+				SrcLogger.setLogAudio(true);
+			}
+			if (arg.equals(Strings.cmdFlagDebugVideo)) {
+				debugMode = true;
+				SrcLogger.setLogVideo(true);
+			}
+			if (arg.equals(Strings.cmdFlagDebugDemo)) {
+				debugMode = true;
+				SrcLogger.setLogDemo(true);
+			}
+			if (arg.equals(Strings.cmdFlagDebugMisc)) {
+				debugMode = true;
+				SrcLogger.setLogMisc(true);
+			}
 			if (arg.equals(Strings.cmdFlagDokanDebug)) {
 				dokanLoggingMode = true;
 			}

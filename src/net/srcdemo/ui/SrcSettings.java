@@ -1,5 +1,7 @@
 package net.srcdemo.ui;
 
+import net.srcdemo.EnumUtils;
+import net.srcdemo.ui.AudioUI.AudioType;
 import net.srcdemo.ui.VideoUI.VideoType;
 
 import com.trolltech.qt.core.QSettings;
@@ -14,6 +16,26 @@ class SrcSettings extends QSettings
 	boolean getAutoCheckUpdates()
 	{
 		return Boolean.parseBoolean((String) value("autoCheckUpdates", "false"));
+	}
+
+	int getLastAudioBufferSize()
+	{
+		return (Integer) value("audioBufferSize", 4096);
+	}
+
+	public int getLastAudioBufferTimeout()
+	{
+		return (Integer) value("audioBufferTimeout", 6);
+	}
+
+	AudioType getLastAudioType()
+	{
+		try {
+			return EnumUtils.fromIndex(AudioType.class, ((Integer) value("audioType", EnumUtils.getIndex(AudioType.BUFFERED))));
+		}
+		catch (final Exception e) {
+			return AudioType.BUFFERED;
+		}
 	}
 
 	String getLastBackingDirectory()
@@ -54,7 +76,7 @@ class SrcSettings extends QSettings
 	VideoType getLastVideoType()
 	{
 		try {
-			return VideoType.fromIndex((Integer) value("videoType", VideoType.PNG.getIndex()));
+			return EnumUtils.fromIndex(VideoType.class, ((Integer) value("videoType", EnumUtils.getIndex(VideoType.PNG))));
 		}
 		catch (final Exception e) {
 			return VideoType.PNG;
@@ -64,6 +86,21 @@ class SrcSettings extends QSettings
 	void setAutoCheckUpdates(final boolean autocheck)
 	{
 		setValue("autoCheckUpdates", autocheck ? "true" : "false");
+	}
+
+	void setLastAudioBufferSize(final int size)
+	{
+		setValue("audioBufferSize", size);
+	}
+
+	void setLastAudioBufferTimeout(final int timeout)
+	{
+		setValue("audioBufferTimeout", timeout);
+	}
+
+	void setLastAudioType(final AudioType audioType)
+	{
+		setValue("audioType", EnumUtils.getIndex(audioType));
 	}
 
 	void setLastBackingDirectory(final String backingDirectory)
@@ -103,6 +140,6 @@ class SrcSettings extends QSettings
 
 	void setLastVideoType(final VideoType videoType)
 	{
-		setValue("videoType", videoType.getIndex());
+		setValue("videoType", EnumUtils.getIndex(videoType));
 	}
 }

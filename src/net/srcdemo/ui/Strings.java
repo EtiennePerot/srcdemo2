@@ -1,8 +1,11 @@
 package net.srcdemo.ui;
 
-public interface Strings
+interface Strings
 {
 	final String aboutUnknownVersion = "Unknown";
+	final String audioOptBuffered = "WAV (Buffered)";
+	final String audioOptDisabled = "Disabled (video only)";
+	final String audioOptDisk = "WAV (Straight to disk)";
 	final String btnActivate = "Activate";
 	final String btnBrowse = "Browse...";
 	final String btnDeactivate = "Deactivate";
@@ -11,7 +14,11 @@ public interface Strings
 	final String btnUpdateChecking = "Checking...";
 	final String btnUpdateRecheck = "Re-check for updates";
 	final String chkUpdateAutoCheck = "Check for updates when starting";
+	final String cmdFlagDebugAudio = "--srcdemo-debug-audio";
+	final String cmdFlagDebugDemo = "--srcdemo-debug-demo";
+	final String cmdFlagDebugMisc = "--srcdemo-debug-misc";
 	final String cmdFlagDebugMode = "--srcdemo-debug";
+	final String cmdFlagDebugVideo = "--srcdemo-debug-video";
 	final String cmdFlagDokanDebug = "--dokan-debug";
 	final String cmdFlagHideFiles = "--srcdemo-hide-files";
 	final String cmdHostFramerate = "host_framerate ";
@@ -27,6 +34,8 @@ public interface Strings
 	final String errUpdateInvalidVersion = "Cannot check for updates: This build's version is unknown.";
 	final String errUpdateReading = "Error while reading update information.";
 	final String lblAboutIcon = "SrcDemo²";
+	final String lblAudioBufferSize = "Buffer size:";
+	final String lblAudioBufferTimeout = "Buffer timeout:";
 	final String lblAudioType = "Audio output:";
 	final String lblBlendRate = "Motion blur blend rate: ";
 	final String lblBuildDate = "Build date:";
@@ -50,6 +59,8 @@ public interface Strings
 	final String lblUpdateNewVersionNoLink = " (Specific download link not found)";
 	final String lblVideoDisabled = "When video is disabled, the video framerate doesn't matter.\nHowever, it is recommended to record at\nmore than 60 frames to avoid a bug in Source Recorder\ncausing some sounds to not be played at all when playing\na demo at a low framerate compared to the game's tickrate.";
 	final String lblVideoType = "Video output:";
+	final String spnAudioBufferSize = " kilobytes";
+	final String spnAudioBufferTimeout = " seconds";
 	final String spnBlendRatePlural = " frames per frame";
 	final String spnBlendRateSingular = " frame (identity)";
 	final String spnShutterAnglePlural = " degrees";
