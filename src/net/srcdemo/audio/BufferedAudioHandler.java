@@ -19,6 +19,7 @@ public class BufferedAudioHandler implements AudioHandler, Morticianed
 {
 	private final ByteArrayOutputStream buffer;
 	private final int bufferSize;
+	private final SrcDemo demo;
 	private final File file;
 	private FileChannel fileChannel = null;
 	private final ReentrantLock fileLock = new ReentrantLock();
@@ -28,6 +29,7 @@ public class BufferedAudioHandler implements AudioHandler, Morticianed
 
 	public BufferedAudioHandler(final SrcDemo demo, final int bufferSize, final int bufferTimeout)
 	{
+		this.demo = demo;
 		file = demo.getSoundFile();
 		mortician = new Mortician(this, "Audio checking thread for " + demo.getPrefix(), 1000, bufferTimeout * 1000, false,
 				new Runnable()
@@ -35,8 +37,8 @@ public class BufferedAudioHandler implements AudioHandler, Morticianed
 					@Override
 					public void run()
 					{
-						SrcLogger.logAudio("Audio buffer timeout fired. Writing out.");
-						writeOut();
+						SrcLogger.logAudio("Audio buffer timeout fired. Flushing.");
+						flush();
 					}
 				});
 		this.bufferSize = bufferSize;
@@ -71,11 +73,12 @@ public class BufferedAudioHandler implements AudioHandler, Morticianed
 	public void destroy()
 	{
 		SrcLogger.logAudio("Audio buffer is being destroyed. Writing out.");
-		writeOut();
 		mortician.stopService();
+		writeOut();
 	}
 
-	private void flush()
+	@Override
+	public void flush()
 	{
 		fileLock.lock();
 		if (fileChannel == null) {
@@ -83,12 +86,14 @@ public class BufferedAudioHandler implements AudioHandler, Morticianed
 		}
 		try {
 			fileChannel.write(ByteBuffer.wrap(buffer.toByteArray()));
+			fileChannel.force(true);
 		}
 		catch (final IOException e) {
 			SrcLogger.error("Warning: Couldn't write to sound file at " + file + ".", e);
 		}
 		lastWrite = System.currentTimeMillis();
 		buffer.reset();
+		demo.notifyAudioBufferWriteout();
 		fileLock.unlock();
 	}
 
@@ -168,9 +173,13 @@ public class BufferedAudioHandler implements AudioHandler, Morticianed
 			SrcLogger.error("Warning: Couldn't write " + toWrite + " bytes to sound buffer.", e);
 		}
 		fileSize += toWrite;
-		if (this.buffer.size() > bufferSize) {
+		final int bufSize = this.buffer.size();
+		if (bufSize > bufferSize) {
 			SrcLogger.logAudio("Buffer is full; flushing.");
 			flush();
+		}
+		else {
+			demo.notifyAudioBuffer(bufSize, bufferSize);
 		}
 		fileLock.unlock();
 		return toWrite;
@@ -187,6 +196,7 @@ public class BufferedAudioHandler implements AudioHandler, Morticianed
 			SrcLogger.logAudio("Warning: Couldn't close sound file at " + file + ".");
 		}
 		fileChannel = null;
+		demo.notifyAudioBufferWriteout();
 		fileLock.unlock();
 	}
 }

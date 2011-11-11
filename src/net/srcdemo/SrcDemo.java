@@ -89,6 +89,11 @@ public class SrcDemo implements Morticianed
 		SrcLogger.logDemo("Fully destroyed SrcDemo object: " + this);
 	}
 
+	public void flushAudioBuffer()
+	{
+		audioHandler.flush();
+	}
+
 	public File getBackedFile(final String fileSuffix)
 	{
 		return backingFS.getBackedFile(demoPrefix + fileSuffix);
@@ -155,6 +160,16 @@ public class SrcDemo implements Morticianed
 		}
 		audioHandler.modifyFindResults(pathName, actualFiles);
 		videoHandler.modifyFindResults(pathName, actualFiles);
+	}
+
+	public void notifyAudioBuffer(final int occupied, final int total)
+	{
+		backingFS.notifyAudioBuffer(occupied, total);
+	}
+
+	public void notifyAudioBufferWriteout()
+	{
+		backingFS.notifyAudioBufferWriteout();
 	}
 
 	public void notifyFrameSaved(final File frame)

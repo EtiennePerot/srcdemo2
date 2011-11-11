@@ -35,6 +35,12 @@ public class NullAudioHandler implements AudioHandler
 	}
 
 	@Override
+	public void flush()
+	{
+		// Unsupported
+	}
+
+	@Override
 	public long getSize()
 	{
 		return size.get();

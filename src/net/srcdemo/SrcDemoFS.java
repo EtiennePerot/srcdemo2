@@ -102,6 +102,15 @@ public class SrcDemoFS extends LoopbackFS
 		}
 	}
 
+	public void flushAudioBuffer()
+	{
+		demoLock.lock();
+		for (final SrcDemo demo : demos.values()) {
+			demo.flushAudioBuffer();
+		}
+		demoLock.unlock();
+	}
+
 	private SrcDemo getDemo(final String fileName)
 	{
 		final Matcher match = demoNamePattern.matcher(fileName);
@@ -126,6 +135,20 @@ public class SrcDemoFS extends LoopbackFS
 			return super.getFileInfo(fileName);
 		}
 		return demo.getFileInfo(fileName);
+	}
+
+	void notifyAudioBuffer(final int occupied, final int total)
+	{
+		for (final SrcDemoListener listener : demoListeners) {
+			listener.onAudioBuffer(occupied, total);
+		}
+	}
+
+	void notifyAudioBufferWriteout()
+	{
+		for (final SrcDemoListener listener : demoListeners) {
+			listener.onAudioBufferWriteout();
+		}
 	}
 
 	void notifyFrameProcessed(final String frameName)

@@ -10,6 +10,8 @@ interface Strings
 	final String btnBrowse = "Browse...";
 	final String btnDeactivate = "Deactivate";
 	final String btnQuit = "Quit";
+	final String btnRenderAudioBufferFlush = "Flush";
+	final String btnRenderAudioBufferFlushing = "Flushing";
 	final String btnUpdateCheck = "Check for updates";
 	final String btnUpdateChecking = "Checking...";
 	final String btnUpdateRecheck = "Re-check for updates";
@@ -50,6 +52,10 @@ interface Strings
 	final String lblMakeSureFramerate = "Make sure to set host_framerate before you start rendering!";
 	final String lblPressWhenReady = "Press \"Activate\" when ready.";
 	final String lblReadyToRender = "Ready to render.";
+	final String lblRenderAudioBuffer1 = " KB (";
+	final String lblRenderAudioBuffer2 = "%)";
+	final String lblRenderAudioBuffer3 = " KB total)";
+	final String lblRenderAudioBufferWriting = "Writing...";
 	final String lblShutterAngle = "Simulated <a href=\"http://www.facepunch.com/threads/1126220?p=32617404&viewfull=1#post32617404\">shutter angle</a>: ";
 	final String lblTargetFps = "Final video FPS: ";
 	final String lblTgaCompressionRLE = "TGA RLE compression";

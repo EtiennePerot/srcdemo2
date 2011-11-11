@@ -5,12 +5,10 @@ import java.lang.reflect.Field;
 import java.util.concurrent.locks.ReentrantLock;
 
 import net.srcdemo.SrcDemoFS;
-import net.srcdemo.SrcDemoListener;
 import net.srcdemo.SrcLogger;
 
 import org.apache.commons.io.FileUtils;
 
-import com.trolltech.qt.core.Qt.AlignmentFlag;
 import com.trolltech.qt.gui.QApplication;
 import com.trolltech.qt.gui.QFileDialog;
 import com.trolltech.qt.gui.QHBoxLayout;
@@ -22,7 +20,7 @@ import com.trolltech.qt.gui.QTabWidget;
 import com.trolltech.qt.gui.QVBoxLayout;
 import com.trolltech.qt.gui.QWidget;
 
-public class SrcDemoUI extends QWidget implements SrcDemoListener
+public class SrcDemoUI extends QWidget
 {
 	private static boolean debugMode = false;
 	private static boolean dokanLoggingMode = false;
@@ -115,8 +113,6 @@ public class SrcDemoUI extends QWidget implements SrcDemoListener
 	private QPushButton btnExit;
 	private QPushButton btnMount;
 	private final ReentrantLock fsLock = new ReentrantLock();
-	private LabelUpdater lastFrameProcessedUpdater;
-	private LabelUpdater lastFrameSavedUpdated;
 	private QLabel lblStatus;
 	private SrcDemoFS mountedFS = null;
 	private QLineEdit mountpoint;
@@ -161,6 +157,15 @@ public class SrcDemoUI extends QWidget implements SrcDemoListener
 		SrcDemoUI.returnCode = returnCode;
 		unmount();
 		close();
+	}
+
+	public void flushAudioBuffer()
+	{
+		fsLock.lock();
+		if (mountedFS != null) {
+			mountedFS.flushAudioBuffer();
+		}
+		fsLock.unlock();
 	}
 
 	private File getBackingDirectory()
@@ -239,26 +244,6 @@ public class SrcDemoUI extends QWidget implements SrcDemoListener
 			hbox.addWidget(btnExit);
 			vbox.addLayout(hbox);
 		}
-		{
-			{
-				final QHBoxLayout hbox = new QHBoxLayout();
-				hbox.addWidget(new QLabel(Strings.lblLastFrameProcessed));
-				final QLabel lblLastFrameProcessed = new QLabel(Strings.lblLastFrameProcessedDefault);
-				lblLastFrameProcessed.setAlignment(AlignmentFlag.AlignRight);
-				hbox.addWidget(lblLastFrameProcessed);
-				vbox.addLayout(hbox);
-				lastFrameProcessedUpdater = new LabelUpdater(lblLastFrameProcessed);
-			}
-			{
-				final QHBoxLayout hbox = new QHBoxLayout();
-				hbox.addWidget(new QLabel(Strings.lblLastFrameSaved));
-				final QLabel lblLastFrameSaved = new QLabel(Strings.lblLastFrameSavedDefault);
-				lblLastFrameSaved.setAlignment(AlignmentFlag.AlignRight);
-				hbox.addWidget(lblLastFrameSaved);
-				vbox.addLayout(hbox);
-				lastFrameSavedUpdated = new LabelUpdater(lblLastFrameSaved);
-			}
-		}
 		updateStatus();
 		setLayout(vbox);
 	}
@@ -295,21 +280,6 @@ public class SrcDemoUI extends QWidget implements SrcDemoListener
 		exit(relaunchStatusCode);
 	}
 
-	@Override
-	public void onFrameProcessed(String frameName)
-	{
-		while (frameName.charAt(0) == File.separatorChar) {
-			frameName = frameName.substring(1);
-		}
-		lastFrameProcessedUpdater.update(frameName);
-	}
-
-	@Override
-	public void onFrameSaved(final File savedFrame)
-	{
-		lastFrameSavedUpdated.update(savedFrame.getName());
-	}
-
 	@SuppressWarnings("unused")
 	private void onMount()
 	{
@@ -319,12 +289,13 @@ public class SrcDemoUI extends QWidget implements SrcDemoListener
 		audioUi.logParams();
 		fsLock.lock();
 		mountedFS = new SrcDemoFS(getBackingDirectory().getAbsolutePath(), videoUi.getFactory(), audioUi.getFactory());
-		mountedFS.addListener(this);
+		mountedFS.addListener(renderTab);
 		mountedFS.setLogging(dokanLoggingMode);
 		mountedFS.setHideFiles(srcDemoHideFiles);
 		mountedFS.mount(getMountpoint().getAbsolutePath());
 		fsLock.unlock();
 		updateStatus();
+		selectTab(renderTab);
 	}
 
 	void selectTab(final QWidget tab)
@@ -338,7 +309,7 @@ public class SrcDemoUI extends QWidget implements SrcDemoListener
 		if (mountedFS != null) {
 			SrcLogger.log("Unmounting.");
 			mountedFS.unmount();
-			mountedFS.removeListener(this);
+			mountedFS.removeListener(renderTab);
 			mountedFS = null;
 		}
 		fsLock.unlock();

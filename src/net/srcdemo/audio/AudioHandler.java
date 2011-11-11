@@ -11,6 +11,8 @@ public interface AudioHandler
 
 	public void destroy();
 
+	public void flush();
+
 	public long getSize();
 
 	public boolean isLocked();
