@@ -95,6 +95,7 @@ public class SrcDemoUI extends QWidget
 				@Override
 				public void run()
 				{
+					ui.flushAudioBuffer(true);
 					ui.unmount();
 				}
 			});
@@ -159,11 +160,11 @@ public class SrcDemoUI extends QWidget
 		close();
 	}
 
-	public void flushAudioBuffer()
+	void flushAudioBuffer(final boolean block)
 	{
 		fsLock.lock();
 		if (mountedFS != null) {
-			mountedFS.flushAudioBuffer();
+			mountedFS.flushAudioBuffer(block);
 		}
 		fsLock.unlock();
 	}

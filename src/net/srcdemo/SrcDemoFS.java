@@ -102,13 +102,26 @@ public class SrcDemoFS extends LoopbackFS
 		}
 	}
 
-	public void flushAudioBuffer()
+	public void flushAudioBuffer(final boolean block)
 	{
-		demoLock.lock();
-		for (final SrcDemo demo : demos.values()) {
-			demo.flushAudioBuffer();
+		final Thread t = new Thread("Audio buffer flush")
+		{
+			@Override
+			public void run()
+			{
+				demoLock.lock();
+				for (final SrcDemo demo : demos.values()) {
+					demo.flushAudioBuffer();
+				}
+				demoLock.unlock();
+			}
+		};
+		if (block) {
+			t.run();
 		}
-		demoLock.unlock();
+		else {
+			t.start();
+		}
 	}
 
 	private SrcDemo getDemo(final String fileName)

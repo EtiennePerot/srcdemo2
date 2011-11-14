@@ -210,7 +210,7 @@ public class LoopbackFS extends DokanFSStub
 		try {
 			return getFileHandle(backed, true).read(buffer, offset);
 		}
-		catch (final IOException e) {
+		catch (final Exception e) {
 			System.err.println("Error reading file: " + fileName);
 			e.printStackTrace();
 		}

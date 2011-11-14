@@ -1,23 +1,28 @@
 package net.srcdemo.ui;
 
 import java.io.File;
+import java.text.DecimalFormat;
 import java.util.Timer;
 import java.util.TimerTask;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import net.srcdemo.SrcDemoListener;
 
 import com.trolltech.qt.core.QCoreApplication;
 import com.trolltech.qt.core.Qt.AlignmentFlag;
 import com.trolltech.qt.core.Qt.Orientation;
+import com.trolltech.qt.gui.QGroupBox;
 import com.trolltech.qt.gui.QHBoxLayout;
 import com.trolltech.qt.gui.QLabel;
 import com.trolltech.qt.gui.QProgressBar;
 import com.trolltech.qt.gui.QPushButton;
+import com.trolltech.qt.gui.QSizePolicy.Policy;
 import com.trolltech.qt.gui.QVBoxLayout;
 import com.trolltech.qt.gui.QWidget;
 
 class RenderingTab extends QWidget implements SrcDemoListener
 {
+	private static final DecimalFormat framesProcessedPerSecondFormat = new DecimalFormat("#.##");
 	/**
 	 * Time between UI updates, in milliseconds
 	 */
@@ -37,19 +42,22 @@ class RenderingTab extends QWidget implements SrcDemoListener
 	};
 	private QPushButton btnFlushAudioBuffer;
 	private boolean flushButtonEnabled = false;
-	private String lastFrameProcessed = "";
-	private String lastFrameSaved = "";
+	private final AtomicInteger framesProcessed = new AtomicInteger(0);
+	private final RollingRate framesProcessRate = new RollingRate();
+	private final AtomicInteger framesSaved = new AtomicInteger(0);
 	private QLabel lblAudioBuffer1;
 	private QLabel lblAudioBuffer2;
+	private QLabel lblFramesProcessedPerSecond;
 	private QLabel lblLastFrameProcessed;
 	private QLabel lblLastFrameSaved;
 	private final SrcDemoUI parent;
+	private UpdatablePicture previewPicture;
 
 	RenderingTab(final SrcDemoUI parent)
 	{
 		this.parent = parent;
 		initUI();
-		final Runnable doUpdate = new Runnable()
+		final Runnable updateUi = new Runnable()
 		{
 			@Override
 			public void run()
@@ -62,46 +70,69 @@ class RenderingTab extends QWidget implements SrcDemoListener
 			@Override
 			public void run()
 			{
-				QCoreApplication.invokeLater(doUpdate);
+				QCoreApplication.invokeLater(updateUi);
 			}
 		}, 0, uiUpdateInterval);
 	}
 
 	private void initUI()
 	{
-		final QVBoxLayout vbox = new QVBoxLayout();
+		final QHBoxLayout mainHbox = new QHBoxLayout();
 		{
-			final QHBoxLayout hbox = new QHBoxLayout();
-			hbox.addWidget(new QLabel(Strings.lblLastFrameProcessed));
-			lblLastFrameProcessed = new QLabel(Strings.lblLastFrameProcessedDefault);
-			lblLastFrameProcessed.setAlignment(AlignmentFlag.AlignRight);
-			hbox.addWidget(lblLastFrameProcessed);
-			vbox.addLayout(hbox);
+			final QGroupBox videoBox = new QGroupBox(Strings.grpRenderingVideoFrames);
+			final QVBoxLayout videoVbox = new QVBoxLayout();
+			{
+				final QHBoxLayout hbox = new QHBoxLayout();
+				hbox.addWidget(new QLabel(Strings.lblLastFrameProcessed));
+				lblLastFrameProcessed = new QLabel(Strings.lblLastFrameProcessedDefault);
+				lblLastFrameProcessed.setAlignment(AlignmentFlag.AlignRight);
+				hbox.addWidget(lblLastFrameProcessed);
+				videoVbox.addLayout(hbox, 0);
+			}
+			{
+				final QHBoxLayout hbox = new QHBoxLayout();
+				hbox.addWidget(new QLabel(Strings.lblFramesProcessedPerSecond));
+				lblFramesProcessedPerSecond = new QLabel(Strings.lblFramesProcessedPerSecondDefault);
+				lblFramesProcessedPerSecond.setAlignment(AlignmentFlag.AlignRight);
+				hbox.addWidget(lblFramesProcessedPerSecond);
+				videoVbox.addLayout(hbox, 0);
+			}
+			{
+				final QHBoxLayout hbox = new QHBoxLayout();
+				hbox.addWidget(new QLabel(Strings.lblLastFrameSaved));
+				lblLastFrameSaved = new QLabel(Strings.lblLastFrameSavedDefault);
+				lblLastFrameSaved.setAlignment(AlignmentFlag.AlignRight);
+				hbox.addWidget(lblLastFrameSaved);
+				videoVbox.addLayout(hbox, 0);
+			}
+			{
+				previewPicture = new UpdatablePicture(Files.iconRenderingDefault);
+				videoVbox.addWidget(previewPicture, 1);
+			}
+			videoBox.setLayout(videoVbox);
+			mainHbox.addWidget(videoBox, 1);
 		}
 		{
-			final QHBoxLayout hbox = new QHBoxLayout();
-			hbox.addWidget(new QLabel(Strings.lblLastFrameSaved));
-			lblLastFrameSaved = new QLabel(Strings.lblLastFrameSavedDefault);
-			lblLastFrameSaved.setAlignment(AlignmentFlag.AlignRight);
-			hbox.addWidget(lblLastFrameSaved);
-			vbox.addLayout(hbox);
-		}
-		{
+			final QGroupBox audioBox = new QGroupBox(Strings.grpRenderingAudioBuffer);
 			final QVBoxLayout audioVbox = new QVBoxLayout();
-			audioBuffer = new QProgressBar();
-			audioBuffer.setOrientation(Orientation.Vertical);
-			audioVbox.addWidget(audioBuffer, 1, AlignmentFlag.AlignCenter);
-			lblAudioBuffer1 = new QLabel();
-			audioVbox.addWidget(lblAudioBuffer1, 0, AlignmentFlag.AlignCenter);
-			lblAudioBuffer2 = new QLabel();
-			audioVbox.addWidget(lblAudioBuffer2, 0, AlignmentFlag.AlignCenter);
-			btnFlushAudioBuffer = new QPushButton(Strings.btnRenderAudioBufferFlush);
-			btnFlushAudioBuffer.clicked.connect(this, "onFlushAudioBuffer()");
-			btnFlushAudioBuffer.setEnabled(flushButtonEnabled);
-			audioVbox.addWidget(btnFlushAudioBuffer, 0, AlignmentFlag.AlignCenter);
-			vbox.addLayout(audioVbox);
+			{
+				audioBuffer = new QProgressBar();
+				audioBuffer.setOrientation(Orientation.Vertical);
+				audioBuffer.setSizePolicy(Policy.Expanding, Policy.Expanding);
+				audioVbox.addWidget(audioBuffer, 1, AlignmentFlag.AlignHCenter);
+				lblAudioBuffer1 = new QLabel();
+				audioVbox.addWidget(lblAudioBuffer1, 0, AlignmentFlag.AlignCenter);
+				lblAudioBuffer2 = new QLabel();
+				audioVbox.addWidget(lblAudioBuffer2, 0, AlignmentFlag.AlignCenter);
+				btnFlushAudioBuffer = new QPushButton(Strings.btnRenderAudioBufferFlush);
+				btnFlushAudioBuffer.clicked.connect(this, "onFlushAudioBuffer()");
+				btnFlushAudioBuffer.setEnabled(flushButtonEnabled);
+				audioVbox.addWidget(btnFlushAudioBuffer, 0, AlignmentFlag.AlignCenter);
+			}
+			audioBox.setLayout(audioVbox);
+			mainHbox.addWidget(audioBox, 0);
 		}
-		setLayout(vbox);
+		setLayout(mainHbox);
 	}
 
 	@Override
@@ -125,28 +156,31 @@ class RenderingTab extends QWidget implements SrcDemoListener
 		flushButtonEnabled = false;
 		btnFlushAudioBuffer.setEnabled(false);
 		btnFlushAudioBuffer.setText(Strings.btnRenderAudioBufferFlushing);
-		parent.flushAudioBuffer();
+		parent.flushAudioBuffer(false);
 	}
 
 	@Override
-	public void onFrameProcessed(String frameName)
+	public void onFrameProcessed(final String frameName)
 	{
-		while (frameName.charAt(0) == File.separatorChar) {
-			frameName = frameName.substring(1);
-		}
-		lastFrameProcessed = frameName;
+		framesProcessed.incrementAndGet();
+		framesProcessRate.mark();
 	}
 
 	@Override
 	public void onFrameSaved(final File savedFrame)
 	{
-		lastFrameSaved = savedFrame.getName();
+		framesSaved.incrementAndGet();
+		previewPicture.push(savedFrame);
 	}
 
 	private void updateUI()
 	{
-		lblLastFrameProcessed.setText(lastFrameProcessed);
-		lblLastFrameSaved.setText(lastFrameSaved);
+		lblLastFrameProcessed.setText(Integer.toString(framesProcessed.get()));
+		final Double framerate = framesProcessRate.getRatePerSecond();
+		lblFramesProcessedPerSecond.setText(framerate == null ? Strings.lblFramesProcessedPerSecondDefault
+				: framesProcessedPerSecondFormat.format(framerate));
+		lblLastFrameSaved.setText(Integer.toString(framesSaved.get()));
+		previewPicture.updatePicture();
 		if (audioBufferTotal == -1) {
 			audioBuffer.setValue(0);
 		}

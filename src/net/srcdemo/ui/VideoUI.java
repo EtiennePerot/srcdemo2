@@ -36,6 +36,21 @@ class VideoUI extends QWidget
 			EnumUtils.registerOrder(VideoType.class, order);
 		}
 
+		private String getDescription()
+		{
+			switch (this) {
+				case PNG:
+					return Strings.videoOptPngExplanation;
+				case TGA:
+					return Strings.videoOptTgaExplanation;
+				case JPEG:
+					return Strings.videoOptJpgExplanation;
+				case DISABLED:
+					return Strings.videoOptDisabledExplanation;
+			}
+			return null;
+		}
+
 		@Override
 		public String toString()
 		{
@@ -54,11 +69,10 @@ class VideoUI extends QWidget
 	}
 
 	private QSpinBox blendRate;
-	private QLabel disabledLabel;
-	private QVBoxLayout disabledOptionsBox;
+	private final Set<QWidget> disablableVideoOptions = new HashSet<QWidget>();
 	private QLabel effectiveRecordingFps;
 	private QLabel effectiveRecordingFpsCommand;
-	private final Set<QWidget> globalVideoOptions = new HashSet<QWidget>();
+	private QLabel formatExplanation;
 	private QVBoxLayout globalVideoOptionsVbox;
 	private QSlider jpegCompressionLevel;
 	private QLabel jpegCompressionLevelLabel;
@@ -81,6 +95,12 @@ class VideoUI extends QWidget
 		updateEffectiveRecordingFps();
 	}
 
+	private QWidget disablableVideoWidget(final QWidget widget)
+	{
+		disablableVideoOptions.add(widget);
+		return widget;
+	}
+
 	void enable(final boolean enable)
 	{
 		updateVideoType();
@@ -90,7 +110,7 @@ class VideoUI extends QWidget
 		jpegCompressionLevel.setEnabled(enable);
 		tgaCompressionRLESpacer.setEnabled(enable);
 		tgaCompressionRLE.setEnabled(enable);
-		for (final QWidget widget : globalVideoOptions) {
+		for (final QWidget widget : disablableVideoOptions) {
 			widget.setEnabled(enable);
 		}
 	}
@@ -169,14 +189,21 @@ class VideoUI extends QWidget
 		mainVbox = new QVBoxLayout();
 		{
 			videoTypeVbox = new QVBoxLayout();
-			final QHBoxLayout hbox = new QHBoxLayout();
-			videoTypeLabel = new QLabel(Strings.lblVideoType);
-			hbox.addWidget(videoTypeLabel);
-			videoType = new EnumComboBox<VideoType>(VideoType.class);
-			videoType.setCurrentItem(getSettings().getLastVideoType());
-			videoType.currentIndexChanged.connect(this, "updateVideoType()");
-			hbox.addWidget(videoType);
-			videoTypeVbox.addLayout(hbox);
+			{
+				final QHBoxLayout hbox = new QHBoxLayout();
+				videoTypeLabel = new QLabel(Strings.lblVideoType);
+				hbox.addWidget(videoTypeLabel);
+				videoType = new EnumComboBox<VideoType>(VideoType.class);
+				videoType.setCurrentItem(getSettings().getLastVideoType());
+				videoType.currentIndexChanged.connect(this, "updateVideoType()");
+				hbox.addWidget(videoType);
+				videoTypeVbox.addLayout(hbox);
+			}
+			{
+				formatExplanation = new QLabel();
+				formatExplanation.setWordWrap(true);
+				videoTypeVbox.addWidget(disablableVideoWidget(formatExplanation));
+			}
 			{
 				// JPEG settings
 				jpegOptionsBox = new QHBoxLayout();
@@ -205,59 +232,52 @@ class VideoUI extends QWidget
 				tgaCompressionRLE.stateChanged.connect(this, "saveVideoSettings()");
 				tgaOptionsBox.addWidget(tgaCompressionRLE);
 			}
-			{
-				// Disabled settings
-				disabledOptionsBox = new QVBoxLayout();
-				disabledLabel = new QLabel(Strings.lblVideoDisabled);
-				disabledLabel.setWordWrap(true);
-				disabledOptionsBox.addWidget(disabledLabel);
-			}
 			mainVbox.addLayout(videoTypeVbox);
 		}
 		{
 			globalVideoOptionsVbox = new QVBoxLayout();
 			{
 				final QHBoxLayout hbox = new QHBoxLayout();
-				hbox.addWidget(registerGlobalVideoWidget(new QLabel(Strings.lblTargetFps)));
+				hbox.addWidget(disablableVideoWidget(new QLabel(Strings.lblTargetFps)));
 				targetFps = new QSpinBox();
 				targetFps.setRange(1, 600);
 				targetFps.setValue(getSettings().getLastTargetFps());
 				targetFps.valueChanged.connect(this, "updateEffectiveRecordingFps()");
-				globalVideoOptions.add(targetFps);
-				hbox.addWidget(registerGlobalVideoWidget(targetFps));
+				disablableVideoOptions.add(targetFps);
+				hbox.addWidget(disablableVideoWidget(targetFps));
 				globalVideoOptionsVbox.addLayout(hbox);
 			}
 			{
 				final QHBoxLayout hbox = new QHBoxLayout();
-				hbox.addWidget(registerGlobalVideoWidget(new QLabel(Strings.lblBlendRate)));
+				hbox.addWidget(disablableVideoWidget(new QLabel(Strings.lblBlendRate)));
 				blendRate = new QSpinBox();
 				blendRate.setRange(1, 1000);
 				blendRate.setValue(getSettings().getLastBlendRate());
 				blendRate.valueChanged.connect(this, "updateEffectiveRecordingFps()");
-				hbox.addWidget(registerGlobalVideoWidget(blendRate));
+				hbox.addWidget(disablableVideoWidget(blendRate));
 				globalVideoOptionsVbox.addLayout(hbox);
 			}
 			{
 				final QHBoxLayout hbox = new QHBoxLayout();
 				final QLabel shutterAngleUI = new QLabel(Strings.lblShutterAngle);
 				shutterAngleUI.setOpenExternalLinks(true);
-				hbox.addWidget(registerGlobalVideoWidget(shutterAngleUI));
+				hbox.addWidget(disablableVideoWidget(shutterAngleUI));
 				shutterAngle = new QSpinBox();
 				shutterAngle.setRange(1, 360);
 				shutterAngle.setValue(getSettings().getLastShutterAngle());
 				shutterAngle.valueChanged.connect(this, "updateEffectiveRecordingFps()");
-				hbox.addWidget(registerGlobalVideoWidget(shutterAngle));
+				hbox.addWidget(disablableVideoWidget(shutterAngle));
 				globalVideoOptionsVbox.addLayout(hbox);
 			}
 			{
 				final QHBoxLayout hbox = new QHBoxLayout();
-				hbox.addWidget(registerGlobalVideoWidget(new QLabel(Strings.lblEffectiveFps)));
+				hbox.addWidget(disablableVideoWidget(new QLabel(Strings.lblEffectiveFps)));
 				effectiveRecordingFps = new QLabel();
-				hbox.addWidget(registerGlobalVideoWidget(effectiveRecordingFps));
+				hbox.addWidget(disablableVideoWidget(effectiveRecordingFps));
 				globalVideoOptionsVbox.addLayout(hbox);
-				globalVideoOptionsVbox.addWidget(registerGlobalVideoWidget(new QLabel(Strings.lblMakeSureFramerate)));
+				globalVideoOptionsVbox.addWidget(disablableVideoWidget(new QLabel(Strings.lblMakeSureFramerate)));
 				effectiveRecordingFpsCommand = new QLabel();
-				globalVideoOptionsVbox.addWidget(registerGlobalVideoWidget(effectiveRecordingFpsCommand));
+				globalVideoOptionsVbox.addWidget(disablableVideoWidget(effectiveRecordingFpsCommand));
 			}
 		}
 		setLayout(mainVbox);
@@ -281,12 +301,6 @@ class VideoUI extends QWidget
 			SrcLogger.log("Shutter angle: " + shutterAngle.value());
 		}
 		SrcLogger.log("~ End of video parameters block ~");
-	}
-
-	private QWidget registerGlobalVideoWidget(final QWidget widget)
-	{
-		globalVideoOptions.add(widget);
-		return widget;
 	}
 
 	private void saveVideoSettings()
@@ -320,29 +334,22 @@ class VideoUI extends QWidget
 	private void updateVideoType()
 	{
 		final VideoType current = videoType.getCurrentItem();
+		formatExplanation.setText(current.getDescription());
 		{
 			// Disabled
 			final boolean disabled = current.equals(VideoType.DISABLED);
 			if (disabled) {
-				if (disabledOptionsBox.parent() == null) {
-					videoTypeVbox.addLayout(disabledOptionsBox);
-				}
 				if (globalVideoOptionsVbox.parent() != null) {
 					mainVbox.removeItem(globalVideoOptionsVbox);
 					globalVideoOptionsVbox.setParent(null);
 				}
 			}
 			else {
-				if (disabledOptionsBox.parent() != null) {
-					videoTypeVbox.removeItem(disabledOptionsBox);
-					disabledOptionsBox.setParent(null);
-				}
 				if (globalVideoOptionsVbox.parent() == null) {
 					mainVbox.addLayout(globalVideoOptionsVbox);
 				}
 			}
-			disabledLabel.setVisible(disabled);
-			for (final QWidget widget : globalVideoOptions) {
+			for (final QWidget widget : disablableVideoOptions) {
 				widget.setVisible(!disabled);
 			}
 		}

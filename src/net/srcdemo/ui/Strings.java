@@ -35,6 +35,8 @@ interface Strings
 	final String errUpdateContact = "Error while attempting to grab update information.";
 	final String errUpdateInvalidVersion = "Cannot check for updates: This build's version is unknown.";
 	final String errUpdateReading = "Error while reading update information.";
+	final String grpRenderingAudioBuffer = "Audio buffer";
+	final String grpRenderingVideoFrames = "Video frames";
 	final String lblAboutIcon = "SrcDemo²";
 	final String lblAudioBufferSize = "Buffer size:";
 	final String lblAudioBufferTimeout = "Buffer timeout:";
@@ -43,6 +45,9 @@ interface Strings
 	final String lblBuildDate = "Build date:";
 	final String lblDefaultDownloadLink = "http://code.google.com/p/srcdemo2/downloads/list";
 	final String lblEffectiveFps = "Effective recording FPS: ";
+	final String lblFramesPerSecond = "Frames processed per second:";
+	final String lblFramesProcessedPerSecond = "Frames per second:";
+	final String lblFramesProcessedPerSecondDefault = "...";
 	final String lblInvalidSettings = "Invalid settings: ";
 	final String lblJpegQuality = "JPEG quality";
 	final String lblLastFrameProcessed = "Last frame processed: ";
@@ -63,7 +68,6 @@ interface Strings
 	final String lblUpdateIsUpToDate = "SrcDemo² is up to date.";
 	final String lblUpdateNewVersion = "New version available: ";
 	final String lblUpdateNewVersionNoLink = " (Specific download link not found)";
-	final String lblVideoDisabled = "When video is disabled, the video framerate doesn't matter.\nHowever, it is recommended to record at\nmore than 60 frames to avoid a bug in Source Recorder\ncausing some sounds to not be played at all when playing\na demo at a low framerate compared to the game's tickrate.";
 	final String lblVideoType = "Video output:";
 	final String spnAudioBufferSize = " kilobytes";
 	final String spnAudioBufferTimeout = " seconds";
@@ -86,8 +90,12 @@ interface Strings
 	final String urlHomepage = "http://srcdemo2.googlecode.com/";
 	final String urlUpdateFeed = "http://code.google.com/feeds/p/srcdemo2/downloads/basic";
 	final String videoOptDisabled = "Disabled (Audio only)";
-	final String videoOptJpg = "JPG";
+	final String videoOptDisabledExplanation = "When video is disabled, the video framerate doesn't matter.\nHowever, it is recommended to record at\nmore than 66 frames to avoid a bug in Source Recorder\ncausing some sounds to not be played at all when playing\na demo at a low framerate compared to the game's tickrate.";
+	final String videoOptJpg = "JPEG";
+	final String videoOptJpgExplanation = "JPEG is a lossy, compressed image format.\nGood if running low on disk space.";
 	final String videoOptPng = "PNG";
+	final String videoOptPngExplanation = "PNG is a lossless, compressed image format.\nGood for losslessness while keeping the disk usage minimal.";
 	final String videoOptTga = "TGA";
+	final String videoOptTgaExplanation = "TGA is a lossless, uncompressed image format.\nGood if your disk is very fast but your CPU isn't.";
 	final String windowTitle = "SrcDemo²";
 }
