@@ -115,6 +115,11 @@ class VideoUI extends QWidget
 		}
 	}
 
+	int getEffectiveRecordingFps()
+	{
+		return blendRate.value() * targetFps.value();
+	}
+
 	VideoHandlerFactory getFactory()
 	{
 		final int blend = blendRate.value();
@@ -202,7 +207,7 @@ class VideoUI extends QWidget
 			{
 				formatExplanation = new QLabel();
 				formatExplanation.setWordWrap(true);
-				videoTypeVbox.addWidget(disablableVideoWidget(formatExplanation));
+				videoTypeVbox.addWidget(formatExplanation);
 			}
 			{
 				// JPEG settings
@@ -315,7 +320,7 @@ class VideoUI extends QWidget
 
 	private void updateEffectiveRecordingFps()
 	{
-		final int effectiveFps = blendRate.value() * targetFps.value();
+		final int effectiveFps = getEffectiveRecordingFps();
 		effectiveRecordingFps.setText("" + effectiveFps);
 		effectiveRecordingFpsCommand.setText(Strings.cmdHostFramerate + effectiveFps);
 		targetFps.setSuffix(targetFps.value() == 1 ? Strings.spnTargetFpsSingular : Strings.spnTargetFpsPlural);

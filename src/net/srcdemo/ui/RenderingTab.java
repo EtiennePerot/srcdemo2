@@ -2,6 +2,8 @@ package net.srcdemo.ui;
 
 import java.io.File;
 import java.text.DecimalFormat;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -40,6 +42,7 @@ class RenderingTab extends QWidget implements SrcDemoListener
 			btnFlushAudioBuffer.setText(Strings.btnRenderAudioBufferFlushing);
 		}
 	};
+	private final Set<QWidget> audioWidgets = new HashSet<QWidget>();
 	private QPushButton btnFlushAudioBuffer;
 	private boolean flushButtonEnabled = false;
 	private final AtomicInteger framesProcessed = new AtomicInteger(0);
@@ -73,6 +76,12 @@ class RenderingTab extends QWidget implements SrcDemoListener
 				QCoreApplication.invokeLater(updateUi);
 			}
 		}, 0, uiUpdateInterval);
+	}
+
+	private QWidget audioWidget(final QWidget widget)
+	{
+		audioWidgets.add(widget);
+		return widget;
 	}
 
 	private void initUI()
@@ -119,18 +128,18 @@ class RenderingTab extends QWidget implements SrcDemoListener
 				audioBuffer = new QProgressBar();
 				audioBuffer.setOrientation(Orientation.Vertical);
 				audioBuffer.setSizePolicy(Policy.Expanding, Policy.Expanding);
-				audioVbox.addWidget(audioBuffer, 1, AlignmentFlag.AlignHCenter);
+				audioVbox.addWidget(audioWidget(audioBuffer), 1, AlignmentFlag.AlignHCenter);
 				lblAudioBuffer1 = new QLabel();
-				audioVbox.addWidget(lblAudioBuffer1, 0, AlignmentFlag.AlignCenter);
+				audioVbox.addWidget(audioWidget(lblAudioBuffer1), 0, AlignmentFlag.AlignCenter);
 				lblAudioBuffer2 = new QLabel();
-				audioVbox.addWidget(lblAudioBuffer2, 0, AlignmentFlag.AlignCenter);
+				audioVbox.addWidget(audioWidget(lblAudioBuffer2), 0, AlignmentFlag.AlignCenter);
 				btnFlushAudioBuffer = new QPushButton(Strings.btnRenderAudioBufferFlush);
 				btnFlushAudioBuffer.clicked.connect(this, "onFlushAudioBuffer()");
 				btnFlushAudioBuffer.setEnabled(flushButtonEnabled);
-				audioVbox.addWidget(btnFlushAudioBuffer, 0, AlignmentFlag.AlignCenter);
+				audioVbox.addWidget(audioWidget(btnFlushAudioBuffer), 0, AlignmentFlag.AlignCenter);
 			}
 			audioBox.setLayout(audioVbox);
-			mainHbox.addWidget(audioBox, 0);
+			mainHbox.addWidget(audioWidget(audioBox), 0);
 		}
 		setLayout(mainHbox);
 	}
@@ -181,17 +190,24 @@ class RenderingTab extends QWidget implements SrcDemoListener
 				: framesProcessedPerSecondFormat.format(framerate));
 		lblLastFrameSaved.setText(Integer.toString(framesSaved.get()));
 		previewPicture.updatePicture();
-		if (audioBufferTotal == -1) {
-			audioBuffer.setValue(0);
+		if (parent.isAudioBufferInUse()) {
+			if (audioBufferTotal == -1) {
+				audioBuffer.setValue(0);
+			}
+			else {
+				audioBuffer.setMaximum(audioBufferTotal);
+				audioBuffer.setValue(audioBufferOccupied);
+				lblAudioBuffer1.setText((audioBufferOccupied / 1024) + Strings.lblRenderAudioBuffer1
+						+ (audioBufferOccupied * 100 / audioBufferTotal) + Strings.lblRenderAudioBuffer2);
+				lblAudioBuffer2.setText("(" + (audioBufferTotal / 1024) + Strings.lblRenderAudioBuffer3);
+				btnFlushAudioBuffer.setText(Strings.btnRenderAudioBufferFlush);
+			}
+			btnFlushAudioBuffer.setEnabled(flushButtonEnabled && audioBufferOccupied > 0);
 		}
 		else {
-			audioBuffer.setMaximum(audioBufferTotal);
-			audioBuffer.setValue(audioBufferOccupied);
-			lblAudioBuffer1.setText((audioBufferOccupied / 1024) + Strings.lblRenderAudioBuffer1
-					+ (audioBufferOccupied * 100 / audioBufferTotal) + Strings.lblRenderAudioBuffer2);
-			lblAudioBuffer2.setText("(" + (audioBufferTotal / 1024) + Strings.lblRenderAudioBuffer3);
-			btnFlushAudioBuffer.setText(Strings.btnRenderAudioBufferFlush);
+			for (final QWidget w : audioWidgets) {
+				w.setEnabled(false);
+			}
 		}
-		btnFlushAudioBuffer.setEnabled(flushButtonEnabled && audioBufferOccupied > 0);
 	}
 }

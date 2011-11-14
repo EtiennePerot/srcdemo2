@@ -2,6 +2,8 @@ package net.srcdemo.ui;
 
 import java.io.File;
 import java.lang.reflect.Field;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.concurrent.locks.ReentrantLock;
 
 import net.srcdemo.SrcDemoFS;
@@ -107,12 +109,13 @@ public class SrcDemoUI extends QWidget
 		System.exit(returnCode);
 	}
 
-	private QTabWidget allParams;
+	private QTabWidget allTabs;
 	private AudioUI audioUi;
 	private QLineEdit backingDirectory;
 	private QPushButton backingDirectoryBrowse;
 	private QPushButton btnExit;
 	private QPushButton btnMount;
+	private final Set<QWidget> disablableWidgets = new HashSet<QWidget>();
 	private final ReentrantLock fsLock = new ReentrantLock();
 	private QLabel lblStatus;
 	private SrcDemoFS mountedFS = null;
@@ -153,6 +156,12 @@ public class SrcDemoUI extends QWidget
 		return null;
 	}
 
+	private QWidget disablableWidget(final QWidget widget)
+	{
+		disablableWidgets.add(widget);
+		return widget;
+	}
+
 	void exit(final int returnCode)
 	{
 		SrcDemoUI.returnCode = returnCode;
@@ -188,50 +197,47 @@ public class SrcDemoUI extends QWidget
 	{
 		final QVBoxLayout vbox = new QVBoxLayout();
 		{
-			final QLabel label = new QLabel(Strings.step1);
-			vbox.addWidget(label);
+			vbox.addWidget(disablableWidget(new QLabel(Strings.step1)));
 			final QHBoxLayout hbox = new QHBoxLayout();
 			mountpoint = new QLineEdit(settings.getLastMountpoint());
 			mountpoint.textChanged.connect(this, "updateStatus()");
-			hbox.addWidget(mountpoint);
+			hbox.addWidget(disablableWidget(mountpoint));
 			mountpointBrowse = new QPushButton(Strings.btnBrowse);
 			mountpointBrowse.clicked.connect(this, "onBrowseMountpoint()");
-			hbox.addWidget(mountpointBrowse);
+			hbox.addWidget(disablableWidget(mountpointBrowse));
 			vbox.addLayout(hbox);
 		}
 		{
-			final QLabel label = new QLabel(Strings.step2);
-			vbox.addWidget(label);
+			vbox.addWidget(disablableWidget(new QLabel(Strings.step2)));
 			final QHBoxLayout hbox = new QHBoxLayout();
 			backingDirectory = new QLineEdit(settings.getLastBackingDirectory());
 			backingDirectory.textChanged.connect(this, "updateStatus()");
-			hbox.addWidget(backingDirectory);
+			hbox.addWidget(disablableWidget(backingDirectory));
 			backingDirectoryBrowse = new QPushButton(Strings.btnBrowse);
 			backingDirectoryBrowse.clicked.connect(this, "onBrowseBackingDirectory()");
-			hbox.addWidget(backingDirectoryBrowse);
+			hbox.addWidget(disablableWidget(backingDirectoryBrowse));
 			vbox.addLayout(hbox);
 		}
 		{
-			final QLabel label = new QLabel(Strings.step3);
-			vbox.addWidget(label);
-			allParams = new QTabWidget();
+			vbox.addWidget(disablableWidget(new QLabel(Strings.step3)));
+			allTabs = new QTabWidget();
 			{
 				videoUi = new VideoUI(this);
-				allParams.addTab(videoUi, Strings.tabVideo);
+				allTabs.addTab(videoUi, Strings.tabVideo);
 			}
 			{
 				audioUi = new AudioUI(this);
-				allParams.addTab(audioUi, Strings.tabAudio);
+				allTabs.addTab(audioUi, Strings.tabAudio);
 			}
 			{
 				renderTab = new RenderingTab(this);
-				allParams.addTab(renderTab, Strings.tabRender);
+				allTabs.addTab(renderTab, Strings.tabRender);
 			}
 			{
 				final AboutTab aboutTab = new AboutTab(this);
-				allParams.addTab(aboutTab, Strings.tabAbout);
+				allTabs.addTab(aboutTab, Strings.tabAbout);
 			}
-			vbox.addWidget(allParams);
+			vbox.addWidget(allTabs);
 		}
 		{
 			lblStatus = new QLabel();
@@ -247,6 +253,11 @@ public class SrcDemoUI extends QWidget
 		}
 		updateStatus();
 		setLayout(vbox);
+	}
+
+	boolean isAudioBufferInUse()
+	{
+		return audioUi.isBufferInUse();
 	}
 
 	@SuppressWarnings("unused")
@@ -301,7 +312,7 @@ public class SrcDemoUI extends QWidget
 
 	void selectTab(final QWidget tab)
 	{
-		allParams.setCurrentWidget(tab);
+		allTabs.setCurrentWidget(tab);
 	}
 
 	private void unmount()
@@ -318,14 +329,13 @@ public class SrcDemoUI extends QWidget
 
 	private void updateStatus()
 	{
-		final QWidget[] fsOptions = { backingDirectory, backingDirectoryBrowse, mountpoint, mountpointBrowse };
 		final boolean isMounted = mountedFS != null;
-		for (final QWidget w : fsOptions) {
+		for (final QWidget w : disablableWidgets) {
 			w.setEnabled(!isMounted);
 		}
 		videoUi.enable(!isMounted);
 		audioUi.enable(!isMounted);
-		allParams.setTabEnabled(allParams.indexOf(renderTab), isMounted);
+		allTabs.setTabEnabled(allTabs.indexOf(renderTab), isMounted);
 		if (!isMounted) {
 			if (badSettings() == null) {
 				lblStatus.setText(Strings.lblPressWhenReady);
@@ -338,7 +348,7 @@ public class SrcDemoUI extends QWidget
 			btnExit.setEnabled(false);
 		}
 		else {
-			lblStatus.setText(Strings.lblReadyToRender);
+			lblStatus.setText(Strings.lblReadyToRender1 + videoUi.getEffectiveRecordingFps() + Strings.lblReadyToRender2);
 			btnMount.setEnabled(false);
 			btnExit.setEnabled(true);
 		}

@@ -1,5 +1,8 @@
 package net.srcdemo.ui;
 
+import java.util.HashSet;
+import java.util.Set;
+
 import net.srcdemo.EnumUtils;
 import net.srcdemo.SrcDemo;
 import net.srcdemo.SrcLogger;
@@ -44,6 +47,7 @@ class AudioUI extends QWidget
 	private EnumComboBox<AudioType> audioType;
 	private QSpinBox bufferSize;
 	private QSpinBox bufferTimeout;
+	private final Set<QWidget> disablableAudioOptions = new HashSet<QWidget>();
 	private final SrcDemoUI parent;
 
 	AudioUI(final SrcDemoUI parent)
@@ -52,9 +56,17 @@ class AudioUI extends QWidget
 		initUI();
 	}
 
+	private QWidget disablableAudioWidget(final QWidget widget)
+	{
+		disablableAudioOptions.add(widget);
+		return widget;
+	}
+
 	void enable(final boolean enable)
 	{
-		// TODO
+		for (final QWidget w : disablableAudioOptions) {
+			w.setEnabled(enable);
+		}
 	}
 
 	AudioHandlerFactory getFactory()
@@ -105,36 +117,41 @@ class AudioUI extends QWidget
 		final QVBoxLayout vbox = new QVBoxLayout();
 		{
 			final QHBoxLayout hbox = new QHBoxLayout();
-			hbox.addWidget(new QLabel(Strings.lblAudioType));
+			hbox.addWidget(disablableAudioWidget(new QLabel(Strings.lblAudioType)));
 			audioType = new EnumComboBox<AudioType>(AudioType.class);
 			audioType.setCurrentItem(getSettings().getLastAudioType());
 			audioType.currentIndexChanged.connect(this, "saveAudioSettings()");
-			hbox.addWidget(audioType);
+			hbox.addWidget(disablableAudioWidget(audioType));
 			vbox.addLayout(hbox);
 		}
 		{
 			final QHBoxLayout hbox = new QHBoxLayout();
-			hbox.addWidget(new QLabel(Strings.lblAudioBufferSize));
+			hbox.addWidget(disablableAudioWidget(new QLabel(Strings.lblAudioBufferSize)));
 			bufferSize = new QSpinBox();
 			bufferSize.setRange(4, (int) (Runtime.getRuntime().maxMemory() * maximumAudioMemoryPortion / 1024));
 			bufferSize.setSuffix(Strings.spnAudioBufferSize);
 			bufferSize.setValue(getSettings().getLastAudioBufferSize());
 			bufferSize.valueChanged.connect(this, "saveAudioSettings()");
-			hbox.addWidget(bufferSize);
+			hbox.addWidget(disablableAudioWidget(bufferSize));
 			vbox.addLayout(hbox);
 		}
 		{
 			final QHBoxLayout hbox = new QHBoxLayout();
-			hbox.addWidget(new QLabel(Strings.lblAudioBufferTimeout));
+			hbox.addWidget(disablableAudioWidget(new QLabel(Strings.lblAudioBufferTimeout)));
 			bufferTimeout = new QSpinBox();
 			bufferTimeout.setRange(3, 180);
 			bufferTimeout.setSuffix(Strings.spnAudioBufferTimeout);
 			bufferTimeout.setValue(getSettings().getLastAudioBufferTimeout());
 			bufferTimeout.valueChanged.connect(this, "saveAudioSettings()");
-			hbox.addWidget(bufferTimeout);
+			hbox.addWidget(disablableAudioWidget(bufferTimeout));
 			vbox.addLayout(hbox);
 		}
 		setLayout(vbox);
+	}
+
+	boolean isBufferInUse()
+	{
+		return audioType.getCurrentItem().equals(AudioType.BUFFERED);
 	}
 
 	void logParams()

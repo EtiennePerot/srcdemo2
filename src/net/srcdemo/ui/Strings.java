@@ -37,7 +37,7 @@ interface Strings
 	final String errUpdateReading = "Error while reading update information.";
 	final String grpRenderingAudioBuffer = "Audio buffer";
 	final String grpRenderingVideoFrames = "Video frames";
-	final String lblAboutIcon = "SrcDemo²";
+	final String lblAboutIcon = "SrcDemo² - By <a href=\"http://wiki.teamfortress.com/wiki/User:WindPower\">Etienne Perot</a>";
 	final String lblAudioBufferSize = "Buffer size:";
 	final String lblAudioBufferTimeout = "Buffer timeout:";
 	final String lblAudioType = "Audio output:";
@@ -56,7 +56,8 @@ interface Strings
 	final String lblLastFrameSavedDefault = "N/A";
 	final String lblMakeSureFramerate = "Make sure to set host_framerate before you start rendering!";
 	final String lblPressWhenReady = "Press \"Activate\" when ready.";
-	final String lblReadyToRender = "Ready to render.";
+	final String lblReadyToRender1 = "Ready to render. Source engine framerate: ";
+	final String lblReadyToRender2 = " fps.";
 	final String lblRenderAudioBuffer1 = " KB (";
 	final String lblRenderAudioBuffer2 = "%)";
 	final String lblRenderAudioBuffer3 = " KB total)";
@@ -81,7 +82,7 @@ interface Strings
 	final String step1Dialog = "Select the folder where you want the final frames to be saved.";
 	final String step2 = "2. Select the folder where you want the final frames to be saved.\n(Must be a different directory!)";
 	final String step2Dialog = "Select the folder where the game will save frames.";
-	final String step3 = "3. Set parameters";
+	final String step3 = "3. Set parameters.";
 	final String tabAbout = "About/Updates";
 	final String tabAudio = "Audio";
 	final String tabRender = "Rendering";
