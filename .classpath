@@ -16,10 +16,5 @@
 		</attributes>
 	</classpathentry>
 	<classpathentry kind="lib" path="lib/sparta.jar"/>
-	<classpathentry kind="lib" path="lib/javaFlacEncoder.jar" sourcepath="lib/javaFlacEncoder.src.zip">
-		<attributes>
-			<attribute name="javadoc_location" value="jar:platform:/resource/SrcDemo2/lib/javaFlacEncoder.javadoc.zip!/"/>
-		</attributes>
-	</classpathentry>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
