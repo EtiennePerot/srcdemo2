@@ -37,4 +37,9 @@ public class FlacEncoder implements AudioEncoder
 	{
 		encoder.encodeSamples(0, true);
 	}
+
+	public void flush() throws IOException
+	{
+		encoder.flush();
+	}
 }

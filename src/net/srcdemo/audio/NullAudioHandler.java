@@ -65,6 +65,14 @@ public class NullAudioHandler implements AudioHandler
 	}
 
 	@Override
+	public int write(final byte[] buffer, final long offset)
+	{
+		final int length = buffer.length;
+		size.addAndGet(length);
+		return length;
+	}
+
+	@Override
 	public int write(final ByteBuffer buffer, final long offset)
 	{
 		final int toWrite = buffer.remaining();

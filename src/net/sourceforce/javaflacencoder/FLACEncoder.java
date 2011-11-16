@@ -485,6 +485,17 @@ public class FLACEncoder
 	}
 
 	/**
+	 * Flushes the output stream.
+	 * 
+	 * @throws IOException
+	 *             If there is an error while flushing.
+	 */
+	public void flush() throws IOException
+	{
+		out.flush();
+	}
+
+	/**
 	 * Get number of samples which are ready to encode. More samples may exist in the encoder as a partial block. Use
 	 * samplesAvailableToEncode() if you wish to include those as well.
 	 * 

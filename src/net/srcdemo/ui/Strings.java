@@ -6,6 +6,7 @@ interface Strings
 	final String audioOptBuffered = "WAV (Buffered)";
 	final String audioOptDisabled = "Disabled (video only)";
 	final String audioOptDisk = "WAV (Straight to disk)";
+	final String audioOptFlac = "FLAC";
 	final String btnActivate = "Activate";
 	final String btnBrowse = "Browse...";
 	final String btnDeactivate = "Deactivate";

@@ -77,6 +77,12 @@ public class FLACFileOutputStream implements FLACOutputStream
 		fos.close();
 	}
 
+	@Override
+	public void flush() throws IOException
+	{
+		fos.flush();
+	}
+
 	/**
 	 * Get the current write position of this stream.
 	 * 

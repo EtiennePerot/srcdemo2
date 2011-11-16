@@ -113,6 +113,12 @@ public class DiskAudioHandler implements AudioHandler
 	}
 
 	@Override
+	public int write(final byte[] buffer, final long offset)
+	{
+		return write(ByteBuffer.wrap(buffer), offset);
+	}
+
+	@Override
 	public int write(final ByteBuffer buffer, final long offset)
 	{
 		lock.lock();

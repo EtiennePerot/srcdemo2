@@ -2,11 +2,8 @@ package net.srcdemo.audio;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.RandomAccessFile;
 import java.nio.ByteBuffer;
-import java.nio.channels.FileChannel;
 import java.util.Collection;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -21,15 +18,18 @@ public class BufferedAudioHandler implements AudioHandler, Morticianed
 	private final int bufferSize;
 	private final SrcDemo demo;
 	private final File file;
-	private FileChannel fileChannel = null;
 	private final ReentrantLock fileLock = new ReentrantLock();
 	private long fileSize = 0L;
 	private long lastWrite = -1L;
 	private final Mortician mortician;
+	private final AudioHandlerFactory subFactory;
+	private AudioHandler subHandler = null;
 
-	public BufferedAudioHandler(final SrcDemo demo, final int bufferSize, final int bufferTimeout)
+	public BufferedAudioHandler(final SrcDemo demo, final int bufferSize, final int bufferTimeout,
+			final AudioHandlerFactory subFactory)
 	{
 		this.demo = demo;
+		this.subFactory = subFactory;
 		file = demo.getSoundFile();
 		mortician = new Mortician(this, "Audio checking thread for " + demo.getPrefix(), 1000, bufferTimeout * 1000, false,
 				new Runnable()
@@ -57,15 +57,7 @@ public class BufferedAudioHandler implements AudioHandler, Morticianed
 	public void create()
 	{
 		fileLock.lock();
-		if (fileChannel == null) {
-			SrcLogger.logAudio("Audio buffer is being created.");
-			try {
-				fileChannel = new RandomAccessFile(file, "rw").getChannel();
-			}
-			catch (final FileNotFoundException e) {
-				SrcLogger.error("Could not open audio file: " + file, e);
-			}
-		}
+		subHandler = subFactory.buildHandler(demo);
 		fileLock.unlock();
 	}
 
@@ -81,16 +73,11 @@ public class BufferedAudioHandler implements AudioHandler, Morticianed
 	public void flush()
 	{
 		fileLock.lock();
-		if (fileChannel == null) {
+		if (subHandler == null) {
 			create();
 		}
-		try {
-			fileChannel.write(ByteBuffer.wrap(buffer.toByteArray()));
-			fileChannel.force(true);
-		}
-		catch (final IOException e) {
-			SrcLogger.error("Warning: Couldn't write to sound file at " + file + ".", e);
-		}
+		subHandler.write(buffer.toByteArray(), fileSize);
+		subHandler.flush();
 		lastWrite = System.currentTimeMillis();
 		buffer.reset();
 		demo.notifyAudioBufferWriteout();
@@ -140,6 +127,45 @@ public class BufferedAudioHandler implements AudioHandler, Morticianed
 	}
 
 	@Override
+	public int write(final byte[] buffer, final long offset)
+	{
+		final int toWrite = buffer.length;
+		SrcLogger.logAudio("Writing " + toWrite + " bytes to audio buffer at offset " + offset);
+		fileLock.lock();
+		lastWrite = System.currentTimeMillis();
+		if (offset < fileSize) {
+			SrcLogger.logAudio("Offset is behind current buffer position; flushing and doing raw write.");
+			flush();
+			subHandler.write(buffer, offset);
+			fileLock.unlock();
+			return toWrite;
+		}
+		if (offset != fileSize) {
+			SrcLogger.logAudio("Offset (" + offset + ") is in front of the current buffer position (" + fileSize
+					+ "); flushing.");
+			flush();
+			fileSize = offset;
+		}
+		try {
+			this.buffer.write(buffer);
+		}
+		catch (final IOException e) {
+			SrcLogger.error("Warning: Couldn't write " + toWrite + " bytes to sound buffer.", e);
+		}
+		fileSize += toWrite;
+		final int bufSize = this.buffer.size();
+		if (bufSize > bufferSize) {
+			SrcLogger.logAudio("Buffer is full; flushing.");
+			flush();
+		}
+		else {
+			demo.notifyAudioBuffer(bufSize, bufferSize);
+		}
+		fileLock.unlock();
+		return toWrite;
+	}
+
+	@Override
 	public int write(final ByteBuffer buffer, final long offset)
 	{
 		final int toWrite = buffer.remaining();
@@ -149,12 +175,7 @@ public class BufferedAudioHandler implements AudioHandler, Morticianed
 		if (offset < fileSize) {
 			SrcLogger.logAudio("Offset is behind current buffer position; flushing and doing raw write.");
 			flush();
-			try {
-				fileChannel.write(buffer, offset);
-			}
-			catch (final IOException e) {
-				SrcLogger.error("Warning: Couldn't write to sound file at " + file + ".", e);
-			}
+			subHandler.write(buffer, offset);
 			fileLock.unlock();
 			return toWrite;
 		}
@@ -189,13 +210,8 @@ public class BufferedAudioHandler implements AudioHandler, Morticianed
 	{
 		fileLock.lock();
 		flush();
-		try {
-			fileChannel.close();
-		}
-		catch (final IOException e) {
-			SrcLogger.logAudio("Warning: Couldn't close sound file at " + file + ".");
-		}
-		fileChannel = null;
+		subHandler.close();
+		subHandler = null;
 		demo.notifyAudioBufferWriteout();
 		fileLock.unlock();
 	}

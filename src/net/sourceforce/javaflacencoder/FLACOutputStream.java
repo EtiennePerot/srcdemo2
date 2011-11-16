@@ -40,6 +40,14 @@ public interface FLACOutputStream
 	public boolean canSeek();
 
 	/**
+	 * Flush output stream.
+	 * 
+	 * @throws IOException
+	 *             IOException raised upon flush error.
+	 */
+	public void flush() throws IOException;
+
+	/**
 	 * Get current write position of this stream.
 	 * 
 	 * @return current write position.
@@ -59,7 +67,7 @@ public interface FLACOutputStream
 	/**
 	 * Get the number of bytes that have been written in length. This takes into account seeking to different portions.
 	 * 
-	 * @return total writtne length of stream.
+	 * @return total written length of stream.
 	 */
 	public long size();
 

@@ -5,13 +5,15 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.locks.ReentrantLock;
 
 import net.srcdemo.SrcLogger;
+import net.srcdemo.audio.AudioHandler;
 
-public class WAVConverter
+public class WAVConverter implements AudioHandler
 {
 	private static enum ckType
 	{
@@ -38,46 +40,17 @@ public class WAVConverter
 	private byte[] ckIDByte = new byte[4];
 	private boolean decodable = true;
 	private AudioEncoder encoder = null;
+	private final AudioEncoderFactory encoderFactory;
 	private ByteArrayOutputStream headerBuffer = new ByteArrayOutputStream(defaultHeaderBufferSize);
 	private boolean headerDecoded = false;
 	private final ReentrantLock lock = new ReentrantLock();
 	private final File outputFile;
 	private int sampleRate = -1;
 
-	public WAVConverter(final File outputFile)
+	public WAVConverter(final AudioEncoderFactory encoderFactory, final File outputFile)
 	{
+		this.encoderFactory = encoderFactory;
 		this.outputFile = outputFile;
-	}
-
-	public void addData(final ByteBuffer buffer, final int offset)
-	{
-		final byte[] buf = new byte[buffer.remaining()];
-		buffer.get(buf);
-		lock.lock();
-		if (!decodable) {
-			lock.unlock();
-			return;
-		}
-		if (headerBuffer != null) {
-			try {
-				headerBuffer.write(buf);
-			}
-			catch (final IOException e) {
-				SrcLogger.error("Warning: Couldn't write " + buf.length + " bytes to WAV header buffer.", e);
-			}
-			if (headerBuffer.size() > minimumHeaderLength) {
-				decodeHeader();
-			}
-		}
-		else if (encoder != null) {
-			try {
-				addSamples(buf);
-			}
-			catch (final IOException e) {
-				SrcLogger.error("Warning: Couldn't write samples bytes to audio encoder of file " + outputFile, e);
-			}
-		}
-		lock.unlock();
 	}
 
 	private void addSamples(final byte[] bytes) throws IOException
@@ -121,16 +94,16 @@ public class WAVConverter
 		}
 	}
 
+	@Override
 	public void close()
 	{
-		if (encoder != null) {
-			try {
-				encoder.close();
-			}
-			catch (final IOException e) {
-				SrcLogger.error("Error while closing audio encoder of file " + outputFile, e);
-			}
-		}
+		// Ignore the call; this is called way to frequently while we need to call it only once.
+	}
+
+	@Override
+	public void create()
+	{
+		// Nothing
 	}
 
 	private void decodeHeader()
@@ -170,7 +143,7 @@ public class WAVConverter
 					}
 					else {
 						try {
-							encoder = new FlacEncoder(channels, blockSize, sampleRate, bitsPerSample, outputFile);
+							encoder = encoderFactory.buildEncoder(channels, blockSize, sampleRate, bitsPerSample, outputFile);
 							if (header.hasRemaining()) {
 								final byte[] remaining = new byte[header.remaining()];
 								header.get(remaining);
@@ -187,5 +160,91 @@ public class WAVConverter
 					break;
 			}
 		}
+	}
+
+	@Override
+	public void destroy()
+	{
+		lock.lock();
+		if (encoder != null) {
+			try {
+				encoder.close();
+			}
+			catch (final IOException e) {
+				SrcLogger.error("Error while closing audio encoder of file " + outputFile, e);
+			}
+		}
+		lock.unlock();
+	}
+
+	@Override
+	public void flush()
+	{
+		// Ignore the call
+	}
+
+	@Override
+	public long getSize()
+	{
+		// Impossible to determine precisely
+		return 0;
+	}
+
+	@Override
+	public boolean isLocked()
+	{
+		return lock.isLocked();
+	}
+
+	@Override
+	public void modifyFindResults(final String pathName, final Collection<String> existingFiles)
+	{
+		// No need to cheat on anything, the file exists for real.
+	}
+
+	@Override
+	public void truncate(final long length)
+	{
+		// Irrelevant
+	}
+
+	@Override
+	public int write(final byte[] buffer, final long offset)
+	{
+		final int length = buffer.length;
+		lock.lock();
+		if (!decodable) {
+			lock.unlock();
+			return length;
+		}
+		if (headerBuffer != null) {
+			try {
+				headerBuffer.write(buffer);
+			}
+			catch (final IOException e) {
+				SrcLogger.error("Warning: Couldn't write " + length + " bytes to WAV header buffer.", e);
+			}
+			if (headerBuffer.size() > minimumHeaderLength) {
+				decodeHeader();
+			}
+		}
+		else if (encoder != null) {
+			try {
+				addSamples(buffer);
+			}
+			catch (final IOException e) {
+				SrcLogger.error("Warning: Couldn't write samples bytes to audio encoder of file " + outputFile, e);
+			}
+		}
+		lock.unlock();
+		return length;
+	}
+
+	@Override
+	public int write(final ByteBuffer buffer, final long offset)
+	{
+		final byte[] buf = new byte[buffer.remaining()];
+		buffer.get(buf);
+		return write(buf, offset);
 	}
 }

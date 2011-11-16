@@ -1,5 +1,7 @@
 package net.srcdemo.ui;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -11,6 +13,10 @@ import net.srcdemo.audio.AudioHandlerFactory;
 import net.srcdemo.audio.BufferedAudioHandler;
 import net.srcdemo.audio.DiskAudioHandler;
 import net.srcdemo.audio.NullAudioHandler;
+import net.srcdemo.audio.convert.AudioEncoder;
+import net.srcdemo.audio.convert.AudioEncoderFactory;
+import net.srcdemo.audio.convert.FlacEncoder;
+import net.srcdemo.audio.convert.WAVConverter;
 
 import com.trolltech.qt.gui.QHBoxLayout;
 import com.trolltech.qt.gui.QLabel;
@@ -22,10 +28,21 @@ class AudioUI extends QWidget
 {
 	static enum AudioType
 	{
-		BUFFERED, DISABLED, DISK;
+		BUFFERED, DISABLED, DISK, FLAC;
 		static {
-			final AudioType[] order = { DISK, BUFFERED, DISABLED };
+			final AudioType[] order = { DISK, BUFFERED, FLAC, DISABLED };
 			EnumUtils.registerOrder(AudioType.class, order);
+		}
+
+		private boolean requiresBuffer()
+		{
+			switch (this) {
+				case DISABLED:
+				case DISK:
+					return false;
+				default:
+					return true;
+			}
 		}
 
 		@Override
@@ -36,10 +53,74 @@ class AudioUI extends QWidget
 					return Strings.audioOptDisabled;
 				case BUFFERED:
 					return Strings.audioOptBuffered;
+				case FLAC:
+					return Strings.audioOptFlac;
 				case DISK:
 					return Strings.audioOptDisk;
 			}
 			return null;
+		}
+	}
+
+	private class BufferedAudioHandlerFactory extends AudioHandlerFactory
+	{
+		private final int bufferBytes;
+		private final AudioHandlerFactory subFactory;
+		private final int timeout;
+
+		private BufferedAudioHandlerFactory(final AudioHandlerFactory subFactory)
+		{
+			this.subFactory = subFactory;
+			bufferBytes = bufferSize.value() * 1024;
+			timeout = bufferTimeout.value();
+		}
+
+		@Override
+		public AudioHandler buildHandler(final SrcDemo demo)
+		{
+			return new BufferedAudioHandler(demo, bufferBytes, timeout, subFactory);
+		}
+	}
+
+	private class DiskAudioHandlerFactory extends AudioHandlerFactory
+	{
+		@Override
+		public AudioHandler buildHandler(final SrcDemo demo)
+		{
+			return new DiskAudioHandler(demo);
+		}
+	}
+
+	private class FlacAudioHandlerFactory extends AudioHandlerFactory
+	{
+		private AudioEncoderFactory encoderFactory;
+
+		private FlacAudioHandlerFactory()
+		{
+			encoderFactory = new AudioEncoderFactory()
+			{
+				@Override
+				public AudioEncoder buildEncoder(final int channels, final int blockSize, final int sampleRate,
+						final int bitsPerSample, final File outputFile) throws IOException
+				{
+					return new FlacEncoder(channels, blockSize, sampleRate, bitsPerSample, outputFile);
+				}
+			};
+		}
+
+		@Override
+		public AudioHandler buildHandler(final SrcDemo demo)
+		{
+			return new WAVConverter(encoderFactory, demo.getSoundFile());
+		}
+	}
+
+	private class NullAudioHandlerFactory extends AudioHandlerFactory
+	{
+		@Override
+		public AudioHandler buildHandler(final SrcDemo demo)
+		{
+			return new NullAudioHandler(demo);
 		}
 	}
 
@@ -73,36 +154,16 @@ class AudioUI extends QWidget
 	{
 		final AudioType type = audioType.getCurrentItem();
 		if (type.equals(AudioType.DISK)) {
-			return new AudioHandlerFactory()
-			{
-				@Override
-				public AudioHandler buildHandler(final SrcDemo demo)
-				{
-					return new DiskAudioHandler(demo);
-				}
-			};
+			return new DiskAudioHandlerFactory();
 		}
 		if (type.equals(AudioType.DISABLED)) {
-			return new AudioHandlerFactory()
-			{
-				@Override
-				public AudioHandler buildHandler(final SrcDemo demo)
-				{
-					return new NullAudioHandler(demo);
-				}
-			};
+			return new NullAudioHandlerFactory();
+		}
+		if (type.equals(AudioType.FLAC)) {
+			return new BufferedAudioHandlerFactory(new FlacAudioHandlerFactory());
 		}
 		if (type.equals(AudioType.BUFFERED)) {
-			final int bufferBytes = bufferSize.value() * 1024;
-			final int timeout = bufferTimeout.value();
-			return new AudioHandlerFactory()
-			{
-				@Override
-				public AudioHandler buildHandler(final SrcDemo demo)
-				{
-					return new BufferedAudioHandler(demo, bufferBytes, timeout);
-				}
-			};
+			return new BufferedAudioHandlerFactory(new DiskAudioHandlerFactory());
 		}
 		return null;
 	}
@@ -157,7 +218,12 @@ class AudioUI extends QWidget
 	void logParams()
 	{
 		SrcLogger.log("~ Audio parameters block ~");
-		SrcLogger.log("(Unimplemented)");
+		final AudioType current = audioType.getCurrentItem();
+		SrcLogger.log("Audio type: " + current);
+		if (current.requiresBuffer()) {
+			System.out.println("Buffer size: " + bufferSize.value() + " kilobytes");
+			System.out.println("Buffer timeout: " + bufferTimeout.value() + " seconds");
+		}
 		SrcLogger.log("~ End of audio parameters block ~");
 	}
 

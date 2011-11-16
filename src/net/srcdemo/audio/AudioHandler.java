@@ -21,5 +21,7 @@ public interface AudioHandler
 
 	public void truncate(long length);
 
+	public int write(byte[] buffer, long offset);
+
 	public int write(ByteBuffer buffer, long offset);
 }
