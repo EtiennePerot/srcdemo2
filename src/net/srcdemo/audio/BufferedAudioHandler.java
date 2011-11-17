@@ -15,6 +15,7 @@ import net.srcdemo.SrcLogger;
 public class BufferedAudioHandler implements AudioHandler, Morticianed
 {
 	private final ByteArrayOutputStream buffer;
+	private long bufferOffset = 0;
 	private final int bufferSize;
 	private final SrcDemo demo;
 	private final File file;
@@ -76,8 +77,9 @@ public class BufferedAudioHandler implements AudioHandler, Morticianed
 		if (subHandler == null) {
 			create();
 		}
-		subHandler.write(buffer.toByteArray(), fileSize);
+		subHandler.write(buffer.toByteArray(), bufferOffset);
 		subHandler.flush();
+		bufferOffset = fileSize;
 		lastWrite = System.currentTimeMillis();
 		buffer.reset();
 		demo.notifyAudioBufferWriteout();
@@ -211,8 +213,9 @@ public class BufferedAudioHandler implements AudioHandler, Morticianed
 		fileLock.lock();
 		flush();
 		subHandler.close();
+		subHandler.destroy();
 		subHandler = null;
-		demo.notifyAudioBufferWriteout();
 		fileLock.unlock();
+		demo.notifyAudioBufferWriteout();
 	}
 }

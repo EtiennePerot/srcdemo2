@@ -212,7 +212,7 @@ class AudioUI extends QWidget
 
 	boolean isBufferInUse()
 	{
-		return audioType.getCurrentItem().equals(AudioType.BUFFERED);
+		return audioType.getCurrentItem().requiresBuffer();
 	}
 
 	void logParams()
@@ -221,8 +221,8 @@ class AudioUI extends QWidget
 		final AudioType current = audioType.getCurrentItem();
 		SrcLogger.log("Audio type: " + current);
 		if (current.requiresBuffer()) {
-			System.out.println("Buffer size: " + bufferSize.value() + " kilobytes");
-			System.out.println("Buffer timeout: " + bufferTimeout.value() + " seconds");
+			SrcLogger.log("Buffer size: " + bufferSize.value() + " kilobytes");
+			SrcLogger.log("Buffer timeout: " + bufferTimeout.value() + " seconds");
 		}
 		SrcLogger.log("~ End of audio parameters block ~");
 	}

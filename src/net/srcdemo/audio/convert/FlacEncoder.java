@@ -15,10 +15,11 @@ public class FlacEncoder implements AudioEncoder
 	public FlacEncoder(final int channels, final int blockSize, final int sampleRate, final int bitsPerSample,
 			final File outputFile) throws IOException
 	{
+		final File flacFile = new File(outputFile.getParentFile(), outputFile.getName().replaceAll("\\.wav", ".flac"));
 		this.channels = channels;
 		encoder = new FLACEncoder();
 		encoder.setStreamConfiguration(new StreamConfiguration(channels, blockSize, blockSize, sampleRate, bitsPerSample));
-		encoder.setOutputStream(new FLACFileOutputStream(outputFile));
+		encoder.setOutputStream(new FLACFileOutputStream(flacFile));
 		encoder.openFLACStream();
 	}
 
@@ -38,6 +39,7 @@ public class FlacEncoder implements AudioEncoder
 		encoder.encodeSamples(0, true);
 	}
 
+	@Override
 	public void flush() throws IOException
 	{
 		encoder.flush();

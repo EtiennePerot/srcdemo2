@@ -43,6 +43,7 @@ public class WAVConverter implements AudioHandler
 	private final AudioEncoderFactory encoderFactory;
 	private ByteArrayOutputStream headerBuffer = new ByteArrayOutputStream(defaultHeaderBufferSize);
 	private boolean headerDecoded = false;
+	private int headerOffset = Integer.MAX_VALUE;
 	private final ReentrantLock lock = new ReentrantLock();
 	private final File outputFile;
 	private int sampleRate = -1;
@@ -134,6 +135,7 @@ public class WAVConverter implements AudioHandler
 						if (ckSize > 16) {
 							header.position(header.position() + ckSize - 16);
 						}
+						headerOffset = header.position();
 						headerDecoded = true;
 					}
 					break;
@@ -228,7 +230,7 @@ public class WAVConverter implements AudioHandler
 				decodeHeader();
 			}
 		}
-		else if (encoder != null) {
+		else if (encoder != null && offset >= headerOffset) {
 			try {
 				addSamples(buffer);
 			}

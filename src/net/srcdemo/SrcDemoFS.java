@@ -72,6 +72,7 @@ public class SrcDemoFS extends LoopbackFS
 			return;
 		}
 		String toDelete = null;
+		demoLock.lock();
 		for (final String demoPrefix : demos.keySet()) {
 			if (srcDemo.equals(demos.get(demoPrefix))) {
 				toDelete = demoPrefix;
@@ -79,10 +80,9 @@ public class SrcDemoFS extends LoopbackFS
 			}
 		}
 		if (toDelete != null) {
-			demoLock.lock();
 			demos.remove(toDelete);
-			demoLock.unlock();
 		}
+		demoLock.unlock();
 	}
 
 	@Override
@@ -207,6 +207,17 @@ public class SrcDemoFS extends LoopbackFS
 			super.truncateFile(fileName, length);
 		}
 		demo.truncateFile(fileName, length);
+	}
+
+	@Override
+	public void unmount()
+	{
+		demoLock.lock();
+		for (final SrcDemo demo : demos.values()) {
+			demo.destroy();
+		}
+		demoLock.unlock();
+		super.unmount();
 	}
 
 	@Override

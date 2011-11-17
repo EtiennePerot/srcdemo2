@@ -77,7 +77,7 @@ public class SrcDemo implements Morticianed
 		}
 	}
 
-	private void destroy()
+	void destroy()
 	{
 		SrcLogger.logDemo("Destroying SrcDemo object: " + this);
 		mortician.stopService();

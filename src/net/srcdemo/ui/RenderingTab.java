@@ -202,7 +202,7 @@ class RenderingTab extends QWidget implements SrcDemoListener
 				lblAudioBuffer2.setText("(" + (audioBufferTotal / 1024) + Strings.lblRenderAudioBuffer3);
 				btnFlushAudioBuffer.setText(Strings.btnRenderAudioBufferFlush);
 			}
-			btnFlushAudioBuffer.setEnabled(flushButtonEnabled && audioBufferOccupied > 0);
+			btnFlushAudioBuffer.setEnabled(flushButtonEnabled && audioBufferOccupied > 0 && audioBufferTotal > 0);
 		}
 		else {
 			for (final QWidget w : audioWidgets) {
