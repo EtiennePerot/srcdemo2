@@ -1,0 +1,133 @@
+
+JVorbis Todo Checklist
+----------------------
+
+libvorbis
+----------------------
+// DONE - Vorbis Comment support added into header
+
+vorbis_encode_init_vbr( vi, 2, 44100, .4f )) - quality should be able to be increased/decresed but not tested yet
+finish support for managed bitrate options
+
+Optimize
+
+manual memory cleanup - _vorbis_pull_ripcord, saves values from a mock vorbis_block_alloc to track localstorage offsets and keep memory footprint down
+
+Check multiple loops to combine throughout the main loop
+
+rewrite to let the java garbage collector manage memory more in main loop - ByteStreams or ArrayLists etc
+
+	System.arraycopy everywhere instead of memcpy, memmove
+	Arrays.fill instead of memsets and hardloops
+
+
+add low quality support from aoTuV - http://www.geocities.jp/aoyoume/aotuv/
+
+OOP classes
+
+Get rid of floor1_func, res0_func, map0_func
+		_floor_P
+		_residue_P
+		_map_P
+
+Abstract as j-ogg, jcraft
+
+	(may only be needed for decode or encode other than 2 channels 44100 rate .4f quality)
+	_floor_P	(currently only supports floor1)
+	_residue_P	(currently only supports res0)
+	_mapping_P	(currently only supports mapping0)
+
+	add floor1 (info, look and functions)
+		vorbis_info_floor1.java, vorbis_look_floor1.java, oggpack_buffer.java
+
+	add residue0 (info, look) and create residue type 0,1,2 [functions]
+		vorbis_info_residue0.java, vorbis_look_residue0.java, oggpack_buffer.java
+
+
+	add mapping0 (info, look and functions) - *** ilog is actually ilog2 function - see mapping0.c
+		vorbis_info_mapping0.java, < no look function >, oggpack_buffer.java
+
+Java signed (>>) to unsigned (>>>) bit shift changes
+These all need inteligent checks
+vorbisenc.java		4
+vorbis_dsp_state	2
+mdct_lookup		17
+drft_lookup		4
+codebook		4
+bitrate_manager_state	1
+
+
+codec_setup_info.java
+abstract classes for 
+// vorbis_info_mapping
+// vorbis_info_floor
+// vorbis_info_residue
+right now limits to mapping0 floor1 residue0
+
+private_state.java
+absctract classes for
+// vorbis_look_floor
+// vorbis_look_residue
+right now limits to residue0 and floor1
+
+
+
+vorbis_block.java - conserve memory in vorbis_analysis_blockout
+mapping0_forward - this is where the logfft (vbi->pcm) data discrepensies come out to haunt.  main impact is the call to floor_posts[i][PACKETBLOBS/2] = floor1_fit( b.flr[info.floorsubmap[submap]], logmdct, logfft );
+call to accumulate_fit( logmask, logmdct, look.sorted_index[i], look.sorted_index[i+1], fits[i], n, info ); sets off the lsfit_acc data when (flr[mdct+i]+info.twofitatten >= flr[i]) is very marginal factions (.00001).  This snowballs to cause the line deltas to return different results than C library.  Basiclly I think it just draws a different sound, cutting or adding in places the C lib does not, and by marginal amounts, but this may have to do with timing as well.  Needs investigation
+
+
+vorbis_dsp_state.java
+need to work System.arraycopy loop to work with more than 2 channels
+
+vorbis_look_psy.java
+possible pointer leak and array wrap around.  I doubt it, but thats what i wrote, file hasnt been edited in a while
+
+vorbisenc.java
+implementation for more than just VBR encoded files
+managed bitrate portions were left out and never documented well
+
+libvorbis.books data package
+only imported residue data for 2 channel 44100 Hz audio processesing.
+meant to write a script to import the rest of the data ( single channel data?, and higher and lower sampling rates ) once this one was finished (imported by hand :-(), but moved forward and never got back to it.
+
+libvorbis.modes data package
+again only impemented the template for 44100 Hz audio a la reside book data
+
+
+
+
+
+
+libshout
+----------------------
+total system state managment
+error exception flow
+reconnecting, buffering
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+References
+----------
+
+
+http://xiph.org/vorbis/doc/Vorbis_I_spec.html
+
+http://xiph.org/vorbis/doc/
+
