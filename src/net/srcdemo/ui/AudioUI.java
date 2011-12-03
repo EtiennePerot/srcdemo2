@@ -16,6 +16,7 @@ import net.srcdemo.audio.NullAudioHandler;
 import net.srcdemo.audio.convert.AudioEncoder;
 import net.srcdemo.audio.convert.AudioEncoderFactory;
 import net.srcdemo.audio.convert.FlacEncoder;
+import net.srcdemo.audio.convert.VorbisEncoder;
 import net.srcdemo.audio.convert.WAVConverter;
 
 import com.trolltech.qt.gui.QHBoxLayout;
@@ -28,9 +29,9 @@ class AudioUI extends QWidget
 {
 	static enum AudioType
 	{
-		BUFFERED, DISABLED, DISK, FLAC;
+		BUFFERED, DISABLED, DISK, FLAC, VORBIS;
 		static {
-			final AudioType[] order = { DISK, BUFFERED, FLAC, DISABLED };
+			final AudioType[] order = { DISK, BUFFERED, FLAC, VORBIS, DISABLED };
 			EnumUtils.registerOrder(AudioType.class, order);
 		}
 
@@ -55,6 +56,8 @@ class AudioUI extends QWidget
 					return Strings.audioOptBuffered;
 				case FLAC:
 					return Strings.audioOptFlac;
+				case VORBIS:
+					return Strings.audioOptVorbis;
 				case DISK:
 					return Strings.audioOptDisk;
 			}
@@ -124,6 +127,30 @@ class AudioUI extends QWidget
 		}
 	}
 
+	private class OggAudioHandlerFactory extends AudioHandlerFactory
+	{
+		private AudioEncoderFactory encoderFactory;
+
+		private OggAudioHandlerFactory(final float quality)
+		{
+			encoderFactory = new AudioEncoderFactory()
+			{
+				@Override
+				public AudioEncoder buildEncoder(final int channels, final int blockSize, final int sampleRate,
+						final int bitsPerSample, final File outputFile) throws IOException
+				{
+					return new VorbisEncoder(channels, blockSize, sampleRate, bitsPerSample, quality, outputFile);
+				}
+			};
+		}
+
+		@Override
+		public AudioHandler buildHandler(final SrcDemo demo)
+		{
+			return new WAVConverter(encoderFactory, demo.getSoundFile());
+		}
+	}
+
 	private static final double maximumAudioMemoryPortion = 0.65;
 	private EnumComboBox<AudioType> audioType;
 	private QSpinBox bufferSize;
@@ -161,6 +188,9 @@ class AudioUI extends QWidget
 		}
 		if (type.equals(AudioType.FLAC)) {
 			return new BufferedAudioHandlerFactory(new FlacAudioHandlerFactory());
+		}
+		if (type.equals(AudioType.VORBIS)) {
+			return new BufferedAudioHandlerFactory(new OggAudioHandlerFactory(0.9f)); // FIXME: Quality
 		}
 		if (type.equals(AudioType.BUFFERED)) {
 			return new BufferedAudioHandlerFactory(new DiskAudioHandlerFactory());
