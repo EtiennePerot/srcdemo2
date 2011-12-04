@@ -5,89 +5,103 @@
  ********************************************************************/
 package org.xiph.libshout;
 
-public class Base64EncoderDecoder extends java.util.prefs.AbstractPreferences
-{
-	private java.util.Hashtable encodedStore = new java.util.Hashtable();
+import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.prefs.AbstractPreferences;
+import java.util.prefs.BackingStoreException;
 
-	public Base64EncoderDecoder(java.util.prefs.AbstractPreferences prefs, java.lang.String string)
+public class Base64EncoderDecoder extends AbstractPreferences
+{
+	private final Map<String, String> encodedStore = new HashMap<String, String>();
+
+	public Base64EncoderDecoder(final AbstractPreferences prefs, final String string)
 	{
 		super(prefs, string);
 	}
 
-	public java.lang.String encodeBase64(java.lang.String raw) throws java.io.UnsupportedEncodingException
+	@Override
+	protected String[] childrenNamesSpi() throws BackingStoreException
 	{
-		byte[] rawUTF8 = raw.getBytes("UTF8");
-		this.putByteArray(raw, rawUTF8);
-		return (java.lang.String) this.encodedStore.get(raw);
-	}
-
-	public java.lang.String encodeBase64(java.lang.String key, java.lang.String raw)
-			throws java.io.UnsupportedEncodingException
-	{
-		byte[] rawUTF8 = raw.getBytes("UTF8");
-		this.putByteArray(key, rawUTF8);
-		return (java.lang.String) this.encodedStore.get(key);
-	}
-
-	@SuppressWarnings("unchecked")
-	public java.lang.String decodeBase64(java.lang.String key, java.lang.String base64String)
-			throws java.io.UnsupportedEncodingException, java.io.IOException
-	{
-		byte[] def = { (byte) 'D', (byte) 'E', (byte) 'F' };// placeholder
-		this.encodedStore.put(key, base64String);
-		byte[] byteResults = this.getByteArray(key, def);
-		return new java.lang.String(byteResults, "UTF8");
-	}
-
-	public String get(String key, String def)
-	{
-		return (java.lang.String) this.encodedStore.get(key);
-	}
-
-	@SuppressWarnings("unchecked")
-	public void put(String key, String value)
-	{
-		this.encodedStore.put(key, value);
+		return null;
 	}
 
 	// dummy implementation as AbstractPreferences is extended to access methods above
-	protected java.util.prefs.AbstractPreferences childSpi(String name)
+	@Override
+	protected AbstractPreferences childSpi(final String name)
 	{
 		return null;
 	}
 
-	protected String[] childrenNamesSpi() throws java.util.prefs.BackingStoreException
+	public String decodeBase64(final String key, final String base64String) throws UnsupportedEncodingException, IOException
+	{
+		final byte[] def = { (byte) 'D', (byte) 'E', (byte) 'F' };// placeholder
+		encodedStore.put(key, base64String);
+		final byte[] byteResults = getByteArray(key, def);
+		return new String(byteResults, "UTF8");
+	}
+
+	public String encodeBase64(final String raw) throws UnsupportedEncodingException
+	{
+		final byte[] rawUTF8 = raw.getBytes("UTF8");
+		putByteArray(raw, rawUTF8);
+		return encodedStore.get(raw);
+	}
+
+	public String encodeBase64(final String key, final String raw) throws UnsupportedEncodingException
+	{
+		final byte[] rawUTF8 = raw.getBytes("UTF8");
+		putByteArray(key, rawUTF8);
+		return encodedStore.get(key);
+	}
+
+	@Override
+	protected void flushSpi() throws BackingStoreException
+	{
+	}
+
+	@Override
+	public String get(final String key, final String def)
+	{
+		return encodedStore.get(key);
+	}
+
+	@Override
+	protected String getSpi(final String key)
 	{
 		return null;
 	}
 
-	protected void flushSpi() throws java.util.prefs.BackingStoreException
-	{
-	}
-
-	protected String getSpi(String key)
+	@Override
+	protected String[] keysSpi() throws BackingStoreException
 	{
 		return null;
 	}
 
-	protected String[] keysSpi() throws java.util.prefs.BackingStoreException
+	@Override
+	public void put(final String key, final String value)
 	{
-		return null;
+		encodedStore.put(key, value);
 	}
 
-	protected void putSpi(String key, String value)
-	{
-	}
-
-	protected void removeNodeSpi() throws java.util.prefs.BackingStoreException
+	@Override
+	protected void putSpi(final String key, final String value)
 	{
 	}
 
-	protected void removeSpi(String key)
+	@Override
+	protected void removeNodeSpi() throws BackingStoreException
 	{
 	}
 
-	protected void syncSpi() throws java.util.prefs.BackingStoreException
+	@Override
+	protected void removeSpi(final String key)
+	{
+	}
+
+	@Override
+	protected void syncSpi() throws BackingStoreException
 	{
 	}
 }
