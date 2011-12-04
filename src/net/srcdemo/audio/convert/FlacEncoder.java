@@ -3,9 +3,10 @@ package net.srcdemo.audio.convert;
 import java.io.File;
 import java.io.IOException;
 
-import net.sourceforce.javaflacencoder.FLACEncoder;
-import net.sourceforce.javaflacencoder.FLACFileOutputStream;
-import net.sourceforce.javaflacencoder.StreamConfiguration;
+import net.sourceforge.javaflacencoder.EncodingConfiguration;
+import net.sourceforge.javaflacencoder.FLACEncoder;
+import net.sourceforge.javaflacencoder.FLACFileOutputStream;
+import net.sourceforge.javaflacencoder.StreamConfiguration;
 
 public class FlacEncoder implements AudioEncoder
 {
@@ -19,6 +20,7 @@ public class FlacEncoder implements AudioEncoder
 		this.channels = channels;
 		encoder = new FLACEncoder();
 		encoder.setStreamConfiguration(new StreamConfiguration(channels, blockSize, blockSize, sampleRate, bitsPerSample));
+		encoder.setEncodingConfiguration(new EncodingConfiguration());
 		encoder.setOutputStream(new FLACFileOutputStream(flacFile));
 		encoder.openFLACStream();
 	}
@@ -26,8 +28,7 @@ public class FlacEncoder implements AudioEncoder
 	@Override
 	public void addSamples(final int[] samples) throws IOException
 	{
-		final int len = samples.length;
-		encoder.addSamples(samples, len / channels);
+		encoder.addSamples(samples, samples.length / channels);
 		while (encoder.fullBlockSamplesAvailableToEncode() > 0) {
 			encoder.encodeSamples(encoder.fullBlockSamplesAvailableToEncode(), false);
 		}
@@ -36,12 +37,12 @@ public class FlacEncoder implements AudioEncoder
 	@Override
 	public void close() throws IOException
 	{
-		encoder.encodeSamples(0, true);
+		encoder.encodeSamples(encoder.samplesAvailableToEncode(), true);
 	}
 
 	@Override
 	public void flush() throws IOException
 	{
-		encoder.flush();
+		// Unsupported
 	}
 }

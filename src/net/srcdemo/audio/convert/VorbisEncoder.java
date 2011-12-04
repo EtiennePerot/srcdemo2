@@ -16,7 +16,8 @@ import org.xiph.libvorbis.vorbisenc;
 
 public class VorbisEncoder implements AudioEncoder
 {
-	private final double bitDepth;
+	private static final Random randomStreamStateGenerator = new Random();
+	private final float bitDepth;
 	private final vorbis_block block;
 	private final int blockSize;
 	private final int channels;
@@ -32,15 +33,15 @@ public class VorbisEncoder implements AudioEncoder
 	{
 		this.channels = channels;
 		this.blockSize = blockSize;
-		bitDepth = Math.pow(2, bitsPerSample - 1);
+		bitDepth = (float) Math.pow(2, bitsPerSample - 1);
 		final vorbis_info vi = new vorbis_info();
 		final vorbisenc encoder = new vorbisenc();
 		encoder.vorbis_encode_init_vbr(vi, channels, sampleRate, Math.max(0, Math.min(1, quality)));
+		final vorbis_comment vc = new vorbis_comment();
 		dsp = new vorbis_dsp_state();
 		dsp.vorbis_analysis_init(vi);
 		block = new vorbis_block(dsp);
-		streamState = new ogg_stream_state(new Random().nextInt(256));
-		final vorbis_comment vc = new vorbis_comment();
+		streamState = new ogg_stream_state(randomStreamStateGenerator.nextInt(256));
 		final ogg_packet header = new ogg_packet();
 		final ogg_packet header_comm = new ogg_packet();
 		final ogg_packet header_code = new ogg_packet();
@@ -50,7 +51,7 @@ public class VorbisEncoder implements AudioEncoder
 		streamState.ogg_stream_packetin(header_code);
 		page = new ogg_page();
 		packet = new ogg_packet();
-		output = new FileOutputStream(new File(outputFile.getParentFile(), outputFile.getName().replaceAll("\\.wav", ".flac")));
+		output = new FileOutputStream(new File(outputFile.getParentFile(), outputFile.getName().replaceAll("\\.wav", ".ogg")));
 		while (streamState.ogg_stream_flush(page)) {
 			output.write(page.header, 0, page.header_len);
 			output.write(page.body, 0, page.body_len);
@@ -60,16 +61,15 @@ public class VorbisEncoder implements AudioEncoder
 	@Override
 	public void addSamples(final int[] samples) throws IOException
 	{
-		final int channelSamples = samples.length / channels;
-		final float[][] floatSamples = dsp.vorbis_analysis_buffer(channelSamples);
+		final int numSamples = samples.length / channels;
+		final float[][] floatSamples = dsp.vorbis_analysis_buffer(numSamples);
 		int channel;
-		for (int i = 0; i < channelSamples; i++) {
-			for (channel = 0; channel < channels; channel++) {
-				floatSamples[channel][i] = (float) (samples[i] / bitDepth);
-			}
+		for (int i = 0; i < numSamples; i++) {
+			channel = i % channels;
+			floatSamples[channel][dsp.pcm_current + i] = samples[i * channels + channel] / bitDepth;
 		}
-		dsp.vorbis_analysis_wrote(channelSamples);
-		writtenSamples += channelSamples;
+		dsp.vorbis_analysis_wrote(numSamples);
+		writtenSamples += numSamples;
 		if (writtenSamples >= blockSize) {
 			flush();
 		}
@@ -98,7 +98,7 @@ public class VorbisEncoder implements AudioEncoder
 					output.write(page.header, 0, page.header_len);
 					output.write(page.body, 0, page.body_len);
 				}
-				while (page.ogg_page_eos() > 0);
+				while (page.ogg_page_eos() < 0);
 			}
 		}
 		writtenSamples = 0;

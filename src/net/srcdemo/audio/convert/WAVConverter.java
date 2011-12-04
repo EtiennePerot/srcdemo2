@@ -58,40 +58,40 @@ public class WAVConverter implements AudioHandler
 	{
 		final int length = bytes.length;
 		int i = 0;
-		int[] samples;
+		int[] samples = null;
 		switch (bitsPerSample) {
 			case 8:
 				samples = new int[length];
 				for (final byte b : bytes) {
-					samples[i] = b;
+					samples[i] = (byte) (b & 0xff);
 					i++;
 				}
-				encoder.addSamples(samples);
 				break;
 			case 16:
 				final int halfLength = length / 2;
 				samples = new int[halfLength];
 				for (i = 0; i < halfLength; i++) {
-					samples[i] = bytes[i * 2] + (bytes[i * 2 + 1] << 8);
+					samples[i] = (short) ((bytes[i * 2] & 0xff) | ((bytes[i * 2 + 1] & 0xff) << 8));
 				}
-				encoder.addSamples(samples);
 				break;
 			case 24:
 				final int thirdLength = length / 3;
 				samples = new int[thirdLength];
 				for (i = 0; i < thirdLength; i++) {
-					samples[i] = bytes[i * 3] + (bytes[i * 3 + 1] << 8) + (bytes[i * 3 + 2] << 16);
+					samples[i] = (bytes[i * 3] & 0xff) | ((bytes[i * 3 + 1] & 0xff) << 8) | ((bytes[i * 3 + 2] & 0xff) << 16);
 				}
-				encoder.addSamples(samples);
 				break;
 			case 32:
 				final int quaterLength = length / 4;
 				samples = new int[quaterLength];
 				for (i = 0; i < quaterLength; i++) {
-					samples[i] = bytes[i * 4] + (bytes[i * 4 + 1] << 8) + (bytes[i * 4 + 2] << 16) + (bytes[i * 4 + 3] << 24);
+					samples[i] = (bytes[i * 4] & 0xff) | ((bytes[i * 4 + 1] & 0xff) << 8) | ((bytes[i * 4 + 2] & 0xff) << 16)
+							| ((bytes[i * 4 + 3] & 0xff) << 24);
 				}
-				encoder.addSamples(samples);
 				break;
+		}
+		if (samples != null) {
+			encoder.addSamples(samples);
 		}
 	}
 
@@ -125,7 +125,7 @@ public class WAVConverter implements AudioHandler
 					decodable = false;
 					break;
 				case FMT:
-					decodable = header.getShort() == 0x0001; // Decode PCM only
+					decodable = header.getShort() == 0x1; // Decode PCM only
 					if (decodable) {
 						channels = header.getShort();
 						sampleRate = header.getInt();
