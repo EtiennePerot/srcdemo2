@@ -7,6 +7,7 @@ import java.util.Collection;
 import net.srcdemo.Mortician.Morticianed;
 import net.srcdemo.audio.AudioHandler;
 import net.srcdemo.audio.AudioHandlerFactory;
+import net.srcdemo.audio.BufferedAudioHandler.AudioBufferStatus;
 import net.srcdemo.video.VideoHandler;
 import net.srcdemo.video.VideoHandlerFactory;
 
@@ -162,14 +163,9 @@ public class SrcDemo implements Morticianed
 		videoHandler.modifyFindResults(pathName, actualFiles);
 	}
 
-	public void notifyAudioBuffer(final int occupied, final int total)
+	public void notifyAudioBuffer(final AudioBufferStatus status, final int occupied, final int total)
 	{
-		backingFS.notifyAudioBuffer(occupied, total);
-	}
-
-	public void notifyAudioBufferWriteout()
-	{
-		backingFS.notifyAudioBufferWriteout();
+		backingFS.notifyAudioBuffer(status, occupied, total);
 	}
 
 	public void notifyFrameSaved(final File frame)

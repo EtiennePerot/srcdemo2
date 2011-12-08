@@ -9,6 +9,7 @@ import java.util.TimerTask;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import net.srcdemo.SrcDemoListener;
+import net.srcdemo.audio.BufferedAudioHandler.AudioBufferStatus;
 
 import com.trolltech.qt.core.QCoreApplication;
 import com.trolltech.qt.core.Qt.AlignmentFlag;
@@ -24,15 +25,35 @@ import com.trolltech.qt.gui.QWidget;
 
 class RenderingTab extends QWidget implements SrcDemoListener
 {
-	private static final DecimalFormat framesProcessedPerSecondFormat = new DecimalFormat("#.##");
+	private static final DecimalFormat framesProcessedPerSecondFormat = new DecimalFormat(
+			Strings.lblFramesProcessedPerSecondFormat);
 	/**
 	 * Time between UI updates, in milliseconds
 	 */
 	private static final long uiUpdateInterval = 750;
 	private QProgressBar audioBuffer;
-	private int audioBufferOccupied = 0;
-	private int audioBufferTotal = 1;
-	private final Runnable audioBufferWriteout = new Runnable()
+	private final Runnable audioBufferClosed = new Runnable()
+	{
+		@Override
+		public void run()
+		{
+			lblAudioBuffer1.setText(Strings.lblRenderAudioBufferClosed);
+			lblAudioBuffer2.setText("");
+			btnFlushAudioBuffer.setText(Strings.btnRenderAudioBufferFlush);
+			enabledAudioWidgets(false);
+		}
+	};
+	private final Runnable audioBufferFlushEnd = new Runnable()
+	{
+		@Override
+		public void run()
+		{
+			lblAudioBuffer1.setText(Strings.lblRenderAudioBufferWritten);
+			lblAudioBuffer2.setText("");
+			btnFlushAudioBuffer.setText(Strings.btnRenderAudioBufferFlushed);
+		}
+	};
+	private final Runnable audioBufferFlushStart = new Runnable()
 	{
 		@Override
 		public void run()
@@ -40,11 +61,15 @@ class RenderingTab extends QWidget implements SrcDemoListener
 			lblAudioBuffer1.setText(Strings.lblRenderAudioBufferWriting);
 			lblAudioBuffer2.setText("");
 			btnFlushAudioBuffer.setText(Strings.btnRenderAudioBufferFlushing);
+			enabledAudioWidgets(false);
 		}
 	};
+	private boolean audioBufferInUse = false;
+	private int audioBufferOccupied = 0;
+	private AudioBufferStatus audioBufferStatus = AudioBufferStatus.DESTROYED;
+	private int audioBufferTotal = 1;
 	private final Set<QWidget> audioWidgets = new HashSet<QWidget>();
 	private QPushButton btnFlushAudioBuffer;
-	private boolean flushButtonEnabled = false;
 	private final AtomicInteger framesProcessed = new AtomicInteger(0);
 	private final RollingRate framesProcessRate = new RollingRate();
 	private final AtomicInteger framesSaved = new AtomicInteger(0);
@@ -82,6 +107,13 @@ class RenderingTab extends QWidget implements SrcDemoListener
 	{
 		audioWidgets.add(widget);
 		return widget;
+	}
+
+	private void enabledAudioWidgets(final boolean enable)
+	{
+		for (final QWidget w : audioWidgets) {
+			w.setEnabled(enable);
+		}
 	}
 
 	private void initUI()
@@ -135,35 +167,45 @@ class RenderingTab extends QWidget implements SrcDemoListener
 				audioVbox.addWidget(audioWidget(lblAudioBuffer2), 0, AlignmentFlag.AlignCenter);
 				btnFlushAudioBuffer = new QPushButton(Strings.btnRenderAudioBufferFlush);
 				btnFlushAudioBuffer.clicked.connect(this, "onFlushAudioBuffer()");
-				btnFlushAudioBuffer.setEnabled(flushButtonEnabled);
+				btnFlushAudioBuffer.setEnabled(false);
 				audioVbox.addWidget(audioWidget(btnFlushAudioBuffer), 0, AlignmentFlag.AlignCenter);
 			}
 			audioBox.setLayout(audioVbox);
-			mainHbox.addWidget(audioWidget(audioBox), 0);
+			mainHbox.addWidget(audioBox, 0);
 		}
 		setLayout(mainHbox);
 	}
 
 	@Override
-	public void onAudioBuffer(final int occupied, final int total)
+	public void onAudioBuffer(final AudioBufferStatus status, final int occupied, final int total)
 	{
 		audioBufferOccupied = occupied;
 		audioBufferTotal = total;
-		flushButtonEnabled = true;
-	}
-
-	@Override
-	public void onAudioBufferWriteout()
-	{
-		audioBufferTotal = -1;
-		QCoreApplication.invokeLater(audioBufferWriteout);
+		switch (status) {
+			case REGULAR:
+				audioBufferInUse = true;
+				if (audioBufferStatus.equals(AudioBufferStatus.FLUSHING)) {
+					// End of flush
+					QCoreApplication.invokeLater(audioBufferFlushEnd);
+				}
+				break;
+			case FLUSHING:
+				audioBufferInUse = true;
+				QCoreApplication.invokeLater(audioBufferFlushStart);
+				break;
+			case DESTROYED:
+				audioBufferInUse = false;
+				QCoreApplication.invokeLater(audioBufferClosed);
+				break;
+		}
+		audioBufferStatus = status;
 	}
 
 	@SuppressWarnings("unused")
 	private void onFlushAudioBuffer()
 	{
-		flushButtonEnabled = false;
-		btnFlushAudioBuffer.setEnabled(false);
+		audioBufferStatus = AudioBufferStatus.FLUSHING;
+		enabledAudioWidgets(false);
 		btnFlushAudioBuffer.setText(Strings.btnRenderAudioBufferFlushing);
 		parent.flushAudioBuffer(false);
 	}
@@ -190,24 +232,28 @@ class RenderingTab extends QWidget implements SrcDemoListener
 				: framesProcessedPerSecondFormat.format(framerate));
 		lblLastFrameSaved.setText(Integer.toString(framesSaved.get()));
 		previewPicture.updatePicture();
-		if (parent.isAudioBufferInUse()) {
-			if (audioBufferTotal == -1) {
-				audioBuffer.setValue(0);
+		if (audioBufferInUse && parent.isAudioBufferInUse()) {
+			switch (audioBufferStatus) {
+				case REGULAR:
+					audioBuffer.setMaximum(audioBufferTotal);
+					audioBuffer.setValue(audioBufferOccupied);
+					lblAudioBuffer1.setText((audioBufferOccupied / 1024) + Strings.lblRenderAudioBuffer1
+							+ (audioBufferOccupied * 100 / audioBufferTotal) + Strings.lblRenderAudioBuffer2);
+					lblAudioBuffer2.setText(Strings.lblRenderAudioBuffer3 + (audioBufferTotal / 1024)
+							+ Strings.lblRenderAudioBuffer4);
+					btnFlushAudioBuffer.setText(Strings.btnRenderAudioBufferFlush);
+					enabledAudioWidgets(audioBufferOccupied > 0 && audioBufferTotal > 0);
+					break;
+				case FLUSHING:
+				case DESTROYED:
+					audioBuffer.setMaximum(1);
+					audioBuffer.setValue(0);
+					btnFlushAudioBuffer.setEnabled(false);
+					break;
 			}
-			else {
-				audioBuffer.setMaximum(audioBufferTotal);
-				audioBuffer.setValue(audioBufferOccupied);
-				lblAudioBuffer1.setText((audioBufferOccupied / 1024) + Strings.lblRenderAudioBuffer1
-						+ (audioBufferOccupied * 100 / audioBufferTotal) + Strings.lblRenderAudioBuffer2);
-				lblAudioBuffer2.setText("(" + (audioBufferTotal / 1024) + Strings.lblRenderAudioBuffer3);
-				btnFlushAudioBuffer.setText(Strings.btnRenderAudioBufferFlush);
-			}
-			btnFlushAudioBuffer.setEnabled(flushButtonEnabled && audioBufferOccupied > 0 && audioBufferTotal > 0);
 		}
 		else {
-			for (final QWidget w : audioWidgets) {
-				w.setEnabled(false);
-			}
+			enabledAudioWidgets(false);
 		}
 	}
 }

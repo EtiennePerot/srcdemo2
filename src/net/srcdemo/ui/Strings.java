@@ -13,6 +13,7 @@ interface Strings
 	final String btnDeactivate = "Deactivate";
 	final String btnQuit = "Quit";
 	final String btnRenderAudioBufferFlush = "Flush";
+	final String btnRenderAudioBufferFlushed = "Flushed";
 	final String btnRenderAudioBufferFlushing = "Flushing";
 	final String btnUpdateCheck = "Check for updates";
 	final String btnUpdateChecking = "Checking...";
@@ -50,6 +51,7 @@ interface Strings
 	final String lblFramesPerSecond = "Frames processed per second:";
 	final String lblFramesProcessedPerSecond = "Frames per second:";
 	final String lblFramesProcessedPerSecondDefault = "...";
+	final String lblFramesProcessedPerSecondFormat = "#.00";
 	final String lblInvalidSettings = "Invalid settings: ";
 	final String lblJpegQuality = "JPEG quality";
 	final String lblLastFrameProcessed = "Last frame processed: ";
@@ -62,8 +64,11 @@ interface Strings
 	final String lblReadyToRender2 = " fps.";
 	final String lblRenderAudioBuffer1 = " KB (";
 	final String lblRenderAudioBuffer2 = "%)";
-	final String lblRenderAudioBuffer3 = " KB total)";
+	final String lblRenderAudioBuffer3 = "(";
+	final String lblRenderAudioBuffer4 = " KB total)";
+	final String lblRenderAudioBufferClosed = "Inactive.";
 	final String lblRenderAudioBufferWriting = "Writing...";
+	final String lblRenderAudioBufferWritten = "Written.";
 	final String lblShutterAngle = "Simulated <a href=\"http://www.facepunch.com/threads/1126220?p=32617404&viewfull=1#post32617404\">shutter angle</a>: ";
 	final String lblTargetFps = "Final video FPS: ";
 	final String lblTgaCompressionRLE = "TGA RLE compression";

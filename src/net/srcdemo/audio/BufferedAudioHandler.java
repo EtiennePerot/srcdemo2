@@ -14,7 +14,13 @@ import net.srcdemo.SrcLogger;
 
 public class BufferedAudioHandler implements AudioHandler, Morticianed
 {
+	public enum AudioBufferStatus
+	{
+		DESTROYED, FLUSHING, REGULAR;
+	}
+
 	private final ByteArrayOutputStream buffer;
+	private int bufferOccupiedSize = 0;
 	private long bufferOffset = 0;
 	private final int bufferSize;
 	private final SrcDemo demo;
@@ -67,12 +73,19 @@ public class BufferedAudioHandler implements AudioHandler, Morticianed
 	{
 		SrcLogger.logAudio("Audio buffer is being destroyed. Writing out.");
 		mortician.stopService();
-		writeOut();
+		fileLock.lock();
+		flush();
+		subHandler.close();
+		subHandler.destroy();
+		subHandler = null;
+		fileLock.unlock();
+		notifyBuffer(AudioBufferStatus.DESTROYED);
 	}
 
 	@Override
 	public void flush()
 	{
+		notifyBuffer(AudioBufferStatus.FLUSHING);
 		fileLock.lock();
 		if (subHandler == null) {
 			create();
@@ -80,10 +93,11 @@ public class BufferedAudioHandler implements AudioHandler, Morticianed
 		subHandler.write(buffer.toByteArray(), bufferOffset);
 		subHandler.flush();
 		bufferOffset = fileSize;
+		bufferOccupiedSize = 0;
 		lastWrite = System.currentTimeMillis();
 		buffer.reset();
-		demo.notifyAudioBufferWriteout();
 		fileLock.unlock();
+		notifyBuffer(AudioBufferStatus.REGULAR);
 	}
 
 	@Override
@@ -117,6 +131,11 @@ public class BufferedAudioHandler implements AudioHandler, Morticianed
 	public void modifyFindResults(final String pathName, final Collection<String> existingFiles)
 	{
 		// No need to cheat on anything, the file exists for real.
+	}
+
+	private void notifyBuffer(final AudioBufferStatus status)
+	{
+		demo.notifyAudioBuffer(status, bufferOccupiedSize, bufferSize);
 	}
 
 	@Override
@@ -155,13 +174,13 @@ public class BufferedAudioHandler implements AudioHandler, Morticianed
 			SrcLogger.error("Warning: Couldn't write " + toWrite + " bytes to sound buffer.", e);
 		}
 		fileSize += toWrite;
-		final int bufSize = this.buffer.size();
-		if (bufSize > bufferSize) {
+		bufferOccupiedSize = this.buffer.size();
+		if (bufferOccupiedSize > bufferSize) {
 			SrcLogger.logAudio("Buffer is full; flushing.");
 			flush();
 		}
 		else {
-			demo.notifyAudioBuffer(bufSize, bufferSize);
+			notifyBuffer(AudioBufferStatus.REGULAR);
 		}
 		fileLock.unlock();
 		return toWrite;
@@ -196,26 +215,15 @@ public class BufferedAudioHandler implements AudioHandler, Morticianed
 			SrcLogger.error("Warning: Couldn't write " + toWrite + " bytes to sound buffer.", e);
 		}
 		fileSize += toWrite;
-		final int bufSize = this.buffer.size();
-		if (bufSize > bufferSize) {
+		bufferOccupiedSize = this.buffer.size();
+		if (bufferOccupiedSize > bufferSize) {
 			SrcLogger.logAudio("Buffer is full; flushing.");
 			flush();
 		}
 		else {
-			demo.notifyAudioBuffer(bufSize, bufferSize);
+			notifyBuffer(AudioBufferStatus.REGULAR);
 		}
 		fileLock.unlock();
 		return toWrite;
-	}
-
-	private void writeOut()
-	{
-		fileLock.lock();
-		flush();
-		subHandler.close();
-		subHandler.destroy();
-		subHandler = null;
-		fileLock.unlock();
-		demo.notifyAudioBufferWriteout();
 	}
 }

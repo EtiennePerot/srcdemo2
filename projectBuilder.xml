@@ -4,6 +4,7 @@
     <property name="src.dir" value="${root.dir}/src"/>
     <property name="lib.dir" value="${root.dir}/lib"/>
     <property name="img.dir" value="${root.dir}/img"/>
+    <property name="tools.dir" value="${root.dir}/tools"/>
 	<property name="build.dir" value="${root.dir}/build"/>
     <property name="launcher.dir" value="${root.dir}/launcher"/>
     <property name="installer.dir" value="${root.dir}/installer"/>
@@ -15,6 +16,7 @@
 	<property name="jar.file" value="${jar.dir}/${ant.project.name}.jar"/>
     <property name="jar.libdir" value="${jar.dir}/lib"/>
     <property name="jar.imgdir" value="${jar.dir}/img"/>
+    <property name="jar.toolsdir" value="${jar.dir}/tools"/>
 	<property name="main-class" value="net.srcdemo.ui.SrcDemoUI"/>
 	<property name="launcher.builddir" value="${launcher.dir}/build"/>
 	<property name="launcher.distdir" value="${launcher.dir}/dist"/>
@@ -49,6 +51,9 @@
         <move todir="${jar.dir}" file="${program.versionfile}"/>
         <copy todir="${jar.imgdir}">
             <fileset dir="${img.dir}" excludes="${svn.excludes},${img.excludes}"/>
+        </copy>
+        <copy todir="${jar.toolsdir}">
+            <fileset dir="${tools.dir}" excludes="${svn.excludes}"/>
         </copy>
 		<path id="jar-classpath">
 			<fileset dir="${jar.libdir}" includes="**/*.jar"/>

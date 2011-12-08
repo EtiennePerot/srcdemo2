@@ -168,9 +168,11 @@ public class WAVConverter implements AudioHandler
 	public void destroy()
 	{
 		lock.lock();
+		flush();
 		if (encoder != null) {
 			try {
 				encoder.close();
+				encoder = null;
 			}
 			catch (final IOException e) {
 				SrcLogger.error("Error while closing audio encoder of file " + outputFile, e);
@@ -237,6 +239,11 @@ public class WAVConverter implements AudioHandler
 			catch (final IOException e) {
 				SrcLogger.error("Warning: Couldn't write samples bytes to audio encoder of file " + outputFile, e);
 			}
+		}
+		else if (headerDecoded && offset < headerOffset) {
+			SrcLogger.logAudio("Writing in the header after writing samples; considering the audio file to be finalized.");
+			flush();
+			destroy();
 		}
 		lock.unlock();
 		return length;

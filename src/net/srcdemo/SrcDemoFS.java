@@ -16,6 +16,7 @@ import net.decasdev.dokan.DokanFileInfo;
 import net.decasdev.dokan.DokanOperationException;
 import net.decasdev.dokan.Win32FindData;
 import net.srcdemo.audio.AudioHandlerFactory;
+import net.srcdemo.audio.BufferedAudioHandler.AudioBufferStatus;
 import net.srcdemo.video.VideoHandlerFactory;
 
 public class SrcDemoFS extends LoopbackFS
@@ -150,17 +151,10 @@ public class SrcDemoFS extends LoopbackFS
 		return demo.getFileInfo(fileName);
 	}
 
-	void notifyAudioBuffer(final int occupied, final int total)
+	void notifyAudioBuffer(final AudioBufferStatus status, final int occupied, final int total)
 	{
 		for (final SrcDemoListener listener : demoListeners) {
-			listener.onAudioBuffer(occupied, total);
-		}
-	}
-
-	void notifyAudioBufferWriteout()
-	{
-		for (final SrcDemoListener listener : demoListeners) {
-			listener.onAudioBufferWriteout();
+			listener.onAudioBuffer(status, occupied, total);
 		}
 	}
 

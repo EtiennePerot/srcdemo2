@@ -129,25 +129,17 @@ class AudioUI extends QWidget
 
 	private class OggAudioHandlerFactory extends AudioHandlerFactory
 	{
-		private AudioEncoderFactory encoderFactory;
+		private final int quality;
 
-		private OggAudioHandlerFactory(final float quality)
+		private OggAudioHandlerFactory(final int quality)
 		{
-			encoderFactory = new AudioEncoderFactory()
-			{
-				@Override
-				public AudioEncoder buildEncoder(final int channels, final int blockSize, final int sampleRate,
-						final int bitsPerSample, final File outputFile) throws IOException
-				{
-					return new VorbisEncoder(channels, blockSize, sampleRate, bitsPerSample, quality, outputFile);
-				}
-			};
+			this.quality = quality;
 		}
 
 		@Override
 		public AudioHandler buildHandler(final SrcDemo demo)
 		{
-			return new WAVConverter(encoderFactory, demo.getSoundFile());
+			return new VorbisEncoder(demo.getSoundFile(), quality);
 		}
 	}
 
@@ -190,7 +182,7 @@ class AudioUI extends QWidget
 			return new BufferedAudioHandlerFactory(new FlacAudioHandlerFactory());
 		}
 		if (type.equals(AudioType.VORBIS)) {
-			return new BufferedAudioHandlerFactory(new OggAudioHandlerFactory(0.9f)); // FIXME: Quality
+			return new BufferedAudioHandlerFactory(new OggAudioHandlerFactory(9)); // FIXME: Quality
 		}
 		if (type.equals(AudioType.BUFFERED)) {
 			return new BufferedAudioHandlerFactory(new DiskAudioHandlerFactory());

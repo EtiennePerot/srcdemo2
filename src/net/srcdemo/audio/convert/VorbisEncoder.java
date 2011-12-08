@@ -1,107 +1,193 @@
 package net.srcdemo.audio.convert;
 
+import java.io.BufferedOutputStream;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.util.Random;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.nio.ByteBuffer;
+import java.util.Collection;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicLong;
+import java.util.concurrent.locks.Condition;
+import java.util.concurrent.locks.ReentrantLock;
 
-import org.xiph.libogg.ogg_packet;
-import org.xiph.libogg.ogg_page;
-import org.xiph.libogg.ogg_stream_state;
-import org.xiph.libvorbis.vorbis_block;
-import org.xiph.libvorbis.vorbis_comment;
-import org.xiph.libvorbis.vorbis_dsp_state;
-import org.xiph.libvorbis.vorbis_info;
-import org.xiph.libvorbis.vorbisenc;
+import net.srcdemo.SrcLogger;
+import net.srcdemo.audio.AudioHandler;
+import net.srcdemo.ui.Files;
 
-public class VorbisEncoder implements AudioEncoder
+public class VorbisEncoder implements AudioHandler
 {
-	private static final Random randomStreamStateGenerator = new Random();
-	private final float bitDepth;
-	private final vorbis_block block;
-	private final int blockSize;
-	private final int channels;
-	private final vorbis_dsp_state dsp;
-	private final FileOutputStream output;
-	private final ogg_packet packet;
-	private final ogg_page page;
-	private final ogg_stream_state streamState;
-	private int writtenSamples = 0;
-
-	public VorbisEncoder(final int channels, final int blockSize, final int sampleRate, final int bitsPerSample,
-			final float quality, final File outputFile) throws IOException
+	private class OutputStreamThread extends Thread
 	{
-		this.channels = channels;
-		this.blockSize = blockSize;
-		bitDepth = (float) Math.pow(2, bitsPerSample - 1);
-		final vorbis_info vi = new vorbis_info();
-		final vorbisenc encoder = new vorbisenc();
-		encoder.vorbis_encode_init_vbr(vi, channels, sampleRate, Math.max(0, Math.min(1, quality)));
-		final vorbis_comment vc = new vorbis_comment();
-		dsp = new vorbis_dsp_state();
-		dsp.vorbis_analysis_init(vi);
-		block = new vorbis_block(dsp);
-		streamState = new ogg_stream_state(randomStreamStateGenerator.nextInt(256));
-		final ogg_packet header = new ogg_packet();
-		final ogg_packet header_comm = new ogg_packet();
-		final ogg_packet header_code = new ogg_packet();
-		dsp.vorbis_analysis_headerout(vc, header, header_comm, header_code);
-		streamState.ogg_stream_packetin(header);
-		streamState.ogg_stream_packetin(header_comm);
-		streamState.ogg_stream_packetin(header_code);
-		page = new ogg_page();
-		packet = new ogg_packet();
-		output = new FileOutputStream(new File(outputFile.getParentFile(), outputFile.getName().replaceAll("\\.wav", ".ogg")));
-		while (streamState.ogg_stream_flush(page)) {
-			output.write(page.header, 0, page.header_len);
-			output.write(page.body, 0, page.body_len);
-		}
-	}
-
-	@Override
-	public void addSamples(final int[] samples) throws IOException
-	{
-		final int numSamples = samples.length / channels;
-		final float[][] floatSamples = dsp.vorbis_analysis_buffer(numSamples);
-		int channel;
-		for (int i = 0; i < numSamples; i++) {
-			channel = i % channels;
-			floatSamples[channel][dsp.pcm_current + i] = samples[i * channels + channel] / bitDepth;
-		}
-		dsp.vorbis_analysis_wrote(numSamples);
-		writtenSamples += numSamples;
-		if (writtenSamples >= blockSize) {
-			flush();
-		}
-	}
-
-	@Override
-	public void close() throws IOException
-	{
-		dsp.vorbis_analysis_wrote(0);
-		flush();
-		output.close();
-	}
-
-	@Override
-	public void flush() throws IOException
-	{
-		while (block.vorbis_analysis_blockout(dsp)) {
-			block.vorbis_analysis(null);
-			block.vorbis_bitrate_addblock();
-			while (dsp.vorbis_bitrate_flushpacket(packet)) {
-				streamState.ogg_stream_packetin(packet);
-				do {
-					if (!streamState.ogg_stream_pageout(page)) {
+		@Override
+		public void run()
+		{
+			final byte[] buffer = new byte[outputFileBuffer];
+			int read;
+			while (true) {
+				try {
+					read = stdout.read(buffer);
+					if (read == -1) {
 						break;
 					}
-					output.write(page.header, 0, page.header_len);
-					output.write(page.body, 0, page.body_len);
+					fileSize.addAndGet(read);
+					output.write(buffer);
 				}
-				while (page.ogg_page_eos() < 0);
+				catch (final IOException e) {
+					SrcLogger.error("Couldn't read from OggEnc stdout.", e);
+					e.printStackTrace();
+				}
+			}
+			lock.lock();
+			stdoutThreadDead.set(true);
+			stdoutFinished.signal();
+			lock.unlock();
+		}
+	}
+
+	private static final int outputFileBuffer = 1024;
+	private final AtomicLong fileSize = new AtomicLong(0L);
+	private final ReentrantLock lock = new ReentrantLock();
+	private FileOutputStream output = null;
+	private OutputStream stdin = null;
+	private InputStream stdout = null;
+	private final Condition stdoutFinished;
+	private final AtomicBoolean stdoutThreadDead = new AtomicBoolean(false);
+	private long writtenSize = 0L;
+
+	public VorbisEncoder(final File outputFile, final int quality)
+	{
+		final String[] command = { Files.oggEnc.toString(), "-q", Integer.toString(Math.max(-2, Math.min(10, quality))),
+				"--ignorelength", "--quiet", "-" };
+		SrcLogger.logAudio("Starting OggEnc: " + command);
+		stdoutFinished = lock.newCondition();
+		Process oggEnc = null;
+		try {
+			oggEnc = new ProcessBuilder(command).start();
+		}
+		catch (final IOException e) {
+			SrcLogger.error("Couldn't find oggenc.exe.", e);
+		}
+		if (oggEnc != null) {
+			stdin = new BufferedOutputStream(oggEnc.getOutputStream());
+			stdout = oggEnc.getInputStream();
+			final File outputOggFile = new File(outputFile.getParentFile(), outputFile.getName().replaceAll("\\.wav", ".ogg"));
+			try {
+				output = new FileOutputStream(outputOggFile);
+			}
+			catch (final FileNotFoundException e) {
+				SrcLogger.error("Couldn't open file " + outputOggFile, e);
+				e.printStackTrace();
 			}
 		}
-		writtenSamples = 0;
-		output.flush();
+		if (output != null) {
+			new OutputStreamThread().start();
+		}
+	}
+
+	@Override
+	public void close()
+	{
+		// Ignore the call
+	}
+
+	@Override
+	public void create()
+	{
+		// Ignore; this is already done in the constructor
+	}
+
+	@Override
+	public void destroy()
+	{
+		lock.lock();
+		flush();
+		try {
+			stdin.close();
+		}
+		catch (final IOException e) {
+			SrcLogger.error("Couldn't close stdin of OggEnc", e);
+			e.printStackTrace();
+		}
+		while (!stdoutThreadDead.get()) {
+			try {
+				stdoutFinished.await();
+			}
+			catch (final InterruptedException e) {
+				SrcLogger.logAudio("Interrupted while waiting for OggEnc stdout to close. Continuing anyway.");
+				break;
+			}
+		}
+		lock.unlock();
+	}
+
+	@Override
+	public void flush()
+	{
+		lock.lock();
+		try {
+			stdin.flush();
+		}
+		catch (final IOException e) {
+			SrcLogger.error("Couln't flush stdin of OggEnc", e);
+			e.printStackTrace();
+		}
+		lock.unlock();
+	}
+
+	@Override
+	public long getSize()
+	{
+		return fileSize.get();
+	}
+
+	@Override
+	public boolean isLocked()
+	{
+		return lock.isLocked();
+	}
+
+	@Override
+	public void modifyFindResults(final String pathName, final Collection<String> existingFiles)
+	{
+		// Nothing to do here
+	}
+
+	@Override
+	public void truncate(final long length)
+	{
+		// Can't truncate
+	}
+
+	@Override
+	public int write(final byte[] buffer, final long offset)
+	{
+		final int length = buffer.length;
+		if (offset != writtenSize) {
+			return length; // Skip all write requests that aren't exactly where the stream stopped
+		}
+		lock.lock();
+		try {
+			stdin.write(buffer);
+		}
+		catch (final IOException e) {
+			SrcLogger.error("Couldn't write to OggEnc", e);
+			e.printStackTrace();
+		}
+		writtenSize += length;
+		lock.unlock();
+		return length;
+	}
+
+	@Override
+	public int write(final ByteBuffer buffer, final long offset)
+	{
+		final int length = buffer.remaining();
+		final byte[] buf = new byte[length];
+		buffer.get(buf);
+		return write(buf, offset);
 	}
 }
