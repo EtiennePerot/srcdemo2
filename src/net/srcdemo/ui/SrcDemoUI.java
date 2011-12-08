@@ -28,7 +28,6 @@ public class SrcDemoUI extends QWidget
 	private static boolean dokanLoggingMode = false;
 	private static final int relaunchStatusCode = 1337;
 	private static int returnCode = 0;
-	private static boolean srcDemoHideFiles = false;
 	private static String version = null;
 
 	public static String getVersion()
@@ -75,9 +74,6 @@ public class SrcDemoUI extends QWidget
 			}
 			if (arg.equals(Strings.cmdFlagDokanDebug)) {
 				dokanLoggingMode = true;
-			}
-			if (arg.equals(Strings.cmdFlagHideFiles)) {
-				srcDemoHideFiles = true;
 			}
 		}
 		if (Files.versionFile.exists()) {
@@ -303,7 +299,6 @@ public class SrcDemoUI extends QWidget
 		mountedFS = new SrcDemoFS(getBackingDirectory().getAbsolutePath(), videoUi.getFactory(), audioUi.getFactory());
 		mountedFS.addListener(renderTab);
 		mountedFS.setLogging(dokanLoggingMode);
-		mountedFS.setHideFiles(srcDemoHideFiles);
 		mountedFS.mount(getMountpoint().getAbsolutePath());
 		fsLock.unlock();
 		updateStatus();

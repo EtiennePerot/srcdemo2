@@ -293,6 +293,11 @@ class AudioUI extends QWidget
 				hbox.addWidget(disablableAudioWidget(bufferTimeout));
 				bufferSettingsVbox.addLayout(hbox);
 			}
+			{
+				final QLabel warningLabel = new QLabel(Strings.lblBufferWarning);
+				warningLabel.setWordWrap(true);
+				bufferSettingsVbox.addWidget(disablableAudioWidget(warningLabel));
+			}
 			mainVbox.addLayout(bufferSettingsVbox);
 		}
 		setLayout(mainVbox);

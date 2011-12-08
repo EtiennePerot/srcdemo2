@@ -12,9 +12,6 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import net.decasdev.dokan.CreationDispositionEnum;
-import net.decasdev.dokan.DokanFileInfo;
-import net.decasdev.dokan.DokanOperationException;
-import net.decasdev.dokan.Win32FindData;
 import net.srcdemo.audio.AudioHandlerFactory;
 import net.srcdemo.audio.BufferedAudioHandler.AudioBufferStatus;
 import net.srcdemo.video.VideoHandlerFactory;
@@ -22,12 +19,10 @@ import net.srcdemo.video.VideoHandlerFactory;
 public class SrcDemoFS extends LoopbackFS
 {
 	private static final Pattern demoNamePattern = Pattern.compile("\\d+\\.tga$|\\.wav$", Pattern.CASE_INSENSITIVE);
-	private static final Win32FindData[] emptyWin32FindData = new Win32FindData[0];
 	private final AudioHandlerFactory audioHandlerFactory;
 	private final Set<SrcDemoListener> demoListeners = new HashSet<SrcDemoListener>();
 	private final ReentrantLock demoLock = new ReentrantLock();
 	private final Map<String, SrcDemo> demos = new HashMap<String, SrcDemo>();
-	private boolean hideFiles = false;
 	private final VideoHandlerFactory videoHandlerFactory;
 
 	public SrcDemoFS(final String backingStorage, final VideoHandlerFactory videoHandlerFactory,
@@ -89,18 +84,8 @@ public class SrcDemoFS extends LoopbackFS
 	@Override
 	protected Collection<String> findFiles(final String pathName)
 	{
-		if (hideFiles) {
-			return null;
-		}
-		else {
-			final Collection<String> actualFiles = super.findFiles(pathName);
-			demoLock.lock();
-			for (final SrcDemo demo : demos.values()) {
-				demo.modifyFindResults(pathName, actualFiles);
-			}
-			demoLock.unlock();
-			return actualFiles;
-		}
+		// To avoid lack of garbage collection on those objects, return null
+		return null;
 	}
 
 	public void flushAudioBuffer(final boolean block)
@@ -172,25 +157,9 @@ public class SrcDemoFS extends LoopbackFS
 		}
 	}
 
-	@Override
-	public Win32FindData[] onFindFiles(final String pathName, final DokanFileInfo fileInfo) throws DokanOperationException
-	{
-		if (hideFiles) {
-			return emptyWin32FindData;
-		}
-		else {
-			return super.onFindFiles(pathName, fileInfo);
-		}
-	}
-
 	public void removeListener(final SrcDemoListener listener)
 	{
 		demoListeners.remove(listener);
-	}
-
-	public void setHideFiles(final boolean hideFiles)
-	{
-		this.hideFiles = hideFiles;
 	}
 
 	@Override
@@ -200,7 +169,9 @@ public class SrcDemoFS extends LoopbackFS
 		if (demo == null) {
 			super.truncateFile(fileName, length);
 		}
-		demo.truncateFile(fileName, length);
+		else {
+			demo.truncateFile(fileName, length);
+		}
 	}
 
 	@Override

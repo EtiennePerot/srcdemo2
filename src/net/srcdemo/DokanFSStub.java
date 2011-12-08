@@ -114,27 +114,27 @@ public abstract class DokanFSStub implements DokanOperations
 	protected abstract void moveFile(String existingFileName, String newFileName, boolean replaceExisiting);
 
 	@Override
-	public void onCleanup(final String fileName, final DokanFileInfo fileInfo) throws DokanOperationException
+	public final void onCleanup(final String fileName, final DokanFileInfo fileInfo) throws DokanOperationException
 	{
 		log("Cleanup", "Clean up: " + fileName);
 	}
 
 	@Override
-	public void onCloseFile(final String fileName, final DokanFileInfo fileInfo) throws DokanOperationException
+	public final void onCloseFile(final String fileName, final DokanFileInfo fileInfo) throws DokanOperationException
 	{
 		log("CloseFile", "Close file: " + fileName);
 		closeFile(fileName);
 	}
 
 	@Override
-	public void onCreateDirectory(final String fileName, final DokanFileInfo fileInfo) throws DokanOperationException
+	public final void onCreateDirectory(final String fileName, final DokanFileInfo fileInfo) throws DokanOperationException
 	{
 		log("CreateDirectory", "Create directory: " + fileName);
 		createDirectory(fileName);
 	}
 
 	@Override
-	public long onCreateFile(final String fileName, final int desiredAccess, final int shareMode,
+	public final long onCreateFile(final String fileName, final int desiredAccess, final int shareMode,
 			final int creationDisposition, final int flagsAndAttributes, final DokanFileInfo fileInfo)
 			throws DokanOperationException
 	{
@@ -149,21 +149,22 @@ public abstract class DokanFSStub implements DokanOperations
 	}
 
 	@Override
-	public void onDeleteDirectory(final String fileName, final DokanFileInfo fileInfo) throws DokanOperationException
+	public final void onDeleteDirectory(final String fileName, final DokanFileInfo fileInfo) throws DokanOperationException
 	{
 		log("DeleteDirectory", "Delete directory: " + fileName);
 		deleteDirectory(fileName);
 	}
 
 	@Override
-	public void onDeleteFile(final String fileName, final DokanFileInfo fileInfo) throws DokanOperationException
+	public final void onDeleteFile(final String fileName, final DokanFileInfo fileInfo) throws DokanOperationException
 	{
 		log("DeleteFile", "Delete file: " + fileName);
 		deleteFile(fileName);
 	}
 
 	@Override
-	public Win32FindData[] onFindFiles(final String pathName, final DokanFileInfo fileInfo) throws DokanOperationException
+	public final Win32FindData[] onFindFiles(final String pathName, final DokanFileInfo fileInfo)
+			throws DokanOperationException
 	{
 		log("FindFiles", "Find files in: " + pathName);
 		final Collection<String> files = findFiles(pathName);
@@ -183,7 +184,7 @@ public abstract class DokanFSStub implements DokanOperations
 	}
 
 	@Override
-	public Win32FindData[] onFindFilesWithPattern(final String pathName, final String searchPattern,
+	public final Win32FindData[] onFindFilesWithPattern(final String pathName, final String searchPattern,
 			final DokanFileInfo fileInfo) throws DokanOperationException
 	{
 		log("FindFilesWithPattern", "Find files in: " + pathName + " with pattern " + searchPattern);
@@ -191,21 +192,21 @@ public abstract class DokanFSStub implements DokanOperations
 	}
 
 	@Override
-	public void onFlushFileBuffers(final String fileName, final DokanFileInfo fileInfo) throws DokanOperationException
+	public final void onFlushFileBuffers(final String fileName, final DokanFileInfo fileInfo) throws DokanOperationException
 	{
 		log("FlushFileBuffer", "Flush file buffer: " + fileName);
 		flushFileBuffer(fileName);
 	}
 
 	@Override
-	public DokanDiskFreeSpace onGetDiskFreeSpace(final DokanFileInfo fileInfo) throws DokanOperationException
+	public final DokanDiskFreeSpace onGetDiskFreeSpace(final DokanFileInfo fileInfo) throws DokanOperationException
 	{
 		log("GetDiskFreeSpace", "Get disk free space");
 		return new DokanDiskFreeSpace(getFreeBytes(), getTotalBytes());
 	}
 
 	@Override
-	public ByHandleFileInformation onGetFileInformation(final String fileName, final DokanFileInfo fileInfo)
+	public final ByHandleFileInformation onGetFileInformation(final String fileName, final DokanFileInfo fileInfo)
 			throws DokanOperationException
 	{
 		log("GetFileInformation", "Get file information: " + fileName);
@@ -217,7 +218,7 @@ public abstract class DokanFSStub implements DokanOperations
 	}
 
 	@Override
-	public DokanVolumeInformation onGetVolumeInformation(final String volumeName, final DokanFileInfo fileInfo)
+	public final DokanVolumeInformation onGetVolumeInformation(final String volumeName, final DokanFileInfo fileInfo)
 			throws DokanOperationException
 	{
 		log("GetVolumeInformation", "Get volume information");
@@ -225,7 +226,7 @@ public abstract class DokanFSStub implements DokanOperations
 	}
 
 	@Override
-	public void onLockFile(final String fileName, final long byteOffset, final long length, final DokanFileInfo fileInfo)
+	public final void onLockFile(final String fileName, final long byteOffset, final long length, final DokanFileInfo fileInfo)
 			throws DokanOperationException
 	{
 		log("LockFile", "Lock file: " + fileName);
@@ -233,7 +234,7 @@ public abstract class DokanFSStub implements DokanOperations
 	}
 
 	@Override
-	public void onMoveFile(final String existingFileName, final String newFileName, final boolean replaceExisiting,
+	public final void onMoveFile(final String existingFileName, final String newFileName, final boolean replaceExisiting,
 			final DokanFileInfo fileInfo) throws DokanOperationException
 	{
 		log("MoveFile", "Move file: " + existingFileName + " -> " + newFileName);
@@ -241,14 +242,14 @@ public abstract class DokanFSStub implements DokanOperations
 	}
 
 	@Override
-	public long onOpenDirectory(final String fileName, final DokanFileInfo fileInfo) throws DokanOperationException
+	public final long onOpenDirectory(final String fileName, final DokanFileInfo fileInfo) throws DokanOperationException
 	{
 		log("OpenDirectory", "Open directory: " + fileName);
 		return getNextFileHandle();
 	}
 
 	@Override
-	public int onReadFile(final String fileName, final ByteBuffer buffer, final long offset, final DokanFileInfo fileInfo)
+	public final int onReadFile(final String fileName, final ByteBuffer buffer, final long offset, final DokanFileInfo fileInfo)
 			throws DokanOperationException
 	{
 		log("ReadFile", "Read file: " + fileName);
@@ -256,22 +257,22 @@ public abstract class DokanFSStub implements DokanOperations
 	}
 
 	@Override
-	public void onSetEndOfFile(final String fileName, final long length, final DokanFileInfo fileInfo)
+	public final void onSetEndOfFile(final String fileName, final long length, final DokanFileInfo fileInfo)
 			throws DokanOperationException
 	{
 		log("SetEndOfFile", "Set end of file: " + fileName + " at " + length);
-		// truncateFile(fileName, length);
+		truncateFile(fileName, length);
 	}
 
 	@Override
-	public void onSetFileAttributes(final String fileName, final int fileAttributes, final DokanFileInfo fileInfo)
+	public final void onSetFileAttributes(final String fileName, final int fileAttributes, final DokanFileInfo fileInfo)
 			throws DokanOperationException
 	{
 		log("SetFileAttributes", "Set file attributes: " + fileName + " to " + fileAttributes);
 	}
 
 	@Override
-	public void onSetFileTime(final String fileName, final long creationTime, final long lastAccessTime,
+	public final void onSetFileTime(final String fileName, final long creationTime, final long lastAccessTime,
 			final long lastWriteTime, final DokanFileInfo fileInfo) throws DokanOperationException
 	{
 		log("SetFileTime", "Set file time: " + fileName + " to {C: " + creationTime + "; A: " + lastAccessTime + "; W: "
@@ -279,7 +280,7 @@ public abstract class DokanFSStub implements DokanOperations
 	}
 
 	@Override
-	public void onUnlockFile(final String fileName, final long byteOffset, final long length, final DokanFileInfo fileInfo)
+	public final void onUnlockFile(final String fileName, final long byteOffset, final long length, final DokanFileInfo fileInfo)
 			throws DokanOperationException
 	{
 		log("UnlockFile", "Unlock file: " + fileName);
@@ -287,13 +288,13 @@ public abstract class DokanFSStub implements DokanOperations
 	}
 
 	@Override
-	public void onUnmount(final DokanFileInfo fileInfo) throws DokanOperationException
+	public final void onUnmount(final DokanFileInfo fileInfo) throws DokanOperationException
 	{
 		log("Unmount", "Unmounting.");
 	}
 
 	@Override
-	public int onWriteFile(final String fileName, final ByteBuffer buffer, final long offset, final DokanFileInfo fileInfo)
+	public final int onWriteFile(final String fileName, final ByteBuffer buffer, final long offset, final DokanFileInfo fileInfo)
 			throws DokanOperationException
 	{
 		log("WriteFile", "Write file: " + fileName);

@@ -167,7 +167,7 @@ public class FrameBlender implements VideoHandler
 	@Override
 	public void truncate(final int frameNumber, final long length)
 	{
-		// Do nothing
+		frameSize.put(frameNumber, length);
 	}
 
 	@Override

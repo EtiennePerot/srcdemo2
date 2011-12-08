@@ -4,9 +4,9 @@ interface Strings
 {
 	final String aboutUnknownVersion = "Unknown";
 	final String audioOptBuffered = "WAV (Buffered)";
-	final String audioOptBufferedExplanation = "The .wav audio file will be written to disk in chunks.\nGood to get a .wav without abusing the disk.";
+	final String audioOptBufferedExplanation = "The .wav audio file will be written to disk in chunks.\nGood to get a .wav file without overusing the disk.";
 	final String audioOptDisabled = "Disabled (video only)";
-	final String audioOptDisabledExplanation = "When audio is disabled, no audio processing occurs.\nGood if you are rendering video at a high framerate,\nas the sound file is likely to be off-sync.\nIt is then wise to turn audio off, then do another render\nwith audio enabled.";
+	final String audioOptDisabledExplanation = "When audio is disabled, no audio processing occurs.\nGood if you are rendering video at a high framerate,\nas the sound file is likely to be off-sync.\nIt is then wise to turn audio off, then do another render\nwith audio enabled and video disabled.";
 	final String audioOptDisk = "WAV (Straight to disk)";
 	final String audioOptDiskExplanation = "The .wav audio file will directly be written to disk.\nGood if you\'re not feeling fancy.";
 	final String audioOptFlac = "FLAC";
@@ -30,7 +30,6 @@ interface Strings
 	final String cmdFlagDebugMode = "--srcdemo-debug";
 	final String cmdFlagDebugVideo = "--srcdemo-debug-video";
 	final String cmdFlagDokanDebug = "--dokan-debug";
-	final String cmdFlagHideFiles = "--srcdemo-hide-files";
 	final String cmdHostFramerate = "host_framerate ";
 	final String dateSeparator = "-";
 	final String errDirectoriesEqual = "Directories must not be equal";
@@ -50,6 +49,7 @@ interface Strings
 	final String lblAudioBufferTimeout = "Buffer timeout:";
 	final String lblAudioType = "Audio output:";
 	final String lblBlendRate = "Motion blur blend rate: ";
+	final String lblBufferWarning = "When using a buffer, remember to press \"Deactivate\" at the end of the recording, after having entered \"endmovie\".\nOtherwise, the audio file may be corrupt.";
 	final String lblBuildDate = "Build date:";
 	final String lblDefaultDownloadLink = "http://code.google.com/p/srcdemo2/downloads/list";
 	final String lblEffectiveFps = "Effective recording FPS: ";
