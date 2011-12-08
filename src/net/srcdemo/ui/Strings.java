@@ -4,10 +4,15 @@ interface Strings
 {
 	final String aboutUnknownVersion = "Unknown";
 	final String audioOptBuffered = "WAV (Buffered)";
+	final String audioOptBufferedExplanation = "The .wav audio file will be written to disk in chunks.\nGood to get a .wav without abusing the disk.";
 	final String audioOptDisabled = "Disabled (video only)";
+	final String audioOptDisabledExplanation = "When audio is disabled, no audio processing occurs.\nGood if you are rendering video at a high framerate,\nas the sound file is likely to be off-sync.\nIt is then wise to turn audio off, then do another render\nwith audio enabled.";
 	final String audioOptDisk = "WAV (Straight to disk)";
+	final String audioOptDiskExplanation = "The .wav audio file will directly be written to disk.\nGood if you\'re not feeling fancy.";
 	final String audioOptFlac = "FLAC";
+	final String audioOptFlacExplanation = "FLAC is a lossless, compressed sound format.\nGood for losslessness while keeping the disk usage minimal.";
 	final String audioOptVorbis = "Ogg Vorbis";
+	final String audioOptVorbisExplanation = "Vorbis is a lossy, compressed sound format.\nGood if running low on disk space.";
 	final String btnActivate = "Activate";
 	final String btnBrowse = "Browse...";
 	final String btnDeactivate = "Deactivate";
@@ -77,6 +82,8 @@ interface Strings
 	final String lblUpdateNewVersion = "New version available: ";
 	final String lblUpdateNewVersionNoLink = " (Specific download link not found)";
 	final String lblVideoType = "Video output:";
+	final String lblVorbisQuality = "Vorbis quality";
+	final String lblVorbisQualityPrefix = "q";
 	final String spnAudioBufferSize = " kilobytes";
 	final String spnAudioBufferTimeout = " seconds";
 	final String spnBlendRatePlural = " frames per frame";

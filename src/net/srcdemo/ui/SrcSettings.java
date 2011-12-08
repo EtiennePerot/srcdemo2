@@ -83,6 +83,11 @@ class SrcSettings extends QSettings
 		}
 	}
 
+	int getLastVorbisQuality()
+	{
+		return (Integer) value("vorbisQuality", 8);
+	}
+
 	void setAutoCheckUpdates(final boolean autocheck)
 	{
 		setValue("autoCheckUpdates", autocheck ? "true" : "false");
@@ -141,5 +146,10 @@ class SrcSettings extends QSettings
 	void setLastVideoType(final VideoType videoType)
 	{
 		setValue("videoType", EnumUtils.getIndex(videoType));
+	}
+
+	void setLastVorbisQuality(final int quality)
+	{
+		setValue("vorbisQuality", quality);
 	}
 }

@@ -19,8 +19,11 @@ import net.srcdemo.audio.convert.FlacEncoder;
 import net.srcdemo.audio.convert.VorbisEncoder;
 import net.srcdemo.audio.convert.WAVConverter;
 
+import com.trolltech.qt.core.Qt.Orientation;
 import com.trolltech.qt.gui.QHBoxLayout;
 import com.trolltech.qt.gui.QLabel;
+import com.trolltech.qt.gui.QSlider;
+import com.trolltech.qt.gui.QSlider.TickPosition;
 import com.trolltech.qt.gui.QSpinBox;
 import com.trolltech.qt.gui.QVBoxLayout;
 import com.trolltech.qt.gui.QWidget;
@@ -33,6 +36,23 @@ class AudioUI extends QWidget
 		static {
 			final AudioType[] order = { DISK, BUFFERED, FLAC, VORBIS, DISABLED };
 			EnumUtils.registerOrder(AudioType.class, order);
+		}
+
+		public String getDescription()
+		{
+			switch (this) {
+				case DISABLED:
+					return Strings.audioOptDisabledExplanation;
+				case BUFFERED:
+					return Strings.audioOptBufferedExplanation;
+				case FLAC:
+					return Strings.audioOptFlacExplanation;
+				case VORBIS:
+					return Strings.audioOptVorbisExplanation;
+				case DISK:
+					return Strings.audioOptDiskExplanation;
+			}
+			return null;
 		}
 
 		private boolean requiresBuffer()
@@ -145,10 +165,18 @@ class AudioUI extends QWidget
 
 	private static final double maximumAudioMemoryPortion = 0.65;
 	private EnumComboBox<AudioType> audioType;
+	private QLabel audioTypeLabel;
+	private QVBoxLayout audioTypeVbox;
+	private QVBoxLayout bufferSettingsVbox;
 	private QSpinBox bufferSize;
 	private QSpinBox bufferTimeout;
 	private final Set<QWidget> disablableAudioOptions = new HashSet<QWidget>();
+	private QLabel formatExplanation;
+	private QVBoxLayout mainVbox;
 	private final SrcDemoUI parent;
+	private QHBoxLayout vorbisOptionsBox;
+	private QSlider vorbisQuality;
+	private QLabel vorbisQualityLabel;
 
 	AudioUI(final SrcDemoUI parent)
 	{
@@ -164,6 +192,11 @@ class AudioUI extends QWidget
 
 	void enable(final boolean enable)
 	{
+		updateAudioType();
+		audioTypeLabel.setEnabled(enable);
+		audioType.setEnabled(enable);
+		vorbisQualityLabel.setEnabled(enable);
+		vorbisQuality.setEnabled(enable);
 		for (final QWidget w : disablableAudioOptions) {
 			w.setEnabled(enable);
 		}
@@ -182,7 +215,7 @@ class AudioUI extends QWidget
 			return new BufferedAudioHandlerFactory(new FlacAudioHandlerFactory());
 		}
 		if (type.equals(AudioType.VORBIS)) {
-			return new BufferedAudioHandlerFactory(new OggAudioHandlerFactory(9)); // FIXME: Quality
+			return new BufferedAudioHandlerFactory(new OggAudioHandlerFactory(vorbisQuality.value()));
 		}
 		if (type.equals(AudioType.BUFFERED)) {
 			return new BufferedAudioHandlerFactory(new DiskAudioHandlerFactory());
@@ -197,39 +230,73 @@ class AudioUI extends QWidget
 
 	private void initUI()
 	{
-		final QVBoxLayout vbox = new QVBoxLayout();
+		mainVbox = new QVBoxLayout();
 		{
-			final QHBoxLayout hbox = new QHBoxLayout();
-			hbox.addWidget(disablableAudioWidget(new QLabel(Strings.lblAudioType)));
-			audioType = new EnumComboBox<AudioType>(AudioType.class);
-			audioType.setCurrentItem(getSettings().getLastAudioType());
-			audioType.currentIndexChanged.connect(this, "saveAudioSettings()");
-			hbox.addWidget(disablableAudioWidget(audioType));
-			vbox.addLayout(hbox);
+			audioTypeVbox = new QVBoxLayout();
+			{
+				final QHBoxLayout hbox = new QHBoxLayout();
+				audioTypeLabel = new QLabel(Strings.lblAudioType);
+				hbox.addWidget(audioTypeLabel);
+				audioType = new EnumComboBox<AudioType>(AudioType.class);
+				audioType.setCurrentItem(getSettings().getLastAudioType());
+				audioType.currentIndexChanged.connect(this, "updateAudioType()");
+				hbox.addWidget(audioType);
+				audioTypeVbox.addLayout(hbox);
+			}
+			{
+				formatExplanation = new QLabel();
+				formatExplanation.setWordWrap(true);
+				audioTypeVbox.addWidget(formatExplanation);
+			}
+			{
+				// Vorbis settings
+				vorbisOptionsBox = new QHBoxLayout();
+				vorbisQualityLabel = new QLabel();
+				vorbisOptionsBox.addWidget(vorbisQualityLabel, 1);
+				vorbisQuality = new QSlider();
+				vorbisQuality.setOrientation(Orientation.Horizontal);
+				vorbisQuality.setRange(-2, 10);
+				vorbisQuality.setSingleStep(1);
+				vorbisQuality.setPageStep(1);
+				vorbisQuality.setTickPosition(TickPosition.TicksBelow);
+				vorbisQuality.setTickInterval(1);
+				vorbisQuality.setTracking(true);
+				vorbisQuality.setValue(getSettings().getLastVorbisQuality());
+				vorbisQuality.valueChanged.connect(this, "updateVorbisQualityLevel()");
+				vorbisOptionsBox.addWidget(vorbisQuality, 1);
+				vorbisQualityLabel.setText(Strings.lblVorbisQuality + ": " + Strings.lblVorbisQualityPrefix
+						+ vorbisQuality.value());
+			}
+			mainVbox.addLayout(audioTypeVbox);
 		}
 		{
-			final QHBoxLayout hbox = new QHBoxLayout();
-			hbox.addWidget(disablableAudioWidget(new QLabel(Strings.lblAudioBufferSize)));
-			bufferSize = new QSpinBox();
-			bufferSize.setRange(4, (int) (Runtime.getRuntime().maxMemory() * maximumAudioMemoryPortion / 1024));
-			bufferSize.setSuffix(Strings.spnAudioBufferSize);
-			bufferSize.setValue(getSettings().getLastAudioBufferSize());
-			bufferSize.valueChanged.connect(this, "saveAudioSettings()");
-			hbox.addWidget(disablableAudioWidget(bufferSize));
-			vbox.addLayout(hbox);
+			bufferSettingsVbox = new QVBoxLayout();
+			{
+				final QHBoxLayout hbox = new QHBoxLayout();
+				hbox.addWidget(disablableAudioWidget(new QLabel(Strings.lblAudioBufferSize)));
+				bufferSize = new QSpinBox();
+				bufferSize.setRange(4, (int) (Runtime.getRuntime().maxMemory() * maximumAudioMemoryPortion / 1024));
+				bufferSize.setSuffix(Strings.spnAudioBufferSize);
+				bufferSize.setValue(getSettings().getLastAudioBufferSize());
+				bufferSize.valueChanged.connect(this, "saveAudioSettings()");
+				hbox.addWidget(disablableAudioWidget(bufferSize));
+				bufferSettingsVbox.addLayout(hbox);
+			}
+			{
+				final QHBoxLayout hbox = new QHBoxLayout();
+				hbox.addWidget(disablableAudioWidget(new QLabel(Strings.lblAudioBufferTimeout)));
+				bufferTimeout = new QSpinBox();
+				bufferTimeout.setRange(3, 180);
+				bufferTimeout.setSuffix(Strings.spnAudioBufferTimeout);
+				bufferTimeout.setValue(getSettings().getLastAudioBufferTimeout());
+				bufferTimeout.valueChanged.connect(this, "saveAudioSettings()");
+				hbox.addWidget(disablableAudioWidget(bufferTimeout));
+				bufferSettingsVbox.addLayout(hbox);
+			}
+			mainVbox.addLayout(bufferSettingsVbox);
 		}
-		{
-			final QHBoxLayout hbox = new QHBoxLayout();
-			hbox.addWidget(disablableAudioWidget(new QLabel(Strings.lblAudioBufferTimeout)));
-			bufferTimeout = new QSpinBox();
-			bufferTimeout.setRange(3, 180);
-			bufferTimeout.setSuffix(Strings.spnAudioBufferTimeout);
-			bufferTimeout.setValue(getSettings().getLastAudioBufferTimeout());
-			bufferTimeout.valueChanged.connect(this, "saveAudioSettings()");
-			hbox.addWidget(disablableAudioWidget(bufferTimeout));
-			vbox.addLayout(hbox);
-		}
-		setLayout(vbox);
+		setLayout(mainVbox);
+		updateAudioType();
 	}
 
 	boolean isBufferInUse()
@@ -239,21 +306,68 @@ class AudioUI extends QWidget
 
 	void logParams()
 	{
-		SrcLogger.log("~ Audio parameters block ~");
+		SrcLogger.logAudio("~ Audio parameters block ~");
 		final AudioType current = audioType.getCurrentItem();
-		SrcLogger.log("Audio type: " + current);
-		if (current.requiresBuffer()) {
-			SrcLogger.log("Buffer size: " + bufferSize.value() + " kilobytes");
-			SrcLogger.log("Buffer timeout: " + bufferTimeout.value() + " seconds");
+		SrcLogger.logAudio("Audio type: " + current);
+		if (current.equals(AudioType.VORBIS)) {
+			SrcLogger.logAudio("Vorbis quality: " + Strings.lblVorbisQualityPrefix + vorbisQuality.value());
 		}
-		SrcLogger.log("~ End of audio parameters block ~");
+		if (current.requiresBuffer()) {
+			SrcLogger.logAudio("Buffer size: " + bufferSize.value() + " kilobytes");
+			SrcLogger.logAudio("Buffer timeout: " + bufferTimeout.value() + " seconds");
+		}
+		SrcLogger.logAudio("~ End of audio parameters block ~");
 	}
 
-	@SuppressWarnings("unused")
 	private void saveAudioSettings()
 	{
 		getSettings().setLastAudioType(audioType.getCurrentItem());
 		getSettings().setLastAudioBufferSize(bufferSize.value());
 		getSettings().setLastAudioBufferTimeout(bufferTimeout.value());
+		getSettings().setLastVorbisQuality(vorbisQuality.value());
+	}
+
+	private void updateAudioType()
+	{
+		final AudioType current = audioType.getCurrentItem();
+		formatExplanation.setText(current.getDescription());
+		{
+			// Buffer usage
+			final boolean useBuffer = current.requiresBuffer();
+			if (useBuffer) {
+				if (bufferSettingsVbox.parent() == null) {
+					mainVbox.addLayout(bufferSettingsVbox);
+				}
+			}
+			else {
+				if (bufferSettingsVbox.parent() != null) {
+					mainVbox.removeItem(bufferSettingsVbox);
+					bufferSettingsVbox.setParent(null);
+				}
+			}
+			for (final QWidget widget : disablableAudioOptions) {
+				widget.setVisible(useBuffer);
+			}
+		}
+		{
+			// Vorbis
+			if (current.equals(AudioType.VORBIS) && vorbisOptionsBox.parent() == null) {
+				audioTypeVbox.addLayout(vorbisOptionsBox);
+			}
+			else if (!current.equals(AudioType.VORBIS) && vorbisOptionsBox.parent() != null) {
+				audioTypeVbox.removeItem(vorbisOptionsBox);
+				vorbisOptionsBox.setParent(null);
+			}
+			vorbisQualityLabel.setVisible(current.equals(AudioType.VORBIS));
+			vorbisQuality.setVisible(current.equals(AudioType.VORBIS));
+		}
+		saveAudioSettings();
+	}
+
+	@SuppressWarnings("unused")
+	private void updateVorbisQualityLevel()
+	{
+		vorbisQualityLabel.setText(Strings.lblVorbisQuality + ": " + Strings.lblVorbisQualityPrefix + vorbisQuality.value());
+		saveAudioSettings();
 	}
 }

@@ -291,21 +291,21 @@ class VideoUI extends QWidget
 
 	void logParams()
 	{
-		SrcLogger.log("~ Video parameters block ~");
+		SrcLogger.logVideo("~ Video parameters block ~");
 		final VideoType current = videoType.getCurrentItem();
-		SrcLogger.log("Video type: " + current);
+		SrcLogger.logVideo("Video type: " + current);
 		if (current.equals(VideoType.JPEG)) {
-			SrcLogger.log("JPEG compression: " + jpegCompressionLevel.value());
+			SrcLogger.logVideo("JPEG compression: " + jpegCompressionLevel.value());
 		}
 		else if (current.equals(VideoType.TGA)) {
-			SrcLogger.log("TGA RLE compression is " + (tgaCompressionRLE.isChecked() ? "enabled" : "disabled"));
+			SrcLogger.logVideo("TGA RLE compression is " + (tgaCompressionRLE.isChecked() ? "enabled" : "disabled"));
 		}
 		else if (!current.equals(VideoType.DISABLED)) {
-			SrcLogger.log("Target framerate: " + targetFps.value());
-			SrcLogger.log("Blend rate: " + blendRate.value());
-			SrcLogger.log("Shutter angle: " + shutterAngle.value());
+			SrcLogger.logVideo("Target framerate: " + targetFps.value());
+			SrcLogger.logVideo("Blend rate: " + blendRate.value());
+			SrcLogger.logVideo("Shutter angle: " + shutterAngle.value());
 		}
-		SrcLogger.log("~ End of video parameters block ~");
+		SrcLogger.logVideo("~ End of video parameters block ~");
 	}
 
 	private void saveVideoSettings()
