@@ -53,7 +53,7 @@ public class ImageSaver extends Thread
 			}
 			final File outputFile = demo.getBackedFile(task.getSequenceIndex() + "." + task.getExtension());
 			if (task.save(outputFile)) {
-				demo.notifyFrameSaved(outputFile);
+				demo.notifyFrameSaved(outputFile, task.pixelData, task.width, task.height);
 			}
 		}
 	}

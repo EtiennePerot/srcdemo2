@@ -168,9 +168,9 @@ public class SrcDemo implements Morticianed
 		backingFS.notifyAudioBuffer(status, occupied, total);
 	}
 
-	public void notifyFrameSaved(final File frame)
+	public void notifyFrameSaved(final File frame, final int[] pixelData, final int width, final int height)
 	{
-		backingFS.notifyFrameSaved(frame);
+		backingFS.notifyFrameSaved(frame, pixelData, width, height);
 	}
 
 	@Override

@@ -2,6 +2,8 @@
 <project name="SrcDemo2">
     <property name="root.dir" value="."/>
     <property name="src.dir" value="${root.dir}/src"/>
+    <property name="dokan.src.dir" value="${root.dir}/src-dokan"/>
+    <property name="flac.src.dir" value="${root.dir}/src-flac"/>
     <property name="lib.dir" value="${root.dir}/lib"/>
     <property name="img.dir" value="${root.dir}/img"/>
     <property name="tools.dir" value="${root.dir}/tools"/>
@@ -34,7 +36,7 @@
 	</target>
 	<target name="compile">
 		<mkdir dir="${classes.dir}"/>
-		<javac srcdir="${src.dir}" destdir="${classes.dir}" classpathref="classpath"/>
+		<javac srcdir="${src.dir};${dokan.src.dir};${flac.src.dir}" destdir="${classes.dir}" classpathref="classpath"/>
 	</target>
 	<target name="jar">
 		<mkdir dir="${jar.dir}"/>

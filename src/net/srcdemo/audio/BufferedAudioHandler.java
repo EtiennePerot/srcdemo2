@@ -5,6 +5,7 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.Collection;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.locks.ReentrantLock;
 
 import net.srcdemo.Mortician;
@@ -27,7 +28,7 @@ public class BufferedAudioHandler implements AudioHandler, Morticianed
 	private final File file;
 	private final ReentrantLock fileLock = new ReentrantLock();
 	private long fileSize = 0L;
-	private long lastWrite = -1L;
+	private final AtomicLong lastWrite = new AtomicLong(0L);
 	private final Mortician mortician;
 	private final AudioHandlerFactory subFactory;
 	private AudioHandler subHandler = null;
@@ -64,7 +65,9 @@ public class BufferedAudioHandler implements AudioHandler, Morticianed
 	public void create()
 	{
 		fileLock.lock();
-		subHandler = subFactory.buildHandler(demo);
+		if (subHandler == null) {
+			subHandler = subFactory.buildHandler(demo);
+		}
 		fileLock.unlock();
 	}
 
@@ -94,8 +97,8 @@ public class BufferedAudioHandler implements AudioHandler, Morticianed
 		subHandler.flush();
 		bufferOffset = fileSize;
 		bufferOccupiedSize = 0;
-		lastWrite = System.currentTimeMillis();
 		buffer.reset();
+		lastWrite.set(System.currentTimeMillis());
 		fileLock.unlock();
 		notifyBuffer(AudioBufferStatus.REGULAR);
 	}
@@ -124,7 +127,7 @@ public class BufferedAudioHandler implements AudioHandler, Morticianed
 	@Override
 	public long lastLifeSign()
 	{
-		return lastWrite;
+		return lastWrite.get();
 	}
 
 	@Override
@@ -144,6 +147,7 @@ public class BufferedAudioHandler implements AudioHandler, Morticianed
 		fileLock.lock();
 		SrcLogger.logAudio("Truncating audio buffer from " + fileSize + " to " + length);
 		fileSize = Math.min(length, fileSize);
+		lastWrite.set(System.currentTimeMillis());
 		fileLock.unlock();
 	}
 
@@ -153,7 +157,6 @@ public class BufferedAudioHandler implements AudioHandler, Morticianed
 		final int toWrite = buffer.length;
 		SrcLogger.logAudio("Writing " + toWrite + " bytes to audio buffer at offset " + offset);
 		fileLock.lock();
-		lastWrite = System.currentTimeMillis();
 		if (offset < fileSize) {
 			SrcLogger.logAudio("Offset is behind current buffer position; flushing and doing raw write.");
 			flush();
@@ -182,6 +185,7 @@ public class BufferedAudioHandler implements AudioHandler, Morticianed
 		else {
 			notifyBuffer(AudioBufferStatus.REGULAR);
 		}
+		lastWrite.set(System.currentTimeMillis());
 		fileLock.unlock();
 		return toWrite;
 	}
@@ -192,7 +196,6 @@ public class BufferedAudioHandler implements AudioHandler, Morticianed
 		final int toWrite = buffer.remaining();
 		SrcLogger.logAudio("Writing " + toWrite + " bytes to audio buffer at offset " + offset);
 		fileLock.lock();
-		lastWrite = System.currentTimeMillis();
 		if (offset < fileSize) {
 			SrcLogger.logAudio("Offset is behind current buffer position; flushing and doing raw write.");
 			flush();
@@ -223,6 +226,7 @@ public class BufferedAudioHandler implements AudioHandler, Morticianed
 		else {
 			notifyBuffer(AudioBufferStatus.REGULAR);
 		}
+		lastWrite.set(System.currentTimeMillis());
 		fileLock.unlock();
 		return toWrite;
 	}

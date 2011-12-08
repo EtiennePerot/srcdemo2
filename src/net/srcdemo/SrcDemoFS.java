@@ -165,10 +165,10 @@ public class SrcDemoFS extends LoopbackFS
 		}
 	}
 
-	void notifyFrameSaved(final File savedFrame)
+	void notifyFrameSaved(final File savedFrame, final int[] pixelData, final int width, final int height)
 	{
 		for (final SrcDemoListener listener : demoListeners) {
-			listener.onFrameSaved(savedFrame);
+			listener.onFrameSaved(savedFrame, pixelData, width, height);
 		}
 	}
 

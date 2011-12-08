@@ -11,17 +11,20 @@ import java.util.concurrent.locks.ReentrantLock;
 
 import net.srcdemo.SrcDemo;
 import net.srcdemo.SrcLogger;
+import net.srcdemo.TimedMap;
 import net.srcdemo.video.image.ImageSaver;
 import net.srcdemo.video.image.ImageSavingTaskFactory;
 
 public class FrameBlender implements VideoHandler
 {
+	private static final long frameSizeTimeout = 30000;
 	private final int blendRate;
 	private final ReentrantLock bufferLock = new ReentrantLock();
 	private int currentAllocatedSize = -1;
 	private int[] currentMergedFrame;
 	private final Map<Integer, ByteArrayOutputStream> frameData = new HashMap<Integer, ByteArrayOutputStream>();
 	private final ReentrantLock frameLock = new ReentrantLock();
+	private final Map<Integer, Long> frameSize = new TimedMap<Integer, Long>(frameSizeTimeout);
 	private int framesMerged = -1;
 	private ImageSaver imageSaver;
 	private int maxAcceptedFrame;
@@ -84,6 +87,7 @@ public class FrameBlender implements VideoHandler
 		if (!frameData.containsKey(frameNumber)) {
 			final ByteArrayOutputStream buffer = new ByteArrayOutputStream(maxEncounteredByteSize);
 			frameData.put(frameNumber, buffer);
+			frameSize.put(frameNumber, 0L);
 			bufferLock.unlock();
 			return buffer;
 		}
@@ -95,7 +99,8 @@ public class FrameBlender implements VideoHandler
 	@Override
 	public long getFrameSize(final int frameNumber)
 	{
-		return getFrameByte(frameNumber).size();
+		final Long size = frameSize.get(frameNumber);
+		return size == null ? 0L : size;
 	}
 
 	private void handleFrame(final int frameNumber, final byte[] frameData)
@@ -181,6 +186,7 @@ public class FrameBlender implements VideoHandler
 		catch (final IOException e) {
 			SrcLogger.error("Error while copying data to frame: " + frameNumber, e);
 		}
+		frameSize.put(frameNumber, frameSize.get(frameNumber) + toWrite);
 		return toWrite;
 	}
 }

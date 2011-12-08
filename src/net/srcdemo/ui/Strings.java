@@ -45,7 +45,7 @@ interface Strings
 	final String errUpdateReading = "Error while reading update information.";
 	final String grpRenderingAudioBuffer = "Audio buffer";
 	final String grpRenderingVideoFrames = "Video frames";
-	final String lblAboutIcon = "SrcDemo² - By <a href=\"http://wiki.teamfortress.com/wiki/User:WindPower\">Etienne Perot</a>";
+	final String lblAboutIcon = "SrcDemo² - By <a href=\"http://perot.me/\">Etienne Perot</a>";
 	final String lblAudioBufferSize = "Buffer size:";
 	final String lblAudioBufferTimeout = "Buffer timeout:";
 	final String lblAudioType = "Audio output:";

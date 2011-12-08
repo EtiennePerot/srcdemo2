@@ -38,8 +38,6 @@ public abstract class ImageSavingTask
 		}
 		catch (final IOException e) {
 			SrcLogger.error("Error while writing " + getExtension() + " to " + outputFile, e);
-			pixelData = null;
-			System.gc();
 			return false;
 		}
 		if (result) {
@@ -48,8 +46,6 @@ public abstract class ImageSavingTask
 		else {
 			SrcLogger.error("Error while writing " + getExtension() + " to " + outputFile + " (unspecified).");
 		}
-		pixelData = null;
-		System.gc();
 		return result;
 	}
 

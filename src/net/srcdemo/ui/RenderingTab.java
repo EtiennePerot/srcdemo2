@@ -218,10 +218,10 @@ class RenderingTab extends QWidget implements SrcDemoListener
 	}
 
 	@Override
-	public void onFrameSaved(final File savedFrame)
+	public void onFrameSaved(final File savedFrame, final int[] pixels, final int width, final int height)
 	{
 		framesSaved.incrementAndGet();
-		previewPicture.push(savedFrame);
+		previewPicture.push(pixels, width, height);
 	}
 
 	private void updateUI()

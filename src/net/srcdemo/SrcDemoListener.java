@@ -10,5 +10,5 @@ public interface SrcDemoListener
 
 	public void onFrameProcessed(final String frameName);
 
-	public void onFrameSaved(final File savedFrame);
+	public void onFrameSaved(final File savedFrame, int[] pixels, int width, int height);
 }
