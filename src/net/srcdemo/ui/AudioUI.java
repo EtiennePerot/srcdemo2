@@ -244,11 +244,6 @@ class AudioUI extends QWidget
 				audioTypeVbox.addLayout(hbox);
 			}
 			{
-				formatExplanation = new QLabel();
-				formatExplanation.setWordWrap(true);
-				audioTypeVbox.addWidget(formatExplanation);
-			}
-			{
 				// Vorbis settings
 				vorbisOptionsBox = new QHBoxLayout();
 				vorbisQualityLabel = new QLabel();
@@ -268,6 +263,11 @@ class AudioUI extends QWidget
 						+ vorbisQuality.value());
 			}
 			mainVbox.addLayout(audioTypeVbox);
+		}
+		{
+			formatExplanation = new QLabel();
+			formatExplanation.setWordWrap(true);
+			mainVbox.addWidget(formatExplanation);
 		}
 		{
 			bufferSettingsVbox = new QVBoxLayout();

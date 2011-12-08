@@ -205,11 +205,6 @@ class VideoUI extends QWidget
 				videoTypeVbox.addLayout(hbox);
 			}
 			{
-				formatExplanation = new QLabel();
-				formatExplanation.setWordWrap(true);
-				videoTypeVbox.addWidget(formatExplanation);
-			}
-			{
 				// JPEG settings
 				jpegOptionsBox = new QHBoxLayout();
 				jpegCompressionLevelLabel = new QLabel();
@@ -238,6 +233,11 @@ class VideoUI extends QWidget
 				tgaOptionsBox.addWidget(tgaCompressionRLE);
 			}
 			mainVbox.addLayout(videoTypeVbox);
+		}
+		{
+			formatExplanation = new QLabel();
+			formatExplanation.setWordWrap(true);
+			mainVbox.addWidget(formatExplanation);
 		}
 		{
 			globalVideoOptionsVbox = new QVBoxLayout();

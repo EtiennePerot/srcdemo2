@@ -10,7 +10,7 @@ interface Strings
 	final String audioOptDisk = "WAV (Straight to disk)";
 	final String audioOptDiskExplanation = "The .wav audio file will directly be written to disk.\nGood if you\'re not feeling fancy.";
 	final String audioOptFlac = "FLAC";
-	final String audioOptFlacExplanation = "FLAC is a lossless, compressed sound format.\nGood for losslessness while keeping the disk usage minimal.";
+	final String audioOptFlacExplanation = "FLAC is a lossless, compressed sound format.\nGood for losslessness while keeping disk usage minimal.";
 	final String audioOptVorbis = "Ogg Vorbis";
 	final String audioOptVorbisExplanation = "Vorbis is a lossy, compressed sound format.\nGood if running low on disk space.";
 	final String btnActivate = "Activate";
@@ -109,8 +109,8 @@ interface Strings
 	final String videoOptJpg = "JPEG";
 	final String videoOptJpgExplanation = "JPEG is a lossy, compressed image format.\nGood if running low on disk space.";
 	final String videoOptPng = "PNG";
-	final String videoOptPngExplanation = "PNG is a lossless, compressed image format.\nGood for losslessness while keeping the disk usage minimal.";
+	final String videoOptPngExplanation = "PNG is a lossless, compressed image format.\nGood for losslessness while keeping disk usage minimal.";
 	final String videoOptTga = "TGA";
-	final String videoOptTgaExplanation = "TGA is a lossless, uncompressed image format.\nGood if your disk is very fast but your CPU isn't.";
+	final String videoOptTgaExplanation = "TGA is a lossless, uncompressed image format.\nGood if the disk is very fast but the CPU isn't.";
 	final String windowTitle = "SrcDemo²";
 }
