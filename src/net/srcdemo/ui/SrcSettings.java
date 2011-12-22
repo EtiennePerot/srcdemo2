@@ -4,6 +4,7 @@ import net.srcdemo.EnumUtils;
 import net.srcdemo.ui.AudioUI.AudioType;
 import net.srcdemo.ui.VideoUI.VideoType;
 
+import com.trolltech.qt.core.QByteArray;
 import com.trolltech.qt.core.QSettings;
 
 class SrcSettings extends QSettings
@@ -23,7 +24,7 @@ class SrcSettings extends QSettings
 		return (Integer) value("audioBufferSize", 4096);
 	}
 
-	public int getLastAudioBufferTimeout()
+	int getLastAudioBufferTimeout()
 	{
 		return (Integer) value("audioBufferTimeout", 6);
 	}
@@ -86,6 +87,15 @@ class SrcSettings extends QSettings
 	int getLastVorbisQuality()
 	{
 		return (Integer) value("vorbisQuality", 8);
+	}
+
+	QByteArray getUIGeometry()
+	{
+		final Object geometry = value("uiGeometry", null);
+		if (geometry == null) {
+			return null;
+		}
+		return (QByteArray) geometry;
 	}
 
 	void setAutoCheckUpdates(final boolean autocheck)
@@ -151,5 +161,10 @@ class SrcSettings extends QSettings
 	void setLastVorbisQuality(final int quality)
 	{
 		setValue("vorbisQuality", quality);
+	}
+
+	void setUIGeometry(final QByteArray settings)
+	{
+		setValue("uiGeometry", settings);
 	}
 }

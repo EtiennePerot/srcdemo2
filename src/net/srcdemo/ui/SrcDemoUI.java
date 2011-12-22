@@ -11,7 +11,9 @@ import net.srcdemo.SrcLogger;
 
 import org.apache.commons.io.FileUtils;
 
+import com.trolltech.qt.core.QByteArray;
 import com.trolltech.qt.gui.QApplication;
+import com.trolltech.qt.gui.QCloseEvent;
 import com.trolltech.qt.gui.QFileDialog;
 import com.trolltech.qt.gui.QHBoxLayout;
 import com.trolltech.qt.gui.QIcon;
@@ -132,6 +134,10 @@ public class SrcDemoUI extends QWidget
 		}
 		settings = new SrcSettings();
 		initUI();
+		final QByteArray geometry = settings.getUIGeometry();
+		if (geometry != null) {
+			restoreGeometry(geometry);
+		}
 		show();
 	}
 
@@ -150,6 +156,13 @@ public class SrcDemoUI extends QWidget
 			return Strings.errDirectoriesEqual;
 		}
 		return null;
+	}
+
+	@Override
+	protected void closeEvent(final QCloseEvent event)
+	{
+		settings.setUIGeometry(saveGeometry());
+		super.closeEvent(event);
 	}
 
 	private QWidget disablableWidget(final QWidget widget)
