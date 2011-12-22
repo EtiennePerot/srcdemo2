@@ -14,6 +14,7 @@ import net.srcdemo.audio.BufferedAudioHandler.AudioBufferStatus;
 import com.trolltech.qt.core.QCoreApplication;
 import com.trolltech.qt.core.Qt.AlignmentFlag;
 import com.trolltech.qt.core.Qt.Orientation;
+import com.trolltech.qt.gui.QCheckBox;
 import com.trolltech.qt.gui.QGroupBox;
 import com.trolltech.qt.gui.QHBoxLayout;
 import com.trolltech.qt.gui.QLabel;
@@ -27,6 +28,8 @@ class RenderingTab extends QWidget implements SrcDemoListener
 {
 	private static final DecimalFormat framesProcessedPerSecondFormat = new DecimalFormat(
 			Strings.lblFramesProcessedPerSecondFormat);
+	private static final int maximumPreviewHeight = 480;
+	private static final int maximumPreviewWidth = 640;
 	/**
 	 * Time between UI updates, in milliseconds
 	 */
@@ -79,6 +82,8 @@ class RenderingTab extends QWidget implements SrcDemoListener
 	private QLabel lblLastFrameProcessed;
 	private QLabel lblLastFrameSaved;
 	private final SrcDemoUI parent;
+	private boolean previewEnabled = true;
+	private QCheckBox previewEnabledCheckbox;
 	private UpdatablePicture previewPicture;
 
 	RenderingTab(final SrcDemoUI parent)
@@ -147,8 +152,14 @@ class RenderingTab extends QWidget implements SrcDemoListener
 				videoVbox.addLayout(hbox, 0);
 			}
 			{
-				previewPicture = new UpdatablePicture(Files.iconRenderingDefault);
+				previewPicture = new UpdatablePicture(Files.iconRenderingDefault, maximumPreviewWidth, maximumPreviewHeight);
 				videoVbox.addWidget(previewPicture, 1);
+			}
+			{
+				previewEnabledCheckbox = new QCheckBox(Strings.lblEnablePreview);
+				previewEnabledCheckbox.stateChanged.connect(this, "updatePreviewEnabled()");
+				previewEnabledCheckbox.setChecked(previewEnabled);
+				videoVbox.addWidget(previewEnabledCheckbox, 0, AlignmentFlag.AlignHCenter);
 			}
 			videoBox.setLayout(videoVbox);
 			mainHbox.addWidget(videoBox, 1);
@@ -221,7 +232,15 @@ class RenderingTab extends QWidget implements SrcDemoListener
 	public void onFrameSaved(final File savedFrame, final int[] pixels, final int width, final int height)
 	{
 		framesSaved.incrementAndGet();
-		previewPicture.push(pixels, width, height);
+		if (previewEnabled) {
+			previewPicture.push(pixels, width, height);
+		}
+	}
+
+	@SuppressWarnings("unused")
+	private void updatePreviewEnabled()
+	{
+		previewEnabled = previewEnabledCheckbox.isChecked();
 	}
 
 	private void updateUI()
@@ -231,7 +250,9 @@ class RenderingTab extends QWidget implements SrcDemoListener
 		lblFramesProcessedPerSecond.setText(framerate == null ? Strings.lblFramesProcessedPerSecondDefault
 				: framesProcessedPerSecondFormat.format(framerate));
 		lblLastFrameSaved.setText(Integer.toString(framesSaved.get()));
-		previewPicture.updatePicture();
+		if (previewEnabled) {
+			previewPicture.updatePicture();
+		}
 		if (audioBufferInUse && parent.isAudioBufferInUse()) {
 			switch (audioBufferStatus) {
 				case REGULAR:

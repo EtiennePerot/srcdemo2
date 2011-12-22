@@ -299,7 +299,7 @@ public class SrcDemoUI extends QWidget
 		mountedFS = new SrcDemoFS(getBackingDirectory().getAbsolutePath(), videoUi.getFactory(), audioUi.getFactory());
 		mountedFS.addListener(renderTab);
 		mountedFS.setLogging(dokanLoggingMode);
-		mountedFS.mount(getMountpoint().getAbsolutePath());
+		mountedFS.mount(getMountpoint());
 		fsLock.unlock();
 		updateStatus();
 		selectTab(renderTab);

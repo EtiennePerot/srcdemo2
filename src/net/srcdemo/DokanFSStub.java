@@ -2,6 +2,7 @@ package net.srcdemo;
 
 import static net.decasdev.dokan.WinError.ERROR_FILE_NOT_FOUND;
 
+import java.io.File;
 import java.nio.ByteBuffer;
 import java.util.Collection;
 
@@ -89,22 +90,24 @@ public abstract class DokanFSStub implements DokanOperations
 		}
 	}
 
-	public void mount(final String mountPoint)
+	public void mount(final File mountPoint)
 	{
 		final DokanFSStub oldThis = this;
+		final String mountPointString = SymlinkResolver.resolveSymlinks(mountPoint).toString();
 		new Thread("Dokan filesystem thread")
 		{
 			@Override
 			public void run()
 			{
-				oldThis.mountPoint = mountPoint;
+				log("Mount", "Mounting to: " + mountPointString);
+				oldThis.mountPoint = mountPointString;
 				try {
-					Dokan.removeMountPoint(mountPoint);
+					Dokan.removeMountPoint(mountPointString);
 				}
 				catch (final Throwable e) {
 					// Too bad
 				}
-				final DokanOptions dokanOptions = new DokanOptions(mountPoint, 0, 0);
+				final DokanOptions dokanOptions = new DokanOptions(mountPointString, 0, 0);
 				final int result = Dokan.mount(dokanOptions, oldThis);
 				log("Mount", "Mounting result: " + result);
 			}

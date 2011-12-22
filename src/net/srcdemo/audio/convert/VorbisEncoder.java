@@ -34,7 +34,7 @@ public class VorbisEncoder implements AudioHandler
 						break;
 					}
 					fileSize.addAndGet(read);
-					output.write(buffer);
+					output.write(buffer, 0, read);
 				}
 				catch (final IOException e) {
 					SrcLogger.error("Couldn't read from OggEnc stdout.", e);

@@ -16,14 +16,6 @@ import net.decasdev.dokan.CreationDispositionEnum;
 
 public class LoopbackFS extends DokanFSStub
 {
-	public static void main(final String[] args)
-	{
-		final LoopbackFS fs = new LoopbackFS(args[0]);
-		fs.setLogging(false);
-		fs.mount(args[1]);
-		System.exit(0);
-	}
-
 	private final File backingStorage;
 	private final ReentrantLock filesHandleLock = new ReentrantLock();
 	private final Map<File, FileChannel> openedFiles = new HashMap<File, FileChannel>();
