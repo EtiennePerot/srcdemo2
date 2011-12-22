@@ -29,6 +29,11 @@ class UpdatablePicture extends QLabel
 	private int rawWidth = 0;
 	private QSize size = null;
 
+	UpdatablePicture(final File initialImage)
+	{
+		this(initialImage, null, null);
+	}
+
 	UpdatablePicture(final File initialImage, final Integer maxWidth, final Integer maxHeight)
 	{
 		image = initialImage.getAbsolutePath();
