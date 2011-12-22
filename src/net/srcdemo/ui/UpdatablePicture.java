@@ -42,14 +42,17 @@ class UpdatablePicture extends QLabel
 		setAlignment(AlignmentFlag.AlignCenter);
 		setSizePolicy(Policy.MinimumExpanding, Policy.MinimumExpanding);
 		setMinimumSize(1, 1);
+		updatePicture();
 	}
 
 	private QSize getTargetSize()
 	{
-		size = pixmapOriginal.size();
-		final QSize targetSize = new QSize(Math.min(size.width(), width() - imageBorderPixels), Math.min(size.height(),
-				height() - imageBorderPixels));
-		size.scale(targetSize, AspectRatioMode.KeepAspectRatio);
+		if (pixmapOriginal != null) {
+			size = pixmapOriginal.size();
+			final QSize targetSize = new QSize(Math.min(size.width(), width() - imageBorderPixels), Math.min(size.height(),
+					height() - imageBorderPixels));
+			size.scale(targetSize, AspectRatioMode.KeepAspectRatio);
+		}
 		return size;
 	}
 
@@ -78,7 +81,8 @@ class UpdatablePicture extends QLabel
 	protected void resizeEvent(final QResizeEvent event)
 	{
 		lock.lock();
-		if (!getTargetSize().equals(pixmap().size())) {
+		final QSize targetSize = getTargetSize();
+		if (targetSize != null && !targetSize.equals(pixmap().size())) {
 			needUpdate = true;
 			updatePicture();
 		}

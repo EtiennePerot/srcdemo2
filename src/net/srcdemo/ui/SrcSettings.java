@@ -89,6 +89,11 @@ class SrcSettings extends QSettings
 		return (Integer) value("vorbisQuality", 8);
 	}
 
+	boolean getPreviewEnabled()
+	{
+		return Boolean.parseBoolean((String) value("previewPicture", "true"));
+	}
+
 	QByteArray getUIGeometry()
 	{
 		final Object geometry = value("uiGeometry", null);
@@ -161,6 +166,11 @@ class SrcSettings extends QSettings
 	void setLastVorbisQuality(final int quality)
 	{
 		setValue("vorbisQuality", quality);
+	}
+
+	void setPreviewEnabled(final boolean enabled)
+	{
+		setValue("previewPicture", enabled ? "true" : "false");
 	}
 
 	void setUIGeometry(final QByteArray settings)

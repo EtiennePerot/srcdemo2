@@ -82,7 +82,7 @@ class RenderingTab extends QWidget implements SrcDemoListener
 	private QLabel lblLastFrameProcessed;
 	private QLabel lblLastFrameSaved;
 	private final SrcDemoUI parent;
-	private boolean previewEnabled = true;
+	private boolean previewEnabled;
 	private QCheckBox previewEnabledCheckbox;
 	private UpdatablePicture previewPicture;
 
@@ -119,6 +119,11 @@ class RenderingTab extends QWidget implements SrcDemoListener
 		for (final QWidget w : audioWidgets) {
 			w.setEnabled(enable);
 		}
+	}
+
+	private SrcSettings getSettings()
+	{
+		return parent.getSettings();
 	}
 
 	private void initUI()
@@ -158,6 +163,7 @@ class RenderingTab extends QWidget implements SrcDemoListener
 			{
 				previewEnabledCheckbox = new QCheckBox(Strings.lblEnablePreview);
 				previewEnabledCheckbox.stateChanged.connect(this, "updatePreviewEnabled()");
+				previewEnabled = getSettings().getPreviewEnabled();
 				previewEnabledCheckbox.setChecked(previewEnabled);
 				videoVbox.addWidget(previewEnabledCheckbox, 0, AlignmentFlag.AlignHCenter);
 			}
@@ -241,6 +247,7 @@ class RenderingTab extends QWidget implements SrcDemoListener
 	private void updatePreviewEnabled()
 	{
 		previewEnabled = previewEnabledCheckbox.isChecked();
+		getSettings().setPreviewEnabled(previewEnabled);
 	}
 
 	private void updateUI()
