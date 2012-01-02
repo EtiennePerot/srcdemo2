@@ -8,6 +8,9 @@ import java.util.concurrent.locks.ReentrantLock;
 
 import net.srcdemo.SrcDemoFS;
 import net.srcdemo.SrcLogger;
+import net.srcdemo.userfs.UserFS;
+import net.srcdemo.userfs.UserFS.DokanNotInstalledException;
+import net.srcdemo.userfs.UserFS.DokanVersionException;
 
 import org.apache.commons.io.FileUtils;
 
@@ -87,8 +90,17 @@ public class SrcDemoUI extends QWidget
 			}
 		}
 		QApplication.initialize(args);
-		final String dokanMessage = DokanMessage.check();
-		if (dokanMessage == null) {
+		boolean initialized = false;
+		try {
+			initialized = UserFS.init();
+		}
+		catch (final DokanNotInstalledException e) {
+			new UserFSMessage(Strings.errDokanNotInstalled).show();
+		}
+		catch (final DokanVersionException e) {
+			new UserFSMessage(Strings.errInvalidDokan).show();
+		}
+		if (initialized) {
 			final SrcDemoUI ui = new SrcDemoUI();
 			Runtime.getRuntime().addShutdownHook(new Thread("Unmount shtudown hook")
 			{
@@ -99,11 +111,8 @@ public class SrcDemoUI extends QWidget
 					ui.unmount();
 				}
 			});
+			QApplication.exec();
 		}
-		else {
-			new DokanMessage(dokanMessage).show();
-		}
-		QApplication.exec();
 		System.exit(returnCode);
 	}
 
