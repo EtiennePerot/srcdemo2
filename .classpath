@@ -16,6 +16,12 @@
 		</attributes>
 	</classpathentry>
 	<classpathentry kind="lib" path="lib/sparta.jar"/>
+	<classpathentry kind="lib" path="lib/qtjambi/windows/qtjambi-4.7.0.jar">
+		<attributes>
+			<attribute name="org.eclipse.jdt.launching.CLASSPATH_ATTR_LIBRARY_PATH_ENTRY" value="SrcDemo2/lib/qtjambi/windows"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="lib" path="lib/qtjambi/windows/qtjambi-win32-msvc2008-4.7.0.jar"/>
 	<classpathentry kind="lib" path="lib/qtjambi/osx/qtjambi-4.7.0.jar"/>
 	<classpathentry kind="lib" path="lib/qtjambi/osx/qtjambi-macosx-gcc-4.7.0.jar"/>
 	<classpathentry kind="lib" path="lib/qtjambi/osx/qtjambi-util-4.7.0.jar"/>
