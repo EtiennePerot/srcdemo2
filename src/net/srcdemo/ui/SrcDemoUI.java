@@ -14,6 +14,7 @@ import net.srcdemo.userfs.UserFS.DokanVersionException;
 import org.apache.commons.io.FileUtils;
 
 import com.trolltech.qt.core.QByteArray;
+import com.trolltech.qt.core.QCoreApplication;
 import com.trolltech.qt.gui.QApplication;
 import com.trolltech.qt.gui.QCloseEvent;
 import com.trolltech.qt.gui.QFileDialog;
@@ -21,6 +22,7 @@ import com.trolltech.qt.gui.QHBoxLayout;
 import com.trolltech.qt.gui.QIcon;
 import com.trolltech.qt.gui.QLabel;
 import com.trolltech.qt.gui.QLineEdit;
+import com.trolltech.qt.gui.QMenuBar;
 import com.trolltech.qt.gui.QPushButton;
 import com.trolltech.qt.gui.QTabWidget;
 import com.trolltech.qt.gui.QVBoxLayout;
@@ -68,10 +70,15 @@ public class SrcDemoUI extends QWidget {
 				version = FileUtils.readFileToString(Files.versionFile);
 			}
 			catch (final Exception e) {
-				// Whatever
+				// Consider the version number to be unknown
+				version = null;
 			}
 		}
 		QApplication.initialize(args);
+		QCoreApplication.setApplicationName(Strings.productName);
+		if (version != null) {
+			QCoreApplication.setApplicationVersion(version);
+		}
 		boolean initialized = false;
 		try {
 			initialized = UserFS.init();
@@ -113,13 +120,20 @@ public class SrcDemoUI extends QWidget {
 	private VideoUI				videoUi;
 
 	SrcDemoUI() {
-		setWindowTitle(Strings.windowTitle + (getVersion() == null ? "" : Strings.titleBuildPrefix + getVersion()));
+		setWindowTitle(Strings.productName + (getVersion() == null ? "" : Strings.titleBuildPrefix + getVersion()));
+		final QIcon icon;
 		if (debugMode) {
-			setWindowIcon(new QIcon(Files.iconWindowDebug.getAbsolutePath()));
+			icon = new QIcon(Files.iconWindowDebug.getAbsolutePath());
 		} else {
-			setWindowIcon(new QIcon(Files.iconWindowMain.getAbsolutePath()));
+			icon = new QIcon(Files.iconWindowMain.getAbsolutePath());
 		}
+		// Need to do both in order for it to work on OS X
+		QApplication.setWindowIcon(icon);
+		setWindowIcon(icon);
 		settings = new SrcSettings();
+		// Build a dummy QMenuBar to make the OS X guys happy
+		@SuppressWarnings("unused")
+		final QMenuBar dummyBar = new QMenuBar();
 		initUI();
 		final QByteArray geometry = settings.getUIGeometry();
 		if (geometry != null) {

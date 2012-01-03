@@ -1,0 +1,6 @@
+#!/bin/bash
+
+selfDir="`dirname "$0"`"
+resourcesDir="$selfDir/../Resources"
+staticPython="$resourcesDir/static-python/bin/python"
+"$staticPython" -OO "$resourcesDir/SrcDemo2.py" "$@"

@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project name="SrcDemo2">
+    <property name="displayname" value="SrcDemo²"/>
     <property name="root.dir" value="."/>
     <property name="src.dir" value="${root.dir}/src"/>
     <property name="dokan.src.dir" value="${root.dir}/src-dokan"/>
@@ -16,7 +17,10 @@
     <property name="any.tools.dir" value="${tools.dir}/any"/>
 	<property name="build.dir" value="${root.dir}/build"/>
     <property name="launcher.dir" value="${root.dir}/launcher"/>
-    <property name="installer.dir" value="${root.dir}/installer"/>
+    <property name="package.dir" value="${root.dir}/package"/>
+    <property name="windows.package.dir" value="${package.dir}/windows"/>
+    <property name="osx.package.dir" value="${package.dir}/osx"/>
+    <property name="any.package.dir" value="${package.dir}/any"/>
 	<path id="classpath">
 		<fileset dir="${lib.dir}" includes="**/*.jar"/>
 	</path>
@@ -37,21 +41,40 @@
 	<property name="launcher.distdir" value="${launcher.dir}/dist"/>
     <property name="launcher.precompileddir" value="${launcher.dir}/precompiled"/>
     <property name="launcher.script" value="${launcher.dir}/setup.py"/>
-    <property name="installer.ant" value="${installer.dir}/nsisant.jar"/>
-    <property name="installer.script" value="${installer.dir}/setup.nsi"/>
-    <property name="installer.file" value="${ant.project.name}-setup.exe"/>
-    <property name="program.versionscript" value="${installer.dir}/buildversion.py"/>
+    <property name="launcher.source" value="SrcDemo2*.py"/>
+    <property name="windows.package.nsiant" value="${windows.package.dir}/nsisant.jar"/>
+    <property name="windows.package.script" value="${windows.package.dir}/setup.nsi"/>
+    <property name="windows.package.file" value="${ant.project.name}-setup.exe"/>
+    <property name="osx.package.app.dir" value="${build.dir}/${displayname}.app"/>
+    <property name="osx.package.app.contents.dir" value="${osx.package.app.dir}/Contents"/>
+    <property name="osx.package.app.info.script" value="${osx.package.dir}/make-plist.py"/>
+    <property name="osx.package.app.info.output" value="${osx.package.dir}/Info.plist"/>
+    <property name="osx.package.app.pkginfo" value="${osx.package.dir}/PkgInfo"/>
+    <property name="osx.package.app.macos.dir" value="${osx.package.app.contents.dir}/MacOS"/>
+    <property name="osx.package.app.macos.launcher.source" value="${osx.package.dir}/srcdemo2"/>
+    <property name="osx.package.app.macos.launcher.dest" value="${osx.package.app.macos.dir}/srcdemo2"/>
+    <property name="osx.package.app.resources.dir" value="${osx.package.app.contents.dir}/Resources"/>
+    <property name="osx.package.app.resources.python.dir" value="${osx.package.app.resources.dir}/static-python"/>
+    <property name="osx.package.app.resources.icon.target" value="img/icon.icns"/>
+    <property name="osx.package.app.resources.icon.file" value="${osx.package.app.resources.dir}/icon.icns"/>
+    <property name="osx.package.app.python" value="${osx.package.dir}/static-python"/>
+    <property name="program.versionscript" value="${any.package.dir}/buildversion.py"/>
     <property name="program.versionfile" value="${root.dir}/version.txt"/>
     <property name="dll.includes" value="**/*.dll"/>
     <property name="svn.excludes" value="**/*.svn"/>
     <property name="img.excludes" value="**/*.psd"/>
 	<target name="clean">
 		<delete dir="${build.dir}"/>
+		<delete file="${program.versionfile}"/>
+		<delete file="${osx.package.app.info.output}"/>
 	</target>
     <target name="compile" depends="clean">
         <mkdir dir="${classes.dir}"/>
     </target>
     <target name="compile-windows" depends="compile">
+        <javac srcdir="${any.src.dir};${dokan.src.dir}" destdir="${classes.dir}" classpathref="classpath"/>
+    </target>
+    <target name="compile-osx" depends="compile">
         <javac srcdir="${any.src.dir};${dokan.src.dir}" destdir="${classes.dir}" classpathref="classpath"/>
     </target>
 	<target name="jar-init" depends="compile">
@@ -60,7 +83,7 @@
         <exec executable="python">
             <arg value="${program.versionscript}"/>
         </exec>
-        <move todir="${jar.dir}" file="${program.versionfile}"/>
+        <copy todir="${jar.dir}" file="${program.versionfile}"/>
         <copy todir="${jar.img.dir}">
             <fileset dir="${img.dir}" excludes="${svn.excludes},${img.excludes}"/>
         </copy>
@@ -86,11 +109,20 @@
         <copy todir="${jar.windows.lib.dir}">
             <fileset dir="${windows.lib.dir}" excludes="${svn.excludes}"/>
         </copy>
+        <copy todir="${jar.windows.tools.dir}">
+            <fileset dir="${windows.tools.dir}" excludes="${svn.excludes}"/>
+        </copy>
 		<move todir="${jar.dir}">
 			<fileset dir="${jar.windows.lib.dir}" includes="${dll.includes}"/>
 		</move>
-        <copy todir="${jar.windows.tools.dir}">
-            <fileset dir="${windows.tools.dir}" excludes="${svn.excludes}"/>
+		<antcall target="jar-finalize"/>
+	</target>
+	<target name="jar-osx" depends="compile-osx,jar-init">
+        <copy todir="${jar.osx.lib.dir}">
+            <fileset dir="${osx.lib.dir}" excludes="${svn.excludes}"/>
+        </copy>
+        <copy todir="${jar.osx.tools.dir}">
+            <fileset dir="${osx.tools.dir}" excludes="${svn.excludes}"/>
         </copy>
 		<antcall target="jar-finalize"/>
 	</target>
@@ -108,15 +140,47 @@
 		<delete dir="${launcher.builddir}"/>
 		<delete dir="${launcher.distdir}"/>
 	</target>
-	<target name="launcher">
+	<target name="launcher-windows">
         <copy todir="${jar.dir}">
             <fileset dir="${launcher.precompileddir}" excludes="${svn.excludes}"/>
         </copy>
 	</target>
-    <target name="package-windows" depends="jar-windows,launcher">
+    <target name="package-windows" depends="jar-windows,launcher-windows">
     	<!-- Assumes makensis.exe is in the path. Note: Use Unicode NSIS, not regular NSIS! -->
-        <delete file="${installer.file}"/>
-        <taskdef name="nsis" classname="com.danielreese.nsisant.Task" classpath="${installer.ant}"/>
-    	<nsis script="${installer.script}"/>
+        <delete file="${windows.package.file}"/>
+        <taskdef name="nsis" classname="com.danielreese.nsisant.Task" classpath="${windows.package.nsiant}"/>
+    	<nsis script="${windows.package.script}"/>
+    	<antcall target="package-finalize"/>
     </target>
+	<target name="buildapp-osx" depends="jar-osx">
+		<mkdir dir="${osx.package.app.dir}"/>
+        <exec executable="python">
+            <arg value="${osx.package.app.info.script}"/>
+        </exec>
+		<copy file="${osx.package.app.info.output}" todir="${osx.package.app.contents.dir}"/>
+		<copy file="${osx.package.app.pkginfo}" todir="${osx.package.app.contents.dir}"/>
+		<mkdir dir="${osx.package.app.macos.dir}"/>
+		<copy file="${osx.package.app.macos.launcher.source}" tofile="${osx.package.app.macos.launcher.dest}"/>
+		<chmod file="${osx.package.app.macos.launcher.dest}" perm="ugo+rx"/>
+		<mkdir dir="${osx.package.app.resources.dir}"/>
+        <copy todir="${osx.package.app.resources.python.dir}">
+            <fileset dir="${osx.package.app.python}" excludes="${svn.excludes}"/>
+        </copy>
+		<chmod perm="ugo+rx" maxparallel="100">
+			<fileset dir="${osx.package.app.resources.python.dir}" includes="**/*"/>
+		</chmod>
+		<copy todir="${osx.package.app.resources.dir}">
+			<fileset dir="${launcher.dir}" includes="${launcher.source}"/>
+		</copy>
+		<copy todir="${osx.package.app.resources.dir}">
+			<fileset dir="${jar.dir}" includes="**/*"/>
+		</copy>
+		<symlink link="${osx.package.app.resources.icon.file}" resource="${osx.package.app.resources.icon.target}"/>
+	</target>
+	<target name="package-osx" depends="buildapp-osx">
+		<antcall target="package-finalize"/>
+	</target>
+	<target name="package-finalize">
+		<antcall target="clean"/>
+	</target>
 </project>

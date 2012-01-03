@@ -122,15 +122,6 @@ SectionEnd
 # Installer functions
 Function .onInit
     InitPluginsDir
-    ReadRegStr $R0 HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${SIMPLENAME}" "UninstallString"
-    StrCmp $R0 "" done
-    MessageBox MB_YESNOCANCEL|MB_ICONINFORMATION "$(^Name) is already installed. $\n$\nWould you like to uninstall it before installing the new version?" IDYES uninst IDNO done
-    Abort
-    # Run the uninstaller
-    uninst:
-        ClearErrors
-        ExecWait '$R0 _?=$INSTDIR'
-    done:
 FunctionEnd
 
 # Uninstaller functions
