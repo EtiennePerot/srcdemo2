@@ -1,29 +1,29 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
 	<classpathentry kind="src" path="src"/>
-	<classpathentry kind="src" path="src-dokan"/>
+	<classpathentry kind="src" path="src-dokan">
+		<attributes>
+			<attribute name="org.eclipse.jdt.launching.CLASSPATH_ATTR_LIBRARY_PATH_ENTRY" value="SrcDemo2/lib/windows"/>
+		</attributes>
+	</classpathentry>
 	<classpathentry kind="src" path="src-flac"/>
-	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER">
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/jdk-1.6-srcdemo">
 		<attributes>
 			<attribute name="org.eclipse.jdt.launching.CLASSPATH_ATTR_LIBRARY_PATH_ENTRY" value="SrcDemo2/lib"/>
 		</attributes>
 	</classpathentry>
-	<classpathentry kind="lib" path="lib/commons-io-1.4.jar"/>
-	<classpathentry kind="lib" path="lib/trove-2.0.3.jar"/>
-	<classpathentry kind="lib" path="lib/horrorss.jar" sourcepath="lib/horrorss.src.zip">
+	<classpathentry kind="lib" path="lib/any/commons-io/commons-io-1.4.jar"/>
+	<classpathentry kind="lib" path="lib/any/horrorss/horrorss.jar" sourcepath="lib/any/horrorss/horrorss.src.zip">
 		<attributes>
-			<attribute name="javadoc_location" value="jar:platform:/resource/SrcDemo2/lib/horrorss.javadoc.zip!/"/>
+			<attribute name="javadoc_location" value="jar:platform:/resource/SrcDemo2/lib/any/horrorss/horrorss.javadoc.zip!/"/>
 		</attributes>
 	</classpathentry>
-	<classpathentry kind="lib" path="lib/sparta.jar"/>
-	<classpathentry kind="lib" path="lib/qtjambi/windows/qtjambi-4.7.0.jar">
-		<attributes>
-			<attribute name="org.eclipse.jdt.launching.CLASSPATH_ATTR_LIBRARY_PATH_ENTRY" value="SrcDemo2/lib/qtjambi/windows"/>
-		</attributes>
-	</classpathentry>
-	<classpathentry kind="lib" path="lib/qtjambi/windows/qtjambi-win32-msvc2008-4.7.0.jar"/>
-	<classpathentry kind="lib" path="lib/qtjambi/osx/qtjambi-4.7.0.jar"/>
-	<classpathentry kind="lib" path="lib/qtjambi/osx/qtjambi-macosx-gcc-4.7.0.jar"/>
-	<classpathentry kind="lib" path="lib/qtjambi/osx/qtjambi-util-4.7.0.jar"/>
+	<classpathentry kind="lib" path="lib/any/horrorss/sparta.jar"/>
+	<classpathentry kind="lib" path="lib/any/trove/trove-2.0.3.jar"/>
+	<classpathentry kind="lib" path="lib/osx/qtjambi/qtjambi-4.7.0.jar"/>
+	<classpathentry kind="lib" path="lib/osx/qtjambi/qtjambi-macosx-gcc-4.7.0.jar"/>
+	<classpathentry kind="lib" path="lib/osx/qtjambi/qtjambi-util-4.7.0.jar"/>
+	<classpathentry kind="lib" path="lib/windows/qtjambi/qtjambi-4.7.0.jar"/>
+	<classpathentry kind="lib" path="lib/windows/qtjambi/qtjambi-win32-msvc2008-4.7.0.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

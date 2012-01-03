@@ -4,9 +4,16 @@
     <property name="src.dir" value="${root.dir}/src"/>
     <property name="dokan.src.dir" value="${root.dir}/src-dokan"/>
     <property name="flac.src.dir" value="${root.dir}/src-flac"/>
+    <property name="any.src.dir" value="${src.dir};${flac.src.dir}"/>
     <property name="lib.dir" value="${root.dir}/lib"/>
+    <property name="windows.lib.dir" value="${lib.dir}/windows"/>
+    <property name="osx.lib.dir" value="${lib.dir}/osx"/>
+    <property name="any.lib.dir" value="${lib.dir}/any"/>
     <property name="img.dir" value="${root.dir}/img"/>
     <property name="tools.dir" value="${root.dir}/tools"/>
+    <property name="windows.tools.dir" value="${tools.dir}/windows"/>
+    <property name="osx.tools.dir" value="${tools.dir}/osx"/>
+    <property name="any.tools.dir" value="${tools.dir}/any"/>
 	<property name="build.dir" value="${root.dir}/build"/>
     <property name="launcher.dir" value="${root.dir}/launcher"/>
     <property name="installer.dir" value="${root.dir}/installer"/>
@@ -16,9 +23,15 @@
 	<property name="classes.dir" value="${build.dir}/classes"/>
 	<property name="jar.dir" value="${build.dir}/jar"/>
 	<property name="jar.file" value="${jar.dir}/${ant.project.name}.jar"/>
-    <property name="jar.libdir" value="${jar.dir}/lib"/>
-    <property name="jar.imgdir" value="${jar.dir}/img"/>
-    <property name="jar.toolsdir" value="${jar.dir}/tools"/>
+    <property name="jar.lib.dir" value="${jar.dir}/lib"/>
+    <property name="jar.windows.lib.dir" value="${jar.lib.dir}/windows"/>
+    <property name="jar.osx.lib.dir" value="${jar.lib.dir}/osx"/>
+    <property name="jar.any.lib.dir" value="${jar.lib.dir}/any"/>
+    <property name="jar.img.dir" value="${jar.dir}/img"/>
+    <property name="jar.tools.dir" value="${jar.dir}/tools"/>
+    <property name="jar.windows.tools.dir" value="${jar.tools.dir}/windows"/>
+    <property name="jar.osx.tools.dir" value="${jar.tools.dir}/osx"/>
+    <property name="jar.any.tools.dir" value="${jar.tools.dir}/any"/>
 	<property name="main-class" value="net.srcdemo.ui.SrcDemoUI"/>
 	<property name="launcher.builddir" value="${launcher.dir}/build"/>
 	<property name="launcher.distdir" value="${launcher.dir}/dist"/>
@@ -29,48 +42,59 @@
     <property name="installer.file" value="${ant.project.name}-setup.exe"/>
     <property name="program.versionscript" value="${installer.dir}/buildversion.py"/>
     <property name="program.versionfile" value="${root.dir}/version.txt"/>
+    <property name="dll.includes" value="**/*.dll"/>
     <property name="svn.excludes" value="**/*.svn"/>
     <property name="img.excludes" value="**/*.psd"/>
 	<target name="clean">
 		<delete dir="${build.dir}"/>
 	</target>
-	<target name="compile">
-		<mkdir dir="${classes.dir}"/>
-		<javac srcdir="${src.dir};${dokan.src.dir};${flac.src.dir}" destdir="${classes.dir}" classpathref="classpath"/>
-	</target>
-	<target name="jar">
-		<mkdir dir="${jar.dir}"/>
+    <target name="compile" depends="clean">
+        <mkdir dir="${classes.dir}"/>
+    </target>
+    <target name="compile-windows" depends="compile">
+        <javac srcdir="${any.src.dir};${dokan.src.dir}" destdir="${classes.dir}" classpathref="classpath"/>
+    </target>
+	<target name="jar-init" depends="compile">
+        <mkdir dir="${jar.dir}"/>
         <copy todir="${jar.dir}" file="LICENSE"/>
-        <copy todir="${jar.libdir}">
-            <fileset dir="${lib.dir}" excludes="${svn.excludes}"/>
-        </copy>
-		<move todir="${jar.dir}">
-			<fileset dir="${jar.libdir}" includes="**/*.dll"/>
-		</move>
-		<exec executable="python">
-			<arg value="${program.versionscript}"/>
-		</exec>
+        <exec executable="python">
+            <arg value="${program.versionscript}"/>
+        </exec>
         <move todir="${jar.dir}" file="${program.versionfile}"/>
-        <copy todir="${jar.imgdir}">
+        <copy todir="${jar.img.dir}">
             <fileset dir="${img.dir}" excludes="${svn.excludes},${img.excludes}"/>
         </copy>
-        <copy todir="${jar.toolsdir}">
-            <fileset dir="${tools.dir}" excludes="${svn.excludes}"/>
+        <copy todir="${jar.any.lib.dir}">
+            <fileset dir="${any.lib.dir}" excludes="${svn.excludes}"/>
         </copy>
-		<path id="jar-classpath">
-			<fileset dir="${jar.libdir}" includes="**/*.jar"/>
-		</path>
-		<manifestclasspath property="lib.list" jarfile="${jar.file}">
-			<classpath refid="jar-classpath"/>
-		</manifestclasspath>
-		<jar destfile="${jar.file}" basedir="${classes.dir}">
-			<manifest>
-				<attribute name="Main-Class" value="${main-class}"/>
-				<attribute name="Class-Path" value="${lib.list}"/>
-			</manifest>
-		</jar>
 	</target>
-	<target name="mklauncher">
+    <target name="jar-finalize">
+        <path id="jar-classpath">
+            <fileset dir="${jar.lib.dir}" includes="**/*.jar"/>
+        </path>
+        <manifestclasspath property="lib.list" jarfile="${jar.file}">
+            <classpath refid="jar-classpath"/>
+        </manifestclasspath>
+        <jar destfile="${jar.file}" basedir="${classes.dir}">
+            <manifest>
+                <attribute name="Main-Class" value="${main-class}"/>
+                <attribute name="Class-Path" value="${lib.list}"/>
+            </manifest>
+        </jar>
+    </target>
+	<target name="jar-windows" depends="compile-windows,jar-init">
+        <copy todir="${jar.windows.lib.dir}">
+            <fileset dir="${windows.lib.dir}" excludes="${svn.excludes}"/>
+        </copy>
+		<move todir="${jar.dir}">
+			<fileset dir="${jar.windows.lib.dir}" includes="${dll.includes}"/>
+		</move>
+        <copy todir="${jar.windows.tools.dir}">
+            <fileset dir="${windows.tools.dir}" excludes="${svn.excludes}"/>
+        </copy>
+		<antcall target="jar-finalize"/>
+	</target>
+	<target name="mklauncher-windows">
 		<!-- Assumes python is in the path and has modules py2exe and win32all -->
 		<delete dir="${launcher.builddir}"/>
         <delete dir="${launcher.distdir}"/>
@@ -89,7 +113,7 @@
             <fileset dir="${launcher.precompileddir}" excludes="${svn.excludes}"/>
         </copy>
 	</target>
-    <target name="installer">
+    <target name="package-windows" depends="jar-windows,launcher">
     	<!-- Assumes makensis.exe is in the path. Note: Use Unicode NSIS, not regular NSIS! -->
         <delete file="${installer.file}"/>
         <taskdef name="nsis" classname="com.danielreese.nsisant.Task" classpath="${installer.ant}"/>

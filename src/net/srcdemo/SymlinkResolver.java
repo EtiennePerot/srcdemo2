@@ -9,14 +9,12 @@ import java.io.UnsupportedEncodingException;
 
 import net.srcdemo.ui.Files;
 
-public final class SymlinkResolver
-{
-	public static File resolveSymlinks(File file)
-	{
+public final class SymlinkResolver {
+	public static File resolveSymlinks(File file) {
 		file = file.getAbsoluteFile();
 		Process resolveSymlinks = null;
 		try {
-			resolveSymlinks = new ProcessBuilder(Files.resolveSymlinks.toString()).start();
+			resolveSymlinks = new ProcessBuilder(Files.resolveSymlinksWindows.toString()).start();
 		}
 		catch (final IOException e) {
 			return file;

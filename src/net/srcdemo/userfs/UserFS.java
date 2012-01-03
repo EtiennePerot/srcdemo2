@@ -1,7 +1,11 @@
 package net.srcdemo.userfs;
 
+import java.io.File;
+import java.lang.reflect.Field;
+
 import net.decasdev.dokan.Dokan;
 import net.srcdemo.SrcLogger;
+import net.srcdemo.ui.Files;
 
 public final class UserFS {
 	public static final class DokanNotInstalledException extends Exception {
@@ -45,6 +49,20 @@ public final class UserFS {
 	public static boolean init() throws DokanNotInstalledException, DokanVersionException {
 		if (getOperatingSystem().isWindows()) {
 			try {
+				final String newLibPath = Files.libDirectoryWindows.getAbsolutePath() + File.pathSeparator
+					+ System.getProperty("java.library.path");
+				System.setProperty("java.library.path", newLibPath);
+				Field fieldSysPath;
+				try {
+					fieldSysPath = ClassLoader.class.getDeclaredField("sys_paths");
+					fieldSysPath.setAccessible(true);
+					if (fieldSysPath != null) {
+						fieldSysPath.set(System.class.getClassLoader(), null);
+					}
+				}
+				catch (final Exception e) {
+					// Oh well
+				}
 				if (Dokan.getVersion() == 600) {
 					SrcLogger.log("Starting with version = " + Dokan.getVersion() + " / Driver = " + Dokan.getDriverVersion()
 						+ ".");

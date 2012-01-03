@@ -18,13 +18,10 @@ import net.srcdemo.SrcLogger;
 import net.srcdemo.audio.AudioHandler;
 import net.srcdemo.ui.Files;
 
-public class VorbisEncoder implements AudioHandler
-{
-	private class OutputStreamThread extends Thread
-	{
+public class VorbisEncoder implements AudioHandler {
+	private class OutputStreamThread extends Thread {
 		@Override
-		public void run()
-		{
+		public void run() {
 			final byte[] buffer = new byte[outputFileBuffer];
 			int read;
 			while (true) {
@@ -48,20 +45,19 @@ public class VorbisEncoder implements AudioHandler
 		}
 	}
 
-	private static final int outputFileBuffer = 1024;
-	private final AtomicLong fileSize = new AtomicLong(0L);
-	private final ReentrantLock lock = new ReentrantLock();
-	private FileOutputStream output = null;
-	private OutputStream stdin = null;
-	private InputStream stdout = null;
-	private final Condition stdoutFinished;
-	private final AtomicBoolean stdoutThreadDead = new AtomicBoolean(false);
-	private long writtenSize = 0L;
+	private static final int	outputFileBuffer	= 1024;
+	private final AtomicLong	fileSize			= new AtomicLong(0L);
+	private final ReentrantLock	lock				= new ReentrantLock();
+	private FileOutputStream	output				= null;
+	private OutputStream		stdin				= null;
+	private InputStream			stdout				= null;
+	private final Condition		stdoutFinished;
+	private final AtomicBoolean	stdoutThreadDead	= new AtomicBoolean(false);
+	private long				writtenSize			= 0L;
 
-	public VorbisEncoder(final File outputFile, final int quality)
-	{
-		final String[] command = { Files.oggEnc.toString(), "-q", Integer.toString(Math.max(-2, Math.min(10, quality))),
-				"--ignorelength", "--quiet", "-" };
+	public VorbisEncoder(final File outputFile, final int quality) {
+		final String[] command = { Files.oggEncWindows.toString(), "-q", Integer.toString(Math.max(-2, Math.min(10, quality))),
+			"--ignorelength", "--quiet", "-" };
 		SrcLogger.logAudio("Starting OggEnc: " + command);
 		stdoutFinished = lock.newCondition();
 		Process oggEnc = null;
@@ -89,20 +85,17 @@ public class VorbisEncoder implements AudioHandler
 	}
 
 	@Override
-	public void close()
-	{
+	public void close() {
 		// Ignore the call
 	}
 
 	@Override
-	public void create()
-	{
+	public void create() {
 		// Ignore; this is already done in the constructor
 	}
 
 	@Override
-	public void destroy()
-	{
+	public void destroy() {
 		lock.lock();
 		flush();
 		try {
@@ -125,8 +118,7 @@ public class VorbisEncoder implements AudioHandler
 	}
 
 	@Override
-	public void flush()
-	{
+	public void flush() {
 		lock.lock();
 		try {
 			stdin.flush();
@@ -139,32 +131,27 @@ public class VorbisEncoder implements AudioHandler
 	}
 
 	@Override
-	public long getSize()
-	{
+	public long getSize() {
 		return fileSize.get();
 	}
 
 	@Override
-	public boolean isLocked()
-	{
+	public boolean isLocked() {
 		return lock.isLocked();
 	}
 
 	@Override
-	public void modifyFindResults(final String pathName, final Collection<String> existingFiles)
-	{
+	public void modifyFindResults(final String pathName, final Collection<String> existingFiles) {
 		// Nothing to do here
 	}
 
 	@Override
-	public void truncate(final long length)
-	{
+	public void truncate(final long length) {
 		// Can't truncate
 	}
 
 	@Override
-	public int write(final byte[] buffer, final long offset)
-	{
+	public int write(final byte[] buffer, final long offset) {
 		final int length = buffer.length;
 		if (offset != writtenSize) {
 			return length; // Skip all write requests that aren't exactly where the stream stopped
@@ -183,8 +170,7 @@ public class VorbisEncoder implements AudioHandler
 	}
 
 	@Override
-	public int write(final ByteBuffer buffer, final long offset)
-	{
+	public int write(final ByteBuffer buffer, final long offset) {
 		final int length = buffer.remaining();
 		final byte[] buf = new byte[length];
 		buffer.get(buf);

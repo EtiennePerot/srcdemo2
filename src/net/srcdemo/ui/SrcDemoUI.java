@@ -1,7 +1,6 @@
 package net.srcdemo.ui;
 
 import java.io.File;
-import java.lang.reflect.Field;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.locks.ReentrantLock;
@@ -27,35 +26,18 @@ import com.trolltech.qt.gui.QTabWidget;
 import com.trolltech.qt.gui.QVBoxLayout;
 import com.trolltech.qt.gui.QWidget;
 
-public class SrcDemoUI extends QWidget
-{
-	private static boolean debugMode = false;
-	private static boolean dokanLoggingMode = false;
-	private static final int relaunchStatusCode = 1337;
-	private static int returnCode = 0;
-	private static String version = null;
+public class SrcDemoUI extends QWidget {
+	private static boolean		debugMode			= false;
+	private static boolean		dokanLoggingMode	= false;
+	private static final int	relaunchStatusCode	= 1337;
+	private static int			returnCode			= 0;
+	private static String		version				= null;
 
-	public static String getVersion()
-	{
+	public static String getVersion() {
 		return version;
 	}
 
-	public static void main(final String[] args)
-	{
-		final String newLibPath = Files.libDirectory.getAbsolutePath() + File.pathSeparator
-				+ System.getProperty("java.library.path");
-		System.setProperty("java.library.path", newLibPath);
-		Field fieldSysPath;
-		try {
-			fieldSysPath = ClassLoader.class.getDeclaredField("sys_paths");
-			fieldSysPath.setAccessible(true);
-			if (fieldSysPath != null) {
-				fieldSysPath.set(System.class.getClassLoader(), null);
-			}
-		}
-		catch (final Exception e) {
-			// Oh well
-		}
+	public static void main(final String[] args) {
 		for (final String arg : args) {
 			if (arg.equals(Strings.cmdFlagDebugMode)) {
 				debugMode = true;
@@ -102,11 +84,9 @@ public class SrcDemoUI extends QWidget
 		}
 		if (initialized) {
 			final SrcDemoUI ui = new SrcDemoUI();
-			Runtime.getRuntime().addShutdownHook(new Thread("Unmount shtudown hook")
-			{
+			Runtime.getRuntime().addShutdownHook(new Thread("Unmount shtudown hook") {
 				@Override
-				public void run()
-				{
+				public void run() {
 					ui.flushAudioBuffer(true);
 					ui.unmount();
 				}
@@ -116,29 +96,27 @@ public class SrcDemoUI extends QWidget
 		System.exit(returnCode);
 	}
 
-	private QTabWidget allTabs;
-	private AudioUI audioUi;
-	private QLineEdit backingDirectory;
-	private QPushButton backingDirectoryBrowse;
-	private QPushButton btnExit;
-	private QPushButton btnMount;
-	private final Set<QWidget> disablableWidgets = new HashSet<QWidget>();
-	private final ReentrantLock fsLock = new ReentrantLock();
-	private QLabel lblStatus;
-	private SrcDemoFS mountedFS = null;
-	private QLineEdit mountpoint;
-	private QPushButton mountpointBrowse;
-	private RenderingTab renderTab;
-	private final SrcSettings settings;
-	private VideoUI videoUi;
+	private QTabWidget			allTabs;
+	private AudioUI				audioUi;
+	private QLineEdit			backingDirectory;
+	private QPushButton			backingDirectoryBrowse;
+	private QPushButton			btnExit;
+	private QPushButton			btnMount;
+	private final Set<QWidget>	disablableWidgets	= new HashSet<QWidget>();
+	private final ReentrantLock	fsLock				= new ReentrantLock();
+	private QLabel				lblStatus;
+	private SrcDemoFS			mountedFS			= null;
+	private QLineEdit			mountpoint;
+	private QPushButton			mountpointBrowse;
+	private RenderingTab		renderTab;
+	private final SrcSettings	settings;
+	private VideoUI				videoUi;
 
-	SrcDemoUI()
-	{
+	SrcDemoUI() {
 		setWindowTitle(Strings.windowTitle + (getVersion() == null ? "" : Strings.titleBuildPrefix + getVersion()));
 		if (debugMode) {
 			setWindowIcon(new QIcon(Files.iconWindowDebug.getAbsolutePath()));
-		}
-		else {
+		} else {
 			setWindowIcon(new QIcon(Files.iconWindowMain.getAbsolutePath()));
 		}
 		settings = new SrcSettings();
@@ -150,8 +128,7 @@ public class SrcDemoUI extends QWidget
 		show();
 	}
 
-	private String badSettings()
-	{
+	private String badSettings() {
 		if (backingDirectory.text().length() == 0 || getBackingDirectory() == null || !getBackingDirectory().isDirectory()) {
 			return Strings.errInvalidBacking;
 		}
@@ -168,27 +145,23 @@ public class SrcDemoUI extends QWidget
 	}
 
 	@Override
-	protected void closeEvent(final QCloseEvent event)
-	{
+	protected void closeEvent(final QCloseEvent event) {
 		settings.setUIGeometry(saveGeometry());
 		super.closeEvent(event);
 	}
 
-	private QWidget disablableWidget(final QWidget widget)
-	{
+	private QWidget disablableWidget(final QWidget widget) {
 		disablableWidgets.add(widget);
 		return widget;
 	}
 
-	void exit(final int returnCode)
-	{
+	void exit(final int returnCode) {
 		SrcDemoUI.returnCode = returnCode;
 		unmount();
 		close();
 	}
 
-	void flushAudioBuffer(final boolean block)
-	{
+	void flushAudioBuffer(final boolean block) {
 		fsLock.lock();
 		if (mountedFS != null) {
 			mountedFS.flushAudioBuffer(block);
@@ -196,23 +169,19 @@ public class SrcDemoUI extends QWidget
 		fsLock.unlock();
 	}
 
-	private File getBackingDirectory()
-	{
+	private File getBackingDirectory() {
 		return new File(backingDirectory.text());
 	}
 
-	private File getMountpoint()
-	{
+	private File getMountpoint() {
 		return new File(mountpoint.text());
 	}
 
-	SrcSettings getSettings()
-	{
+	SrcSettings getSettings() {
 		return settings;
 	}
 
-	private void initUI()
-	{
+	private void initUI() {
 		final QVBoxLayout vbox = new QVBoxLayout();
 		{
 			vbox.addWidget(disablableWidget(new QLabel(Strings.step1)));
@@ -273,14 +242,12 @@ public class SrcDemoUI extends QWidget
 		setLayout(vbox);
 	}
 
-	boolean isAudioBufferInUse()
-	{
+	boolean isAudioBufferInUse() {
 		return audioUi.isBufferInUse();
 	}
 
 	@SuppressWarnings("unused")
-	private void onBrowseBackingDirectory()
-	{
+	private void onBrowseBackingDirectory() {
 		final String selectedFolder = QFileDialog.getExistingDirectory(this, Strings.step1Dialog, backingDirectory.text());
 		if (selectedFolder.length() > 0) {
 			backingDirectory.setText(selectedFolder);
@@ -292,8 +259,7 @@ public class SrcDemoUI extends QWidget
 	}
 
 	@SuppressWarnings("unused")
-	private void onBrowseMountpoint()
-	{
+	private void onBrowseMountpoint() {
 		final String selectedFolder = QFileDialog.getExistingDirectory(this, Strings.step2Dialog, mountpoint.text());
 		if (selectedFolder.length() > 0) {
 			mountpoint.setText(selectedFolder);
@@ -305,14 +271,12 @@ public class SrcDemoUI extends QWidget
 	}
 
 	@SuppressWarnings("unused")
-	private void onDeactivate()
-	{
+	private void onDeactivate() {
 		exit(relaunchStatusCode);
 	}
 
 	@SuppressWarnings("unused")
-	private void onMount()
-	{
+	private void onMount() {
 		SrcLogger.log("Mounting to: " + getMountpoint().getAbsolutePath());
 		SrcLogger.log("Backing directory: " + getBackingDirectory().getAbsolutePath());
 		videoUi.logParams();
@@ -327,13 +291,11 @@ public class SrcDemoUI extends QWidget
 		selectTab(renderTab);
 	}
 
-	void selectTab(final QWidget tab)
-	{
+	void selectTab(final QWidget tab) {
 		allTabs.setCurrentWidget(tab);
 	}
 
-	private void unmount()
-	{
+	private void unmount() {
 		fsLock.lock();
 		if (mountedFS != null) {
 			SrcLogger.log("Unmounting.");
@@ -344,8 +306,7 @@ public class SrcDemoUI extends QWidget
 		fsLock.unlock();
 	}
 
-	private void updateStatus()
-	{
+	private void updateStatus() {
 		final boolean isMounted = mountedFS != null;
 		for (final QWidget w : disablableWidgets) {
 			w.setEnabled(!isMounted);
@@ -357,14 +318,12 @@ public class SrcDemoUI extends QWidget
 			if (badSettings() == null) {
 				lblStatus.setText(Strings.lblPressWhenReady);
 				btnMount.setEnabled(true);
-			}
-			else {
+			} else {
 				lblStatus.setText(Strings.lblInvalidSettings + badSettings());
 				btnMount.setEnabled(false);
 			}
 			btnExit.setEnabled(false);
-		}
-		else {
+		} else {
 			lblStatus.setText(Strings.lblReadyToRender1 + videoUi.getEffectiveRecordingFps() + Strings.lblReadyToRender2);
 			btnMount.setEnabled(false);
 			btnExit.setEnabled(true);
