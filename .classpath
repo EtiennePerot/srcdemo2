@@ -23,7 +23,7 @@
 	<classpathentry kind="lib" path="lib/osx/qtjambi/qtjambi-4.7.0.jar"/>
 	<classpathentry kind="lib" path="lib/osx/qtjambi/qtjambi-macosx-gcc-4.7.0.jar"/>
 	<classpathentry kind="lib" path="lib/osx/qtjambi/qtjambi-util-4.7.0.jar"/>
-	<classpathentry kind="lib" path="lib/windows/qtjambi/qtjambi-4.7.0.jar"/>
-	<classpathentry kind="lib" path="lib/windows/qtjambi/qtjambi-win32-msvc2008-4.7.0.jar"/>
+	<classpathentry kind="lib" path="lib/windows/qtjambi/qtjambi-4.7.1.jar"/>
+	<classpathentry kind="lib" path="lib/windows/qtjambi/qtjambi-win32-msvc2008-4.7.1.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
