@@ -124,13 +124,12 @@ Function .onInit
     InitPluginsDir
     ReadRegStr $R0 HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${SIMPLENAME}" "UninstallString"
     StrCmp $R0 "" done
-    MessageBox MB_OKCANCEL|MB_ICONINFORMATION "$(^Name) is already installed. $\n$\nClick $\"OK$\" to remove the previous version and install the new one,$\nor $\"Cancel$\" to abort the installer." IDOK uninst
+    MessageBox MB_YESNOCANCEL|MB_ICONINFORMATION "$(^Name) is already installed. $\n$\nWould you like to uninstall it before installing the new version?" IDYES uninst IDNO done
     Abort
     # Run the uninstaller
     uninst:
         ClearErrors
-        ExecWait '$R0 _?=$INSTDIR' # Do not copy the uninstaller to a temp file
-        Exec $INSTDIR\uninst.exe
+        ExecWait '$R0 _?=$INSTDIR'
     done:
 FunctionEnd
 
