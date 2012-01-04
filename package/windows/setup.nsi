@@ -10,7 +10,7 @@ RequestExecutionLevel admin
 !define VERSION 1.0
 !define COMPANY ""
 !define URL http://code.google.com/p/srcdemo2/
-!define PROJECTDIR ".."
+!define PROJECTDIR "..\.."
 !define BUILDDIR "${PROJECTDIR}\build\jar"
 !define ICONDIR "${PROJECTDIR}\img"
 
@@ -44,7 +44,7 @@ Var StartMenuGroup
 !insertmacro MUI_LANGUAGE English
 
 # Installer attributes
-OutFile ..\SrcDemo2-setup.exe
+OutFile "${PROJECTDIR}\SrcDemo2-setup.exe"
 InstallDir $PROGRAMFILES\SrcDemo2
 CRCCheck on
 XPStyle on
@@ -122,6 +122,15 @@ SectionEnd
 # Installer functions
 Function .onInit
     InitPluginsDir
+    ReadRegStr $R0 HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${SIMPLENAME}" "UninstallString"
+    StrCmp $R0 "" done
+    MessageBox MB_YESNOCANCEL|MB_ICONINFORMATION "$(^Name) is already installed. $\n$\nWould you like to uninstall it before installing the new version?" IDYES uninst IDNO done
+    Abort
+    # Run the uninstaller
+    uninst:
+        ClearErrors
+        ExecWait '"$R0" /S'
+    done:
 FunctionEnd
 
 # Uninstaller functions
@@ -130,4 +139,3 @@ Function un.onInit
     !insertmacro MUI_STARTMENU_GETFOLDER Application $StartMenuGroup
     !insertmacro SELECT_UNSECTION Main ${UNSEC0000}
 FunctionEnd
-
