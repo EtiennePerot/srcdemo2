@@ -16,8 +16,7 @@ import net.srcdemo.audio.AudioHandlerFactory;
 import net.srcdemo.audio.BufferedAudioHandler.AudioBufferStatus;
 import net.srcdemo.video.VideoHandlerFactory;
 
-public class SrcDemoFS extends LoopbackFS
-{
+public class SrcDemoFS extends LoopbackFS {
 	private static final Pattern demoNamePattern = Pattern.compile("\\d+\\.tga$|\\.wav$", Pattern.CASE_INSENSITIVE);
 	private final AudioHandlerFactory audioHandlerFactory;
 	private final Set<SrcDemoListener> demoListeners = new HashSet<SrcDemoListener>();
@@ -26,21 +25,18 @@ public class SrcDemoFS extends LoopbackFS
 	private final VideoHandlerFactory videoHandlerFactory;
 
 	public SrcDemoFS(final String backingStorage, final VideoHandlerFactory videoHandlerFactory,
-			final AudioHandlerFactory audioHandlerFactory)
-	{
+		final AudioHandlerFactory audioHandlerFactory) {
 		super(backingStorage);
 		this.audioHandlerFactory = audioHandlerFactory;
 		this.videoHandlerFactory = videoHandlerFactory;
 	}
 
-	public void addListener(final SrcDemoListener listener)
-	{
+	public void addListener(final SrcDemoListener listener) {
 		demoListeners.add(listener);
 	}
 
 	@Override
-	protected void closeFile(final String fileName)
-	{
+	protected void closeFile(final String fileName) {
 		final SrcDemo demo = getDemo(fileName);
 		if (demo == null) {
 			super.closeFile(fileName);
@@ -49,8 +45,7 @@ public class SrcDemoFS extends LoopbackFS
 	}
 
 	@Override
-	protected boolean createFile(final String fileName, final CreationDispositionEnum creation)
-	{
+	protected boolean createFile(final String fileName, final CreationDispositionEnum creation) {
 		if (!creation.shouldCreate()) {
 			return super.createFile(fileName, creation);
 		}
@@ -62,8 +57,7 @@ public class SrcDemoFS extends LoopbackFS
 		return true;
 	}
 
-	void destroy(final SrcDemo srcDemo)
-	{
+	void destroy(final SrcDemo srcDemo) {
 		if (srcDemo == null) {
 			return;
 		}
@@ -82,19 +76,15 @@ public class SrcDemoFS extends LoopbackFS
 	}
 
 	@Override
-	protected Collection<String> findFiles(final String pathName)
-	{
+	protected Collection<String> findFiles(final String pathName) {
 		// To avoid lack of garbage collection on those objects, return null
 		return null;
 	}
 
-	public void flushAudioBuffer(final boolean block)
-	{
-		final Thread t = new Thread("Audio buffer flush")
-		{
+	public void flushAudioBuffer(final boolean block) {
+		final Thread t = new Thread("Audio buffer flush") {
 			@Override
-			public void run()
-			{
+			public void run() {
 				demoLock.lock();
 				for (final SrcDemo demo : demos.values()) {
 					demo.flushAudioBuffer();
@@ -104,14 +94,12 @@ public class SrcDemoFS extends LoopbackFS
 		};
 		if (block) {
 			t.run();
-		}
-		else {
+		} else {
 			t.start();
 		}
 	}
 
-	private SrcDemo getDemo(final String fileName)
-	{
+	private SrcDemo getDemo(final String fileName) {
 		final Matcher match = demoNamePattern.matcher(fileName);
 		if (!match.find()) {
 			return null;
@@ -127,8 +115,7 @@ public class SrcDemoFS extends LoopbackFS
 	}
 
 	@Override
-	protected FileInfo getFileInfo(final String fileName)
-	{
+	protected FileInfo getFileInfo(final String fileName) {
 		final SrcDemo demo = getDemo(fileName);
 		if (demo == null) {
 			return super.getFileInfo(fileName);
@@ -136,47 +123,40 @@ public class SrcDemoFS extends LoopbackFS
 		return demo.getFileInfo(fileName);
 	}
 
-	void notifyAudioBuffer(final AudioBufferStatus status, final int occupied, final int total)
-	{
+	void notifyAudioBuffer(final AudioBufferStatus status, final int occupied, final int total) {
 		for (final SrcDemoListener listener : demoListeners) {
 			listener.onAudioBuffer(status, occupied, total);
 		}
 	}
 
-	void notifyFrameProcessed(final String frameName)
-	{
+	void notifyFrameProcessed(final String frameName) {
 		for (final SrcDemoListener listener : demoListeners) {
 			listener.onFrameProcessed(frameName);
 		}
 	}
 
-	void notifyFrameSaved(final File savedFrame, final int[] pixelData, final int width, final int height)
-	{
+	void notifyFrameSaved(final File savedFrame, final int[] pixelData, final int width, final int height) {
 		for (final SrcDemoListener listener : demoListeners) {
 			listener.onFrameSaved(savedFrame, pixelData, width, height);
 		}
 	}
 
-	public void removeListener(final SrcDemoListener listener)
-	{
+	public void removeListener(final SrcDemoListener listener) {
 		demoListeners.remove(listener);
 	}
 
 	@Override
-	protected void truncateFile(final String fileName, final long length)
-	{
+	protected void truncateFile(final String fileName, final long length) {
 		final SrcDemo demo = getDemo(fileName);
 		if (demo == null) {
 			super.truncateFile(fileName, length);
-		}
-		else {
+		} else {
 			demo.truncateFile(fileName, length);
 		}
 	}
 
 	@Override
-	public void unmount()
-	{
+	public void unmount() {
 		demoLock.lock();
 		for (final SrcDemo demo : demos.values()) {
 			demo.destroy();
@@ -186,8 +166,7 @@ public class SrcDemoFS extends LoopbackFS
 	}
 
 	@Override
-	protected int writeFile(final String fileName, final ByteBuffer buffer, final long offset)
-	{
+	protected int writeFile(final String fileName, final ByteBuffer buffer, final long offset) {
 		final SrcDemo demo = getDemo(fileName);
 		if (demo == null) {
 			return super.writeFile(fileName, buffer, offset);

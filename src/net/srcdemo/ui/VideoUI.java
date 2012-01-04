@@ -26,18 +26,15 @@ import com.trolltech.qt.gui.QSpinBox;
 import com.trolltech.qt.gui.QVBoxLayout;
 import com.trolltech.qt.gui.QWidget;
 
-class VideoUI extends QWidget
-{
-	static enum VideoType
-	{
+class VideoUI extends QWidget {
+	static enum VideoType {
 		DISABLED, JPEG, PNG, TGA;
 		static {
 			final VideoType[] order = { PNG, TGA, JPEG, DISABLED };
 			EnumUtils.registerOrder(VideoType.class, order);
 		}
 
-		private String getDescription()
-		{
+		private String getDescription() {
 			switch (this) {
 				case PNG:
 					return Strings.videoOptPngExplanation;
@@ -52,8 +49,7 @@ class VideoUI extends QWidget
 		}
 
 		@Override
-		public String toString()
-		{
+		public String toString() {
 			switch (this) {
 				case PNG:
 					return Strings.videoOptPng;
@@ -88,21 +84,18 @@ class VideoUI extends QWidget
 	private QLabel videoTypeLabel;
 	private QVBoxLayout videoTypeVbox;
 
-	VideoUI(final SrcDemoUI parent)
-	{
+	VideoUI(final SrcDemoUI parent) {
 		this.parent = parent;
 		initUI();
 		updateEffectiveRecordingFps();
 	}
 
-	private QWidget disablableVideoWidget(final QWidget widget)
-	{
+	private QWidget disablableVideoWidget(final QWidget widget) {
 		disablableVideoOptions.add(widget);
 		return widget;
 	}
 
-	void enable(final boolean enable)
-	{
+	void enable(final boolean enable) {
 		updateVideoType();
 		videoTypeLabel.setEnabled(enable);
 		videoType.setEnabled(enable);
@@ -115,13 +108,14 @@ class VideoUI extends QWidget
 		}
 	}
 
-	int getEffectiveRecordingFps()
-	{
+	Integer getEffectiveRecordingFps() {
+		if (videoType.getCurrentItem().equals(VideoType.DISABLED)) {
+			return null;
+		}
 		return blendRate.value() * targetFps.value();
 	}
 
-	VideoHandlerFactory getFactory()
-	{
+	VideoHandlerFactory getFactory() {
 		final int blend = blendRate.value();
 		final int shutter = shutterAngle.value();
 		final VideoType vidType = videoType.getCurrentItem();
@@ -129,68 +123,56 @@ class VideoUI extends QWidget
 		switch (vidType) {
 			case JPEG:
 				final float quality = jpegCompressionLevel.value() / 100f;
-				imgFactory = new ImageSavingTaskFactory()
-				{
+				imgFactory = new ImageSavingTaskFactory() {
 					@Override
 					public ImageSavingTask buildSavingTask(final int sequenceIndex, final int[] pixelData, final int width,
-							final int height)
-					{
+						final int height) {
 						return new JPEGSavingTask(sequenceIndex, pixelData, width, height, quality);
 					}
 				};
 				break;
 			case PNG:
-				imgFactory = new ImageSavingTaskFactory()
-				{
+				imgFactory = new ImageSavingTaskFactory() {
 					@Override
 					public ImageSavingTask buildSavingTask(final int sequenceIndex, final int[] pixelData, final int width,
-							final int height)
-					{
+						final int height) {
 						return new PNGSavingTask(sequenceIndex, pixelData, width, height);
 					}
 				};
 				break;
 			case TGA:
 				final boolean rleCompression = tgaCompressionRLE.isChecked();
-				imgFactory = new ImageSavingTaskFactory()
-				{
+				imgFactory = new ImageSavingTaskFactory() {
 					@Override
 					public ImageSavingTask buildSavingTask(final int sequenceIndex, final int[] pixelData, final int width,
-							final int height)
-					{
+						final int height) {
 						return new TGASavingTask(sequenceIndex, pixelData, width, height, rleCompression);
 					}
 				};
 				break;
 			case DISABLED:
-				return new VideoHandlerFactory()
-				{
+				return new VideoHandlerFactory() {
 					@Override
-					public VideoHandler buildHandler(final SrcDemo demo)
-					{
+					public VideoHandler buildHandler(final SrcDemo demo) {
 						return new NullVideoHandler(demo);
 					}
 				};
 		}
 		// Need to make a final version to be able to access it within the inner class
 		final ImageSavingTaskFactory finalImgFactory = imgFactory;
-		return new VideoHandlerFactory()
-		{
+		return new VideoHandlerFactory() {
 			@Override
-			public VideoHandler buildHandler(final SrcDemo demo)
-			{
+			public VideoHandler buildHandler(final SrcDemo demo) {
 				return new FrameBlender(demo, finalImgFactory, blend, shutter);
 			}
 		};
 	}
 
-	private SrcSettings getSettings()
-	{
+	private SrcSettings getSettings() {
 		return parent.getSettings();
 	}
 
-	private void initUI()
-	{
+	private void initUI() {
 		mainVbox = new QVBoxLayout();
 		{
 			videoTypeVbox = new QVBoxLayout();
@@ -289,18 +271,15 @@ class VideoUI extends QWidget
 		updateVideoType();
 	}
 
-	void logParams()
-	{
+	void logParams() {
 		SrcLogger.logVideo("~ Video parameters block ~");
 		final VideoType current = videoType.getCurrentItem();
 		SrcLogger.logVideo("Video type: " + current);
 		if (current.equals(VideoType.JPEG)) {
 			SrcLogger.logVideo("JPEG compression: " + jpegCompressionLevel.value());
-		}
-		else if (current.equals(VideoType.TGA)) {
+		} else if (current.equals(VideoType.TGA)) {
 			SrcLogger.logVideo("TGA RLE compression is " + (tgaCompressionRLE.isChecked() ? "enabled" : "disabled"));
-		}
-		else if (!current.equals(VideoType.DISABLED)) {
+		} else if (!current.equals(VideoType.DISABLED)) {
 			SrcLogger.logVideo("Target framerate: " + targetFps.value());
 			SrcLogger.logVideo("Blend rate: " + blendRate.value());
 			SrcLogger.logVideo("Shutter angle: " + shutterAngle.value());
@@ -308,8 +287,7 @@ class VideoUI extends QWidget
 		SrcLogger.logVideo("~ End of video parameters block ~");
 	}
 
-	private void saveVideoSettings()
-	{
+	private void saveVideoSettings() {
 		getSettings().setLastVideoType(videoType.getCurrentItem());
 		getSettings().setLastTargetFps(targetFps.value());
 		getSettings().setLastBlendRate(blendRate.value());
@@ -318,11 +296,12 @@ class VideoUI extends QWidget
 		getSettings().setLastTGACompressionRLE(tgaCompressionRLE.isChecked());
 	}
 
-	private void updateEffectiveRecordingFps()
-	{
-		final int effectiveFps = getEffectiveRecordingFps();
-		effectiveRecordingFps.setText("" + effectiveFps);
-		effectiveRecordingFpsCommand.setText(Strings.cmdHostFramerate + effectiveFps);
+	private void updateEffectiveRecordingFps() {
+		final Integer effectiveFps = getEffectiveRecordingFps();
+		if (effectiveFps != null) {
+			effectiveRecordingFps.setText("" + effectiveFps);
+			effectiveRecordingFpsCommand.setText(Strings.cmdHostFramerate + effectiveFps);
+		}
 		targetFps.setSuffix(targetFps.value() == 1 ? Strings.spnTargetFpsSingular : Strings.spnTargetFpsPlural);
 		blendRate.setSuffix(blendRate.value() == 1 ? Strings.spnBlendRateSingular : Strings.spnBlendRatePlural);
 		shutterAngle.setSuffix(shutterAngle.value() == 1 ? Strings.spnShutterAngleSingular : Strings.spnShutterAnglePlural);
@@ -330,14 +309,12 @@ class VideoUI extends QWidget
 	}
 
 	@SuppressWarnings("unused")
-	private void updateJPEGCompressionLevel()
-	{
+	private void updateJPEGCompressionLevel() {
 		jpegCompressionLevelLabel.setText(Strings.lblJpegQuality + ": " + jpegCompressionLevel.value() + "%");
 		saveVideoSettings();
 	}
 
-	private void updateVideoType()
-	{
+	private void updateVideoType() {
 		final VideoType current = videoType.getCurrentItem();
 		formatExplanation.setText(current.getDescription());
 		{
@@ -348,8 +325,7 @@ class VideoUI extends QWidget
 					mainVbox.removeItem(globalVideoOptionsVbox);
 					globalVideoOptionsVbox.setParent(null);
 				}
-			}
-			else {
+			} else {
 				if (globalVideoOptionsVbox.parent() == null) {
 					mainVbox.addLayout(globalVideoOptionsVbox);
 				}
@@ -362,8 +338,7 @@ class VideoUI extends QWidget
 			// JPEG
 			if (current.equals(VideoType.JPEG) && jpegOptionsBox.parent() == null) {
 				videoTypeVbox.addLayout(jpegOptionsBox);
-			}
-			else if (!current.equals(VideoType.JPEG) && jpegOptionsBox.parent() != null) {
+			} else if (!current.equals(VideoType.JPEG) && jpegOptionsBox.parent() != null) {
 				videoTypeVbox.removeItem(jpegOptionsBox);
 				jpegOptionsBox.setParent(null);
 			}
@@ -374,8 +349,7 @@ class VideoUI extends QWidget
 			// TGA
 			if (current.equals(VideoType.TGA) && tgaOptionsBox.parent() == null) {
 				videoTypeVbox.addLayout(tgaOptionsBox);
-			}
-			else if (!current.equals(VideoType.TGA) && tgaOptionsBox.parent() != null) {
+			} else if (!current.equals(VideoType.TGA) && tgaOptionsBox.parent() != null) {
 				videoTypeVbox.removeItem(tgaOptionsBox);
 				tgaOptionsBox.setParent(null);
 			}

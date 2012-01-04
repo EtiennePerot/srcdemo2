@@ -12,20 +12,17 @@ import java.util.concurrent.locks.ReentrantLock;
 import net.srcdemo.SrcDemo;
 import net.srcdemo.SrcLogger;
 
-public class DiskAudioHandler implements AudioHandler
-{
+public class DiskAudioHandler implements AudioHandler {
 	private final File file;
 	private FileChannel fileChannel;
 	private final ReentrantLock lock = new ReentrantLock();
 
-	public DiskAudioHandler(final SrcDemo demo)
-	{
+	public DiskAudioHandler(final SrcDemo demo) {
 		file = demo.getSoundFile();
 	}
 
 	@Override
-	public void close()
-	{
+	public void close() {
 		lock.lock();
 		try {
 			fileChannel.close();
@@ -38,8 +35,7 @@ public class DiskAudioHandler implements AudioHandler
 	}
 
 	@Override
-	public void create()
-	{
+	public void create() {
 		lock.lock();
 		try {
 			fileChannel = new RandomAccessFile(file, "rw").getChannel();
@@ -55,8 +51,7 @@ public class DiskAudioHandler implements AudioHandler
 	}
 
 	@Override
-	public void destroy()
-	{
+	public void destroy() {
 		lock.lock();
 		try {
 			if (fileChannel != null) {
@@ -70,14 +65,12 @@ public class DiskAudioHandler implements AudioHandler
 	}
 
 	@Override
-	public void flush()
-	{
+	public void flush() {
 		// Unsupported
 	}
 
 	@Override
-	public long getSize()
-	{
+	public long getSize() {
 		lock.lock();
 		final long length = file.length();
 		lock.unlock();
@@ -85,20 +78,17 @@ public class DiskAudioHandler implements AudioHandler
 	}
 
 	@Override
-	public boolean isLocked()
-	{
+	public boolean isLocked() {
 		return lock.isLocked();
 	}
 
 	@Override
-	public void modifyFindResults(final String pathName, final Collection<String> existingFiles)
-	{
+	public void modifyFindResults(final String pathName, final Collection<String> existingFiles) {
 		// No need to cheat on anything, the file exists for real.
 	}
 
 	@Override
-	public void truncate(final long length)
-	{
+	public void truncate(final long length) {
 		lock.lock();
 		if (fileChannel == null) {
 			create();
@@ -113,14 +103,12 @@ public class DiskAudioHandler implements AudioHandler
 	}
 
 	@Override
-	public int write(final byte[] buffer, final long offset)
-	{
+	public int write(final byte[] buffer, final long offset) {
 		return write(ByteBuffer.wrap(buffer), offset);
 	}
 
 	@Override
-	public int write(final ByteBuffer buffer, final long offset)
-	{
+	public int write(final ByteBuffer buffer, final long offset) {
 		lock.lock();
 		if (fileChannel == null) {
 			create();

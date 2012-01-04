@@ -3,8 +3,7 @@ package net.srcdemo.video;
 import java.nio.ByteBuffer;
 import java.util.Collection;
 
-public interface VideoHandler
-{
+public interface VideoHandler {
 	public void close(final int frameNumber);
 
 	public void create(final int frameNumber);

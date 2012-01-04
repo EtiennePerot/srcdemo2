@@ -29,11 +29,11 @@ import com.trolltech.qt.gui.QVBoxLayout;
 import com.trolltech.qt.gui.QWidget;
 
 public class SrcDemoUI extends QWidget {
-	private static boolean		debugMode			= false;
-	private static boolean		dokanLoggingMode	= false;
-	private static final int	relaunchStatusCode	= 1337;
-	private static int			returnCode			= 0;
-	private static String		version				= null;
+	private static boolean debugMode = false;
+	private static boolean dokanLoggingMode = false;
+	private static final int relaunchStatusCode = 1337;
+	private static int returnCode = 0;
+	private static String version = null;
 
 	public static String getVersion() {
 		return version;
@@ -103,21 +103,21 @@ public class SrcDemoUI extends QWidget {
 		System.exit(returnCode);
 	}
 
-	private QTabWidget			allTabs;
-	private AudioUI				audioUi;
-	private QLineEdit			backingDirectory;
-	private QPushButton			backingDirectoryBrowse;
-	private QPushButton			btnExit;
-	private QPushButton			btnMount;
-	private final Set<QWidget>	disablableWidgets	= new HashSet<QWidget>();
-	private final ReentrantLock	fsLock				= new ReentrantLock();
-	private QLabel				lblStatus;
-	private SrcDemoFS			mountedFS			= null;
-	private QLineEdit			mountpoint;
-	private QPushButton			mountpointBrowse;
-	private RenderingTab		renderTab;
-	private final SrcSettings	settings;
-	private VideoUI				videoUi;
+	private QTabWidget allTabs;
+	private AudioUI audioUi;
+	private QLineEdit backingDirectory;
+	private QPushButton backingDirectoryBrowse;
+	private QPushButton btnExit;
+	private QPushButton btnMount;
+	private final Set<QWidget> disablableWidgets = new HashSet<QWidget>();
+	private final ReentrantLock fsLock = new ReentrantLock();
+	private QLabel lblStatus;
+	private SrcDemoFS mountedFS = null;
+	private QLineEdit mountpoint;
+	private QPushButton mountpointBrowse;
+	private RenderingTab renderTab;
+	private final SrcSettings settings;
+	private VideoUI videoUi;
 
 	SrcDemoUI() {
 		setWindowTitle(Strings.productName + (getVersion() == null ? "" : Strings.titleBuildPrefix + getVersion()));
@@ -338,7 +338,12 @@ public class SrcDemoUI extends QWidget {
 			}
 			btnExit.setEnabled(false);
 		} else {
-			lblStatus.setText(Strings.lblReadyToRender1 + videoUi.getEffectiveRecordingFps() + Strings.lblReadyToRender2);
+			final Integer recordingFps = videoUi.getEffectiveRecordingFps();
+			if (recordingFps == null) {
+				lblStatus.setText(Strings.lblReadyToRenderNoVideo);
+			} else {
+				lblStatus.setText(Strings.lblReadyToRender1 + recordingFps + Strings.lblReadyToRender2);
+			}
 			btnMount.setEnabled(false);
 			btnExit.setEnabled(true);
 		}

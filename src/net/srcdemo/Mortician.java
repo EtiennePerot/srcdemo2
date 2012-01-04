@@ -3,10 +3,8 @@ package net.srcdemo;
 import java.util.Timer;
 import java.util.TimerTask;
 
-public class Mortician extends Timer
-{
-	public interface Morticianed
-	{
+public class Mortician extends Timer {
+	public interface Morticianed {
 		public boolean isBusy();
 
 		public long lastLifeSign();
@@ -15,14 +13,11 @@ public class Mortician extends Timer
 	private TimerTask task;
 
 	public Mortician(final Morticianed morticianed, final String name, final long pollingInterval, final long deadBeef,
-			final boolean keepTrying, final Runnable callback)
-	{
+		final boolean keepTrying, final Runnable callback) {
 		super(name, true);
-		task = new TimerTask()
-		{
+		task = new TimerTask() {
 			@Override
-			public void run()
-			{
+			public void run() {
 				final long lastTime = morticianed.lastLifeSign();
 				if (lastTime != -1L && System.currentTimeMillis() - lastTime > deadBeef && !morticianed.isBusy()) {
 					if (!keepTrying) {
@@ -40,13 +35,11 @@ public class Mortician extends Timer
 		schedule(task, 0, pollingInterval);
 	}
 
-	public Mortician(final Morticianed morticianed, final String name, final Runnable callback)
-	{
+	public Mortician(final Morticianed morticianed, final String name, final Runnable callback) {
 		this(morticianed, name, 5000, 60000, false, callback);
 	}
 
-	public void stopService()
-	{
+	public void stopService() {
 		task = null;
 		cancel();
 	}

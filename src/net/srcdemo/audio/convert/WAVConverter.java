@@ -13,10 +13,8 @@ import java.util.concurrent.locks.ReentrantLock;
 import net.srcdemo.SrcLogger;
 import net.srcdemo.audio.AudioHandler;
 
-public class WAVConverter implements AudioHandler
-{
-	private static enum ckType
-	{
+public class WAVConverter implements AudioHandler {
+	private static enum ckType {
 		DATA, FACT, FMT, RIFF;
 		private static final Map<String, ckType> stringMapping = new HashMap<String, ckType>(ckType.values().length);
 		static {
@@ -26,8 +24,7 @@ public class WAVConverter implements AudioHandler
 			stringMapping.put("fact", FACT);
 		}
 
-		private static ckType fromString(final String str)
-		{
+		private static ckType fromString(final String str) {
 			return stringMapping.get(str);
 		}
 	}
@@ -48,14 +45,12 @@ public class WAVConverter implements AudioHandler
 	private final File outputFile;
 	private int sampleRate = -1;
 
-	public WAVConverter(final AudioEncoderFactory encoderFactory, final File outputFile)
-	{
+	public WAVConverter(final AudioEncoderFactory encoderFactory, final File outputFile) {
 		this.encoderFactory = encoderFactory;
 		this.outputFile = outputFile;
 	}
 
-	private void addSamples(final byte[] bytes) throws IOException
-	{
+	private void addSamples(final byte[] bytes) throws IOException {
 		final int length = bytes.length;
 		int i = 0;
 		int[] samples = null;
@@ -86,7 +81,7 @@ public class WAVConverter implements AudioHandler
 				samples = new int[quaterLength];
 				for (i = 0; i < quaterLength; i++) {
 					samples[i] = (bytes[i * 4] & 0xff) | ((bytes[i * 4 + 1] & 0xff) << 8) | ((bytes[i * 4 + 2] & 0xff) << 16)
-							| ((bytes[i * 4 + 3] & 0xff) << 24);
+						| ((bytes[i * 4 + 3] & 0xff) << 24);
 				}
 				break;
 		}
@@ -96,19 +91,16 @@ public class WAVConverter implements AudioHandler
 	}
 
 	@Override
-	public void close()
-	{
+	public void close() {
 		// Ignore the call; this is called way to frequently while we need to call it only once.
 	}
 
 	@Override
-	public void create()
-	{
+	public void create() {
 		// Nothing
 	}
 
-	private void decodeHeader()
-	{
+	private void decodeHeader() {
 		final ByteBuffer header = ByteBuffer.wrap(headerBuffer.toByteArray());
 		header.order(ByteOrder.LITTLE_ENDIAN);
 		String ckID;
@@ -142,8 +134,7 @@ public class WAVConverter implements AudioHandler
 				case DATA:
 					if (!headerDecoded) {
 						decodable = false;
-					}
-					else {
+					} else {
 						try {
 							encoder = encoderFactory.buildEncoder(channels, blockSize, sampleRate, bitsPerSample, outputFile);
 							if (header.hasRemaining()) {
@@ -165,8 +156,7 @@ public class WAVConverter implements AudioHandler
 	}
 
 	@Override
-	public void destroy()
-	{
+	public void destroy() {
 		lock.lock();
 		flush();
 		if (encoder != null) {
@@ -182,39 +172,33 @@ public class WAVConverter implements AudioHandler
 	}
 
 	@Override
-	public void flush()
-	{
+	public void flush() {
 		// Ignore the call
 	}
 
 	@Override
-	public long getSize()
-	{
+	public long getSize() {
 		// Impossible to determine precisely
 		return 0;
 	}
 
 	@Override
-	public boolean isLocked()
-	{
+	public boolean isLocked() {
 		return lock.isLocked();
 	}
 
 	@Override
-	public void modifyFindResults(final String pathName, final Collection<String> existingFiles)
-	{
+	public void modifyFindResults(final String pathName, final Collection<String> existingFiles) {
 		// No need to cheat on anything, the file exists for real.
 	}
 
 	@Override
-	public void truncate(final long length)
-	{
+	public void truncate(final long length) {
 		// Irrelevant
 	}
 
 	@Override
-	public int write(final byte[] buffer, final long offset)
-	{
+	public int write(final byte[] buffer, final long offset) {
 		final int length = buffer.length;
 		lock.lock();
 		if (!decodable) {
@@ -231,16 +215,14 @@ public class WAVConverter implements AudioHandler
 			if (headerBuffer.size() > minimumHeaderLength) {
 				decodeHeader();
 			}
-		}
-		else if (encoder != null && offset >= headerOffset) {
+		} else if (encoder != null && offset >= headerOffset) {
 			try {
 				addSamples(buffer);
 			}
 			catch (final IOException e) {
 				SrcLogger.error("Warning: Couldn't write samples bytes to audio encoder of file " + outputFile, e);
 			}
-		}
-		else if (headerDecoded && offset < headerOffset) {
+		} else if (headerDecoded && offset < headerOffset) {
 			SrcLogger.logAudio("Writing in the header after writing samples; considering the audio file to be finalized.");
 			flush();
 			destroy();
@@ -250,8 +232,7 @@ public class WAVConverter implements AudioHandler
 	}
 
 	@Override
-	public int write(final ByteBuffer buffer, final long offset)
-	{
+	public int write(final ByteBuffer buffer, final long offset) {
 		final byte[] buf = new byte[buffer.remaining()];
 		buffer.get(buf);
 		return write(buf, offset);

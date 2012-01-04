@@ -28,18 +28,15 @@ import com.trolltech.qt.gui.QSpinBox;
 import com.trolltech.qt.gui.QVBoxLayout;
 import com.trolltech.qt.gui.QWidget;
 
-class AudioUI extends QWidget
-{
-	static enum AudioType
-	{
+class AudioUI extends QWidget {
+	static enum AudioType {
 		BUFFERED, DISABLED, DISK, FLAC, VORBIS;
 		static {
 			final AudioType[] order = { DISK, BUFFERED, FLAC, VORBIS, DISABLED };
 			EnumUtils.registerOrder(AudioType.class, order);
 		}
 
-		public String getDescription()
-		{
+		public String getDescription() {
 			switch (this) {
 				case DISABLED:
 					return Strings.audioOptDisabledExplanation;
@@ -55,8 +52,7 @@ class AudioUI extends QWidget
 			return null;
 		}
 
-		private boolean requiresBuffer()
-		{
+		private boolean requiresBuffer() {
 			switch (this) {
 				case DISABLED:
 				case DISK:
@@ -67,8 +63,7 @@ class AudioUI extends QWidget
 		}
 
 		@Override
-		public String toString()
-		{
+		public String toString() {
 			switch (this) {
 				case DISABLED:
 					return Strings.audioOptDisabled;
@@ -85,80 +80,65 @@ class AudioUI extends QWidget
 		}
 	}
 
-	private class BufferedAudioHandlerFactory extends AudioHandlerFactory
-	{
+	private class BufferedAudioHandlerFactory extends AudioHandlerFactory {
 		private final int bufferBytes;
 		private final AudioHandlerFactory subFactory;
 		private final int timeout;
 
-		private BufferedAudioHandlerFactory(final AudioHandlerFactory subFactory)
-		{
+		private BufferedAudioHandlerFactory(final AudioHandlerFactory subFactory) {
 			this.subFactory = subFactory;
 			bufferBytes = bufferSize.value() * 1024;
 			timeout = bufferTimeout.value();
 		}
 
 		@Override
-		public AudioHandler buildHandler(final SrcDemo demo)
-		{
+		public AudioHandler buildHandler(final SrcDemo demo) {
 			return new BufferedAudioHandler(demo, bufferBytes, timeout, subFactory);
 		}
 	}
 
-	private class DiskAudioHandlerFactory extends AudioHandlerFactory
-	{
+	private class DiskAudioHandlerFactory extends AudioHandlerFactory {
 		@Override
-		public AudioHandler buildHandler(final SrcDemo demo)
-		{
+		public AudioHandler buildHandler(final SrcDemo demo) {
 			return new DiskAudioHandler(demo);
 		}
 	}
 
-	private class FlacAudioHandlerFactory extends AudioHandlerFactory
-	{
+	private class FlacAudioHandlerFactory extends AudioHandlerFactory {
 		private AudioEncoderFactory encoderFactory;
 
-		private FlacAudioHandlerFactory()
-		{
-			encoderFactory = new AudioEncoderFactory()
-			{
+		private FlacAudioHandlerFactory() {
+			encoderFactory = new AudioEncoderFactory() {
 				@Override
 				public AudioEncoder buildEncoder(final int channels, final int blockSize, final int sampleRate,
-						final int bitsPerSample, final File outputFile) throws IOException
-				{
+					final int bitsPerSample, final File outputFile) throws IOException {
 					return new FlacEncoder(channels, blockSize, sampleRate, bitsPerSample, outputFile);
 				}
 			};
 		}
 
 		@Override
-		public AudioHandler buildHandler(final SrcDemo demo)
-		{
+		public AudioHandler buildHandler(final SrcDemo demo) {
 			return new WAVConverter(encoderFactory, demo.getSoundFile());
 		}
 	}
 
-	private class NullAudioHandlerFactory extends AudioHandlerFactory
-	{
+	private class NullAudioHandlerFactory extends AudioHandlerFactory {
 		@Override
-		public AudioHandler buildHandler(final SrcDemo demo)
-		{
+		public AudioHandler buildHandler(final SrcDemo demo) {
 			return new NullAudioHandler(demo);
 		}
 	}
 
-	private class OggAudioHandlerFactory extends AudioHandlerFactory
-	{
+	private class OggAudioHandlerFactory extends AudioHandlerFactory {
 		private final int quality;
 
-		private OggAudioHandlerFactory(final int quality)
-		{
+		private OggAudioHandlerFactory(final int quality) {
 			this.quality = quality;
 		}
 
 		@Override
-		public AudioHandler buildHandler(final SrcDemo demo)
-		{
+		public AudioHandler buildHandler(final SrcDemo demo) {
 			return new VorbisEncoder(demo.getSoundFile(), quality);
 		}
 	}
@@ -178,20 +158,17 @@ class AudioUI extends QWidget
 	private QSlider vorbisQuality;
 	private QLabel vorbisQualityLabel;
 
-	AudioUI(final SrcDemoUI parent)
-	{
+	AudioUI(final SrcDemoUI parent) {
 		this.parent = parent;
 		initUI();
 	}
 
-	private QWidget disablableAudioWidget(final QWidget widget)
-	{
+	private QWidget disablableAudioWidget(final QWidget widget) {
 		disablableAudioOptions.add(widget);
 		return widget;
 	}
 
-	void enable(final boolean enable)
-	{
+	void enable(final boolean enable) {
 		updateAudioType();
 		audioTypeLabel.setEnabled(enable);
 		audioType.setEnabled(enable);
@@ -202,8 +179,7 @@ class AudioUI extends QWidget
 		}
 	}
 
-	AudioHandlerFactory getFactory()
-	{
+	AudioHandlerFactory getFactory() {
 		final AudioType type = audioType.getCurrentItem();
 		if (type.equals(AudioType.DISK)) {
 			return new DiskAudioHandlerFactory();
@@ -223,13 +199,11 @@ class AudioUI extends QWidget
 		return null;
 	}
 
-	private SrcSettings getSettings()
-	{
+	private SrcSettings getSettings() {
 		return parent.getSettings();
 	}
 
-	private void initUI()
-	{
+	private void initUI() {
 		mainVbox = new QVBoxLayout();
 		{
 			audioTypeVbox = new QVBoxLayout();
@@ -260,7 +234,7 @@ class AudioUI extends QWidget
 				vorbisQuality.valueChanged.connect(this, "updateVorbisQualityLevel()");
 				vorbisOptionsBox.addWidget(vorbisQuality, 1);
 				vorbisQualityLabel.setText(Strings.lblVorbisQuality + ": " + Strings.lblVorbisQualityPrefix
-						+ vorbisQuality.value());
+					+ vorbisQuality.value());
 			}
 			mainVbox.addLayout(audioTypeVbox);
 		}
@@ -304,13 +278,11 @@ class AudioUI extends QWidget
 		updateAudioType();
 	}
 
-	boolean isBufferInUse()
-	{
+	boolean isBufferInUse() {
 		return audioType.getCurrentItem().requiresBuffer();
 	}
 
-	void logParams()
-	{
+	void logParams() {
 		SrcLogger.logAudio("~ Audio parameters block ~");
 		final AudioType current = audioType.getCurrentItem();
 		SrcLogger.logAudio("Audio type: " + current);
@@ -324,16 +296,14 @@ class AudioUI extends QWidget
 		SrcLogger.logAudio("~ End of audio parameters block ~");
 	}
 
-	private void saveAudioSettings()
-	{
+	private void saveAudioSettings() {
 		getSettings().setLastAudioType(audioType.getCurrentItem());
 		getSettings().setLastAudioBufferSize(bufferSize.value());
 		getSettings().setLastAudioBufferTimeout(bufferTimeout.value());
 		getSettings().setLastVorbisQuality(vorbisQuality.value());
 	}
 
-	private void updateAudioType()
-	{
+	private void updateAudioType() {
 		final AudioType current = audioType.getCurrentItem();
 		formatExplanation.setText(current.getDescription());
 		{
@@ -343,8 +313,7 @@ class AudioUI extends QWidget
 				if (bufferSettingsVbox.parent() == null) {
 					mainVbox.addLayout(bufferSettingsVbox);
 				}
-			}
-			else {
+			} else {
 				if (bufferSettingsVbox.parent() != null) {
 					mainVbox.removeItem(bufferSettingsVbox);
 					bufferSettingsVbox.setParent(null);
@@ -358,8 +327,7 @@ class AudioUI extends QWidget
 			// Vorbis
 			if (current.equals(AudioType.VORBIS) && vorbisOptionsBox.parent() == null) {
 				audioTypeVbox.addLayout(vorbisOptionsBox);
-			}
-			else if (!current.equals(AudioType.VORBIS) && vorbisOptionsBox.parent() != null) {
+			} else if (!current.equals(AudioType.VORBIS) && vorbisOptionsBox.parent() != null) {
 				audioTypeVbox.removeItem(vorbisOptionsBox);
 				vorbisOptionsBox.setParent(null);
 			}
@@ -370,8 +338,7 @@ class AudioUI extends QWidget
 	}
 
 	@SuppressWarnings("unused")
-	private void updateVorbisQualityLevel()
-	{
+	private void updateVorbisQualityLevel() {
 		vorbisQualityLabel.setText(Strings.lblVorbisQuality + ": " + Strings.lblVorbisQualityPrefix + vorbisQuality.value());
 		saveAudioSettings();
 	}

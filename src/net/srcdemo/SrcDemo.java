@@ -11,8 +11,7 @@ import net.srcdemo.audio.BufferedAudioHandler.AudioBufferStatus;
 import net.srcdemo.video.VideoHandler;
 import net.srcdemo.video.VideoHandlerFactory;
 
-public class SrcDemo implements Morticianed
-{
+public class SrcDemo implements Morticianed {
 	private final AudioHandler audioHandler;
 	private final SrcDemoFS backingFS;
 	private final String demoDirectory;
@@ -26,8 +25,7 @@ public class SrcDemo implements Morticianed
 	private final VideoHandler videoHandler;
 
 	SrcDemo(final SrcDemoFS backingFS, final String prefix, final VideoHandlerFactory videoHandlerFactory,
-			final AudioHandlerFactory audioHandlerFactory)
-	{
+		final AudioHandlerFactory audioHandlerFactory) {
 		SrcLogger.logDemo("Creating new SrcDemo with prefix " + prefix);
 		this.backingFS = backingFS;
 		demoPrefix = prefix;
@@ -37,11 +35,9 @@ public class SrcDemo implements Morticianed
 		soundFile = getBackedFile(".wav");
 		soundFileName = soundFile.getName();
 		soundFileNameLowercase = soundFileName.toLowerCase();
-		mortician = new Mortician(this, "Checking thread for " + prefix, new Runnable()
-		{
+		mortician = new Mortician(this, "Checking thread for " + prefix, new Runnable() {
 			@Override
-			public void run()
-			{
+			public void run() {
 				destroy();
 			}
 		});
@@ -49,12 +45,10 @@ public class SrcDemo implements Morticianed
 		audioHandler = audioHandlerFactory.buildHandler(this);
 	}
 
-	void closeFile(final String fileName)
-	{
+	void closeFile(final String fileName) {
 		if (isSoundFile(fileName)) {
 			audioHandler.close();
-		}
-		else {
+		} else {
 			final Integer frameNumber = getFrameNumber(fileName);
 			if (frameNumber != null) {
 				lastClosedFrameTime = System.currentTimeMillis();
@@ -65,12 +59,10 @@ public class SrcDemo implements Morticianed
 		}
 	}
 
-	void createFile(final String fileName)
-	{
+	void createFile(final String fileName) {
 		if (isSoundFile(fileName)) {
 			audioHandler.create();
-		}
-		else {
+		} else {
 			final Integer frameNumber = getFrameNumber(fileName);
 			if (frameNumber != null) {
 				videoHandler.create(frameNumber);
@@ -78,8 +70,7 @@ public class SrcDemo implements Morticianed
 		}
 	}
 
-	void destroy()
-	{
+	void destroy() {
 		SrcLogger.logDemo("Destroying SrcDemo object: " + this);
 		mortician.stopService();
 		videoHandler.destroy();
@@ -90,18 +81,15 @@ public class SrcDemo implements Morticianed
 		SrcLogger.logDemo("Fully destroyed SrcDemo object: " + this);
 	}
 
-	public void flushAudioBuffer()
-	{
+	public void flushAudioBuffer() {
 		audioHandler.flush();
 	}
 
-	public File getBackedFile(final String fileSuffix)
-	{
+	public File getBackedFile(final String fileSuffix) {
 		return backingFS.getBackedFile(demoPrefix + fileSuffix);
 	}
 
-	FileInfo getFileInfo(final String fileName)
-	{
+	FileInfo getFileInfo(final String fileName) {
 		if (isSoundFile(fileName)) {
 			return FileInfo.fromFile(soundFileName, audioHandler.getSize());
 		}
@@ -112,8 +100,7 @@ public class SrcDemo implements Morticianed
 		return FileInfo.fromFile(fileName, 0);
 	}
 
-	private Integer getFrameNumber(final String fileName)
-	{
+	private Integer getFrameNumber(final String fileName) {
 		if (!fileName.startsWith(demoPrefix)) {
 			return null;
 		}
@@ -126,36 +113,30 @@ public class SrcDemo implements Morticianed
 		}
 	}
 
-	public String getPrefix()
-	{
+	public String getPrefix() {
 		return demoPrefix;
 	}
 
-	public File getSoundFile()
-	{
+	public File getSoundFile() {
 		return soundFile;
 	}
 
 	@Override
-	public boolean isBusy()
-	{
+	public boolean isBusy() {
 		return videoHandler.isLocked() || audioHandler.isLocked();
 	}
 
-	private boolean isSoundFile(final String fileName)
-	{
+	private boolean isSoundFile(final String fileName) {
 		// Needs to be case-insensitive because Source Recorder sometimes like to pass all-uppercase filenames.
 		return fileName.toLowerCase().endsWith(soundFileNameLowercase);
 	}
 
 	@Override
-	public long lastLifeSign()
-	{
+	public long lastLifeSign() {
 		return lastClosedFrameTime;
 	}
 
-	public void modifyFindResults(final String pathName, final Collection<String> actualFiles)
-	{
+	public void modifyFindResults(final String pathName, final Collection<String> actualFiles) {
 		if (!pathName.equals(demoDirectory)) {
 			return;
 		}
@@ -163,28 +144,23 @@ public class SrcDemo implements Morticianed
 		videoHandler.modifyFindResults(pathName, actualFiles);
 	}
 
-	public void notifyAudioBuffer(final AudioBufferStatus status, final int occupied, final int total)
-	{
+	public void notifyAudioBuffer(final AudioBufferStatus status, final int occupied, final int total) {
 		backingFS.notifyAudioBuffer(status, occupied, total);
 	}
 
-	public void notifyFrameSaved(final File frame, final int[] pixelData, final int width, final int height)
-	{
+	public void notifyFrameSaved(final File frame, final int[] pixelData, final int width, final int height) {
 		backingFS.notifyFrameSaved(frame, pixelData, width, height);
 	}
 
 	@Override
-	public String toString()
-	{
+	public String toString() {
 		return "SrcDemo(Prefix = " + demoPrefix + ")";
 	}
 
-	void truncateFile(final String fileName, final long length)
-	{
+	void truncateFile(final String fileName, final long length) {
 		if (isSoundFile(fileName)) {
 			audioHandler.truncate(length);
-		}
-		else {
+		} else {
 			final Integer frameNumber = getFrameNumber(fileName);
 			if (frameNumber != null) {
 				videoHandler.truncate(frameNumber, length);
@@ -192,8 +168,7 @@ public class SrcDemo implements Morticianed
 		}
 	}
 
-	int writeFile(final String fileName, final ByteBuffer buffer, final long offset)
-	{
+	int writeFile(final String fileName, final ByteBuffer buffer, final long offset) {
 		if (isSoundFile(fileName)) {
 			return audioHandler.write(buffer, offset);
 		}

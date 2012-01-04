@@ -14,14 +14,12 @@ import java.util.concurrent.locks.ReentrantLock;
 
 import net.decasdev.dokan.CreationDispositionEnum;
 
-public class LoopbackFS extends DokanFSStub
-{
+public class LoopbackFS extends DokanFSStub {
 	private final File backingStorage;
 	private final ReentrantLock filesHandleLock = new ReentrantLock();
 	private final Map<File, FileChannel> openedFiles = new HashMap<File, FileChannel>();
 
-	protected LoopbackFS(final String storageFolder)
-	{
+	protected LoopbackFS(final String storageFolder) {
 		backingStorage = new File(storageFolder);
 		if (!backingStorage.isDirectory()) {
 			if (!backingStorage.mkdirs()) {
@@ -32,8 +30,7 @@ public class LoopbackFS extends DokanFSStub
 	}
 
 	@Override
-	protected void closeFile(final String fileName)
-	{
+	protected void closeFile(final String fileName) {
 		filesHandleLock.lock();
 		final FileChannel handle = getFileHandle(fileName, false);
 		if (handle != null) {
@@ -50,14 +47,12 @@ public class LoopbackFS extends DokanFSStub
 	}
 
 	@Override
-	protected void createDirectory(final String fileName)
-	{
+	protected void createDirectory(final String fileName) {
 		getBackedFile(fileName).mkdirs();
 	}
 
 	@Override
-	protected boolean createFile(final String fileName, final CreationDispositionEnum creation)
-	{
+	protected boolean createFile(final String fileName, final CreationDispositionEnum creation) {
 		if (creation.shouldCreate()) {
 			try {
 				getBackedFile(fileName).createNewFile();
@@ -66,8 +61,7 @@ public class LoopbackFS extends DokanFSStub
 				System.err.println("Error in file creation: " + fileName);
 				e.printStackTrace();
 			}
-		}
-		else if (creation.hasToExist() && getFileInfo(fileName) == null) {
+		} else if (creation.hasToExist() && getFileInfo(fileName) == null) {
 			return false;
 		}
 		if (creation.shouldTruncate()) {
@@ -77,20 +71,17 @@ public class LoopbackFS extends DokanFSStub
 	}
 
 	@Override
-	protected void deleteDirectory(final String fileName)
-	{
+	protected void deleteDirectory(final String fileName) {
 		getBackedFile(fileName).delete();
 	}
 
 	@Override
-	protected void deleteFile(final String fileName)
-	{
+	protected void deleteFile(final String fileName) {
 		getBackedFile(fileName).delete();
 	}
 
 	@Override
-	protected Collection<String> findFiles(final String pathName)
-	{
+	protected Collection<String> findFiles(final String pathName) {
 		final String[] files = getBackedFile(pathName).list();
 		final ArrayList<String> list = new ArrayList<String>(files.length);
 		for (final String s : files) {
@@ -100,23 +91,19 @@ public class LoopbackFS extends DokanFSStub
 	}
 
 	@Override
-	protected void flushFileBuffer(final String fileName)
-	{
+	protected void flushFileBuffer(final String fileName) {
 		closeFile(fileName);
 	}
 
-	protected File getBackedFile(final String subPath)
-	{
+	protected File getBackedFile(final String subPath) {
 		return new File(backingStorage, subPath);
 	}
 
-	protected File getBackingStorage()
-	{
+	protected File getBackingStorage() {
 		return backingStorage;
 	}
 
-	private FileChannel getFileHandle(final File backing, final boolean open)
-	{
+	private FileChannel getFileHandle(final File backing, final boolean open) {
 		filesHandleLock.lock();
 		if (!openedFiles.containsKey(backing)) {
 			if (!open || !backing.exists()) {
@@ -137,57 +124,48 @@ public class LoopbackFS extends DokanFSStub
 		return handle;
 	}
 
-	private FileChannel getFileHandle(final String fileName, final boolean open)
-	{
+	private FileChannel getFileHandle(final String fileName, final boolean open) {
 		return getFileHandle(getBackedFile(fileName), open);
 	}
 
 	@Override
-	protected FileInfo getFileInfo(final String fileName)
-	{
+	protected FileInfo getFileInfo(final String fileName) {
 		final File backing = getBackedFile(fileName);
 		if (backing.isDirectory()) {
 			return FileInfo.fromDirectory(fileName);
-		}
-		else if (backing.isFile()) {
+		} else if (backing.isFile()) {
 			return FileInfo.fromFile(fileName, backing.length());
 		}
 		return null;
 	}
 
 	@Override
-	protected String getFilesystemName()
-	{
+	protected String getFilesystemName() {
 		return "SrcDemo fake filesystem";
 	}
 
 	@Override
-	protected long getFreeBytes()
-	{
+	protected long getFreeBytes() {
 		return backingStorage.getFreeSpace();
 	}
 
 	@Override
-	protected long getTotalBytes()
-	{
+	protected long getTotalBytes() {
 		return backingStorage.getTotalSpace();
 	}
 
 	@Override
-	protected long getUsableBytes()
-	{
+	protected long getUsableBytes() {
 		return backingStorage.getUsableSpace();
 	}
 
 	@Override
-	protected String getVolumeName()
-	{
+	protected String getVolumeName() {
 		return "SrcDemo";
 	}
 
 	@Override
-	protected void moveFile(final String existingFileName, final String newFileName, final boolean replaceExisiting)
-	{
+	protected void moveFile(final String existingFileName, final String newFileName, final boolean replaceExisiting) {
 		final File newFile = getBackedFile(newFileName);
 		if (newFile.exists() && !replaceExisiting) {
 			return;
@@ -196,8 +174,7 @@ public class LoopbackFS extends DokanFSStub
 	}
 
 	@Override
-	protected int readFile(final String fileName, final ByteBuffer buffer, final long offset)
-	{
+	protected int readFile(final String fileName, final ByteBuffer buffer, final long offset) {
 		final File backed = getBackedFile(fileName);
 		try {
 			return getFileHandle(backed, true).read(buffer, offset);
@@ -210,8 +187,7 @@ public class LoopbackFS extends DokanFSStub
 	}
 
 	@Override
-	protected void truncateFile(final String fileName, final long length)
-	{
+	protected void truncateFile(final String fileName, final long length) {
 		try {
 			getFileHandle(fileName, true).truncate(length);
 		}
@@ -222,8 +198,7 @@ public class LoopbackFS extends DokanFSStub
 	}
 
 	@Override
-	protected int writeFile(final String fileName, final ByteBuffer buffer, final long offset)
-	{
+	protected int writeFile(final String fileName, final ByteBuffer buffer, final long offset) {
 		final File backed = getBackedFile(fileName);
 		try {
 			return getFileHandle(backed, true).write(buffer, offset);

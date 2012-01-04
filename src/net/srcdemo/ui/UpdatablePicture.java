@@ -15,8 +15,7 @@ import com.trolltech.qt.gui.QPixmap;
 import com.trolltech.qt.gui.QResizeEvent;
 import com.trolltech.qt.gui.QSizePolicy.Policy;
 
-class UpdatablePicture extends QLabel
-{
+class UpdatablePicture extends QLabel {
 	private static final int imageBorderPixels = 2;
 	private String image = null;
 	private final Lock lock = new ReentrantLock();
@@ -29,13 +28,11 @@ class UpdatablePicture extends QLabel
 	private int rawWidth = 0;
 	private QSize size = null;
 
-	UpdatablePicture(final File initialImage)
-	{
+	UpdatablePicture(final File initialImage) {
 		this(initialImage, null, null);
 	}
 
-	UpdatablePicture(final File initialImage, final Integer maxWidth, final Integer maxHeight)
-	{
+	UpdatablePicture(final File initialImage, final Integer maxWidth, final Integer maxHeight) {
 		image = initialImage.getAbsolutePath();
 		this.maxWidth = maxWidth;
 		this.maxHeight = maxHeight;
@@ -45,19 +42,17 @@ class UpdatablePicture extends QLabel
 		updatePicture();
 	}
 
-	private QSize getTargetSize()
-	{
+	private QSize getTargetSize() {
 		if (pixmapOriginal != null) {
 			size = pixmapOriginal.size();
 			final QSize targetSize = new QSize(Math.min(size.width(), width() - imageBorderPixels), Math.min(size.height(),
-					height() - imageBorderPixels));
+				height() - imageBorderPixels));
 			size.scale(targetSize, AspectRatioMode.KeepAspectRatio);
 		}
 		return size;
 	}
 
-	void push(final File newImage)
-	{
+	void push(final File newImage) {
 		final String path = newImage.getAbsolutePath();
 		lock.lock();
 		needUpdate = !path.equals(image);
@@ -66,8 +61,7 @@ class UpdatablePicture extends QLabel
 		lock.unlock();
 	}
 
-	void push(final int[] pixelData, final int width, final int height)
-	{
+	void push(final int[] pixelData, final int width, final int height) {
 		lock.lock();
 		needUpdate = true; // Comparing each pixel would be expensive; assume it did change
 		image = null;
@@ -78,8 +72,7 @@ class UpdatablePicture extends QLabel
 	}
 
 	@Override
-	protected void resizeEvent(final QResizeEvent event)
-	{
+	protected void resizeEvent(final QResizeEvent event) {
 		lock.lock();
 		final QSize targetSize = getTargetSize();
 		if (targetSize != null && !targetSize.equals(pixmap().size())) {
@@ -89,22 +82,20 @@ class UpdatablePicture extends QLabel
 		lock.unlock();
 	}
 
-	void updatePicture()
-	{
+	void updatePicture() {
 		boolean doGc = false;
 		lock.lock();
 		if (needUpdate) {
 			if (image != null) {
 				pixmapOriginal = new QPixmap(image);
-			}
-			else if (rawPixelData != null) {
+			} else if (rawPixelData != null) {
 				final int length = rawPixelData.length;
 				int width = rawWidth;
 				int height = rawHeight;
 				byte[] rgb;
 				if ((maxWidth != null && rawWidth > maxWidth) || (maxHeight != null && rawHeight > maxHeight)) {
 					final double inverseScale = Math.max((double) width / (double) maxWidth, (double) height
-							/ (double) maxHeight);
+						/ (double) maxHeight);
 					final double scale = 1 / inverseScale;
 					width = (int) Math.floor(width * scale);
 					height = (int) Math.floor(height * scale);
@@ -112,13 +103,12 @@ class UpdatablePicture extends QLabel
 					rgb = new byte[width * height * 3];
 					for (int i = 0; i < width * height; i++) {
 						index = Math.min((int) (inverseScale * (i / width)), rawHeight) * rawWidth
-								+ Math.min((int) (inverseScale * (i % width)), rawWidth);
+							+ Math.min((int) (inverseScale * (i % width)), rawWidth);
 						rgb[i * 3] = (byte) ((rawPixelData[index] & 0xff0000) >> 16);
 						rgb[i * 3 + 1] = (byte) ((rawPixelData[index] & 0xff00) >> 8);
 						rgb[i * 3 + 2] = (byte) (rawPixelData[index] & 0xff);
 					}
-				}
-				else {
+				} else {
 					rgb = new byte[length * 3];
 					for (int i = 0; i < length; i++) {
 						rgb[i * 3] = (byte) ((rawPixelData[i] & 0xff0000) >> 16);
@@ -135,7 +125,7 @@ class UpdatablePicture extends QLabel
 			}
 			if (!pixmapOriginal.isNull()) {
 				setPixmap(pixmapOriginal.scaled(getTargetSize(), AspectRatioMode.KeepAspectRatio,
-						TransformationMode.SmoothTransformation));
+					TransformationMode.SmoothTransformation));
 			}
 			needUpdate = false;
 			doGc = true;

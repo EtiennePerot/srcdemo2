@@ -3,8 +3,7 @@ package net.srcdemo.audio;
 import java.nio.ByteBuffer;
 import java.util.Collection;
 
-public interface AudioHandler
-{
+public interface AudioHandler {
 	public void close();
 
 	public void create();

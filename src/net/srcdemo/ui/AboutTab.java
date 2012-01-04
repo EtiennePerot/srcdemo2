@@ -15,43 +15,35 @@ import com.trolltech.qt.gui.QPushButton;
 import com.trolltech.qt.gui.QVBoxLayout;
 import com.trolltech.qt.gui.QWidget;
 
-public class AboutTab extends QWidget
-{
+public class AboutTab extends QWidget {
 	private QCheckBox autoCheck;
 	private final SrcDemoUI parent;
 	private QPushButton updateButton;
 	private QLabel updateStatus;
 
-	AboutTab(final SrcDemoUI parent)
-	{
+	AboutTab(final SrcDemoUI parent) {
 		this.parent = parent;
 		initUI();
 		if (getSettings().getAutoCheckUpdates() && SrcDemoUI.getVersion() != null) {
-			QCoreApplication.invokeLater(new Runnable()
-			{
+			QCoreApplication.invokeLater(new Runnable() {
 				@Override
-				public void run()
-				{
+				public void run() {
 					onCheckUpdates();
 				}
 			});
 		}
 	}
 
-	private SrcSettings getSettings()
-	{
+	private SrcSettings getSettings() {
 		return parent.getSettings();
 	}
 
-	private void initUI()
-	{
+	private void initUI() {
 		final QVBoxLayout vbox = new QVBoxLayout();
 		{
-			final QLabel iconLabel = new QLabel()
-			{
+			final QLabel iconLabel = new QLabel() {
 				@Override
-				public boolean event(final QEvent event)
-				{
+				public boolean event(final QEvent event) {
 					if (event.type().equals(QEvent.Type.MouseButtonPress)) {
 						QDesktopServices.openUrl(new QUrl(Strings.urlHomepage));
 						return true;
@@ -72,7 +64,7 @@ public class AboutTab extends QWidget
 			final QHBoxLayout hbox = new QHBoxLayout();
 			hbox.addWidget(new QLabel(Strings.lblBuildDate), 0, AlignmentFlag.AlignRight);
 			hbox.addWidget(new QLabel(SrcDemoUI.getVersion() == null ? Strings.aboutUnknownVersion : SrcDemoUI.getVersion()),
-					0, AlignmentFlag.AlignLeft);
+				0, AlignmentFlag.AlignLeft);
 			vbox.addLayout(hbox);
 		}
 		{
@@ -96,21 +88,18 @@ public class AboutTab extends QWidget
 	}
 
 	@SuppressWarnings("unused")
-	private void onChangedAutoCheck()
-	{
+	private void onChangedAutoCheck() {
 		getSettings().setAutoCheckUpdates(autoCheck.isChecked());
 	}
 
-	private void onCheckUpdates()
-	{
+	private void onCheckUpdates() {
 		updateButton.setEnabled(false);
 		updateButton.setText(Strings.btnUpdateChecking);
 		updateStatus.setText(Strings.lblUpdateChecking);
 		new UpdateCheckThread(this).start();
 	}
 
-	void onUpdateStatus(final String status, final boolean switchNow)
-	{
+	void onUpdateStatus(final String status, final boolean switchNow) {
 		updateStatus.setText(status);
 		updateButton.setEnabled(true);
 		updateButton.setText(Strings.btnUpdateRecheck);

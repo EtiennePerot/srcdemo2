@@ -24,10 +24,9 @@ import com.trolltech.qt.gui.QSizePolicy.Policy;
 import com.trolltech.qt.gui.QVBoxLayout;
 import com.trolltech.qt.gui.QWidget;
 
-class RenderingTab extends QWidget implements SrcDemoListener
-{
+class RenderingTab extends QWidget implements SrcDemoListener {
 	private static final DecimalFormat framesProcessedPerSecondFormat = new DecimalFormat(
-			Strings.lblFramesProcessedPerSecondFormat);
+		Strings.lblFramesProcessedPerSecondFormat);
 	private static final int maximumPreviewHeight = 480;
 	private static final int maximumPreviewWidth = 640;
 	/**
@@ -35,32 +34,26 @@ class RenderingTab extends QWidget implements SrcDemoListener
 	 */
 	private static final long uiUpdateInterval = 750;
 	private QProgressBar audioBuffer;
-	private final Runnable audioBufferClosed = new Runnable()
-	{
+	private final Runnable audioBufferClosed = new Runnable() {
 		@Override
-		public void run()
-		{
+		public void run() {
 			lblAudioBuffer1.setText(Strings.lblRenderAudioBufferClosed);
 			lblAudioBuffer2.setText("");
 			btnFlushAudioBuffer.setText(Strings.btnRenderAudioBufferFlush);
 			enabledAudioWidgets(false);
 		}
 	};
-	private final Runnable audioBufferFlushEnd = new Runnable()
-	{
+	private final Runnable audioBufferFlushEnd = new Runnable() {
 		@Override
-		public void run()
-		{
+		public void run() {
 			lblAudioBuffer1.setText(Strings.lblRenderAudioBufferWritten);
 			lblAudioBuffer2.setText("");
 			btnFlushAudioBuffer.setText(Strings.btnRenderAudioBufferFlushed);
 		}
 	};
-	private final Runnable audioBufferFlushStart = new Runnable()
-	{
+	private final Runnable audioBufferFlushStart = new Runnable() {
 		@Override
-		public void run()
-		{
+		public void run() {
 			lblAudioBuffer1.setText(Strings.lblRenderAudioBufferWriting);
 			lblAudioBuffer2.setText("");
 			btnFlushAudioBuffer.setText(Strings.btnRenderAudioBufferFlushing);
@@ -86,48 +79,39 @@ class RenderingTab extends QWidget implements SrcDemoListener
 	private QCheckBox previewEnabledCheckbox;
 	private UpdatablePicture previewPicture;
 
-	RenderingTab(final SrcDemoUI parent)
-	{
+	RenderingTab(final SrcDemoUI parent) {
 		this.parent = parent;
 		initUI();
-		final Runnable updateUi = new Runnable()
-		{
+		final Runnable updateUi = new Runnable() {
 			@Override
-			public void run()
-			{
+			public void run() {
 				updateUI();
 			}
 		};
-		new Timer("Rendering tab updater", true).schedule(new TimerTask()
-		{
+		new Timer("Rendering tab updater", true).schedule(new TimerTask() {
 			@Override
-			public void run()
-			{
+			public void run() {
 				QCoreApplication.invokeLater(updateUi);
 			}
 		}, 0, uiUpdateInterval);
 	}
 
-	private QWidget audioWidget(final QWidget widget)
-	{
+	private QWidget audioWidget(final QWidget widget) {
 		audioWidgets.add(widget);
 		return widget;
 	}
 
-	private void enabledAudioWidgets(final boolean enable)
-	{
+	private void enabledAudioWidgets(final boolean enable) {
 		for (final QWidget w : audioWidgets) {
 			w.setEnabled(enable);
 		}
 	}
 
-	private SrcSettings getSettings()
-	{
+	private SrcSettings getSettings() {
 		return parent.getSettings();
 	}
 
-	private void initUI()
-	{
+	private void initUI() {
 		final QHBoxLayout mainHbox = new QHBoxLayout();
 		{
 			final QGroupBox videoBox = new QGroupBox(Strings.grpRenderingVideoFrames);
@@ -194,8 +178,7 @@ class RenderingTab extends QWidget implements SrcDemoListener
 	}
 
 	@Override
-	public void onAudioBuffer(final AudioBufferStatus status, final int occupied, final int total)
-	{
+	public void onAudioBuffer(final AudioBufferStatus status, final int occupied, final int total) {
 		audioBufferOccupied = occupied;
 		audioBufferTotal = total;
 		switch (status) {
@@ -219,8 +202,7 @@ class RenderingTab extends QWidget implements SrcDemoListener
 	}
 
 	@SuppressWarnings("unused")
-	private void onFlushAudioBuffer()
-	{
+	private void onFlushAudioBuffer() {
 		audioBufferStatus = AudioBufferStatus.FLUSHING;
 		enabledAudioWidgets(false);
 		btnFlushAudioBuffer.setText(Strings.btnRenderAudioBufferFlushing);
@@ -228,15 +210,13 @@ class RenderingTab extends QWidget implements SrcDemoListener
 	}
 
 	@Override
-	public void onFrameProcessed(final String frameName)
-	{
+	public void onFrameProcessed(final String frameName) {
 		framesProcessed.incrementAndGet();
 		framesProcessRate.mark();
 	}
 
 	@Override
-	public void onFrameSaved(final File savedFrame, final int[] pixels, final int width, final int height)
-	{
+	public void onFrameSaved(final File savedFrame, final int[] pixels, final int width, final int height) {
 		framesSaved.incrementAndGet();
 		if (previewEnabled) {
 			previewPicture.push(pixels, width, height);
@@ -244,18 +224,16 @@ class RenderingTab extends QWidget implements SrcDemoListener
 	}
 
 	@SuppressWarnings("unused")
-	private void updatePreviewEnabled()
-	{
+	private void updatePreviewEnabled() {
 		previewEnabled = previewEnabledCheckbox.isChecked();
 		getSettings().setPreviewEnabled(previewEnabled);
 	}
 
-	private void updateUI()
-	{
+	private void updateUI() {
 		lblLastFrameProcessed.setText(Integer.toString(framesProcessed.get()));
 		final Double framerate = framesProcessRate.getRatePerSecond();
 		lblFramesProcessedPerSecond.setText(framerate == null ? Strings.lblFramesProcessedPerSecondDefault
-				: framesProcessedPerSecondFormat.format(framerate));
+			: framesProcessedPerSecondFormat.format(framerate));
 		lblLastFrameSaved.setText(Integer.toString(framesSaved.get()));
 		if (previewEnabled) {
 			previewPicture.updatePicture();
@@ -266,9 +244,9 @@ class RenderingTab extends QWidget implements SrcDemoListener
 					audioBuffer.setMaximum(audioBufferTotal);
 					audioBuffer.setValue(audioBufferOccupied);
 					lblAudioBuffer1.setText((audioBufferOccupied / 1024) + Strings.lblRenderAudioBuffer1
-							+ (audioBufferOccupied * 100 / audioBufferTotal) + Strings.lblRenderAudioBuffer2);
+						+ (audioBufferOccupied * 100 / audioBufferTotal) + Strings.lblRenderAudioBuffer2);
 					lblAudioBuffer2.setText(Strings.lblRenderAudioBuffer3 + (audioBufferTotal / 1024)
-							+ Strings.lblRenderAudioBuffer4);
+						+ Strings.lblRenderAudioBuffer4);
 					btnFlushAudioBuffer.setText(Strings.btnRenderAudioBufferFlush);
 					enabledAudioWidgets(audioBufferOccupied > 0 && audioBufferTotal > 0);
 					break;
@@ -279,8 +257,7 @@ class RenderingTab extends QWidget implements SrcDemoListener
 					btnFlushAudioBuffer.setEnabled(false);
 					break;
 			}
-		}
-		else {
+		} else {
 			enabledAudioWidgets(false);
 		}
 	}

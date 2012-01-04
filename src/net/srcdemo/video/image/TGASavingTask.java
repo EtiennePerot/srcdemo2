@@ -7,8 +7,7 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
 
-public class TGASavingTask extends ImageSavingTask
-{
+public class TGASavingTask extends ImageSavingTask {
 	private static final int maximumRLEpixels = 127;
 	private static final int minimumRLEpixels = 3;
 	private static final int tgaBufferPad = 64;
@@ -16,15 +15,13 @@ public class TGASavingTask extends ImageSavingTask
 	private final boolean compression;
 
 	public TGASavingTask(final int sequenceIndex, final int[] pixelData, final int width, final int height,
-			final boolean compression)
-	{
+		final boolean compression) {
 		super(sequenceIndex, pixelData, width, height);
 		this.compression = compression;
 	}
 
 	@Override
-	protected boolean doSave(final File outputFile) throws IOException
-	{
+	protected boolean doSave(final File outputFile) throws IOException {
 		final FileOutputStream stream = new FileOutputStream(outputFile);
 		final FileChannel chan = stream.getChannel();
 		chan.write(makeBuffer());
@@ -35,13 +32,11 @@ public class TGASavingTask extends ImageSavingTask
 	}
 
 	@Override
-	public String getExtension()
-	{
+	public String getExtension() {
 		return "tga";
 	}
 
-	private ByteBuffer makeBuffer()
-	{
+	private ByteBuffer makeBuffer() {
 		final ByteArrayOutputStream buf = new ByteArrayOutputStream(tgaHeaderLength + pixelData.length * 4 + tgaBufferPad);
 		{
 			// Header
@@ -49,8 +44,7 @@ public class TGASavingTask extends ImageSavingTask
 			buf.write((byte) 0); // Color map (0 = none)
 			if (compression) {
 				buf.write((byte) 10); // Compression (10 = run-length truecolor)
-			}
-			else {
+			} else {
 				buf.write((byte) 2); // Compression (2 = uncompressed truecolor)
 			}
 			writeShortSmallEndian(buf, (short) 0); // First entry index of the color map (0 because there is no color map)
@@ -76,8 +70,7 @@ public class TGASavingTask extends ImageSavingTask
 					currentPixel = pixelData[i];
 					if (currentPixel == lastPixel && currentPixelCount < maxPixelCount) {
 						currentPixelCount++;
-					}
-					else {
+					} else {
 						// Actually write
 						if (currentPixelCount < minimumRLEpixels) {
 							// Non-RLE packet
@@ -87,8 +80,7 @@ public class TGASavingTask extends ImageSavingTask
 								buf.write((byte) ((lastPixel >> 8) & 0xFF));
 								buf.write((byte) ((lastPixel >> 16) & 0xFF));
 							}
-						}
-						else {
+						} else {
 							// RLE packet
 							buf.write((byte) (currentPixelCount + 127));
 							buf.write((byte) (lastPixel & 0xFF));
@@ -109,16 +101,14 @@ public class TGASavingTask extends ImageSavingTask
 						buf.write((byte) ((lastPixel >> 8) & 0xFF));
 						buf.write((byte) ((lastPixel >> 16) & 0xFF));
 					}
-				}
-				else {
+				} else {
 					// RLE packet
 					buf.write((byte) (currentPixelCount + 127));
 					buf.write((byte) (lastPixel & 0xFF));
 					buf.write((byte) ((lastPixel >> 8) & 0xFF));
 					buf.write((byte) ((lastPixel >> 16) & 0xFF));
 				}
-			}
-			else {
+			} else {
 				// No compression
 				for (final int currentPixel : pixelData) {
 					buf.write((byte) (currentPixel & 0xFF));
@@ -130,8 +120,7 @@ public class TGASavingTask extends ImageSavingTask
 		return ByteBuffer.wrap(buf.toByteArray());
 	}
 
-	private void writeShortSmallEndian(final ByteArrayOutputStream buffer, final short value)
-	{
+	private void writeShortSmallEndian(final ByteArrayOutputStream buffer, final short value) {
 		buffer.write((byte) (value & 0xFF));
 		buffer.write((byte) (value >> 8));
 	}

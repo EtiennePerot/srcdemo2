@@ -7,21 +7,18 @@ import java.util.concurrent.BlockingQueue;
 import net.srcdemo.SrcDemo;
 import net.srcdemo.SrcLogger;
 
-public class ImageSaver extends Thread
-{
+public class ImageSaver extends Thread {
 	private SrcDemo demo;
 	private BlockingQueue<ImageSavingTask> tasks = new ArrayBlockingQueue<ImageSavingTask>(4);
 
-	public ImageSaver(final SrcDemo demo)
-	{
+	public ImageSaver(final SrcDemo demo) {
 		super("Image saving thread");
 		this.demo = demo;
 		setDaemon(true);
 		start();
 	}
 
-	public void add(final ImageSavingTask imgSavingTask)
-	{
+	public void add(final ImageSavingTask imgSavingTask) {
 		try {
 			tasks.put(imgSavingTask);
 			SrcLogger.logVideo("Image saving task queued: " + imgSavingTask);
@@ -32,16 +29,14 @@ public class ImageSaver extends Thread
 	}
 
 	@Override
-	public void interrupt()
-	{
+	public void interrupt() {
 		tasks = null;
 		demo = null;
 		super.interrupt();
 	}
 
 	@Override
-	public void run()
-	{
+	public void run() {
 		while (true) {
 			ImageSavingTask task;
 			try {

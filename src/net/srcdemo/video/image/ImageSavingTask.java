@@ -5,15 +5,13 @@ import java.io.IOException;
 
 import net.srcdemo.SrcLogger;
 
-public abstract class ImageSavingTask
-{
+public abstract class ImageSavingTask {
 	protected final int height;
 	protected int[] pixelData;
 	protected final int sequenceIndex;
 	protected final int width;
 
-	public ImageSavingTask(final int sequenceIndex, final int[] pixelData, final int width, final int height)
-	{
+	public ImageSavingTask(final int sequenceIndex, final int[] pixelData, final int width, final int height) {
 		this.sequenceIndex = sequenceIndex;
 		this.pixelData = pixelData;
 		this.width = width;
@@ -24,13 +22,11 @@ public abstract class ImageSavingTask
 
 	public abstract String getExtension();
 
-	int getSequenceIndex()
-	{
+	int getSequenceIndex() {
 		return sequenceIndex;
 	}
 
-	boolean save(final File outputFile)
-	{
+	boolean save(final File outputFile) {
 		SrcLogger.logVideo("Spawned " + getExtension() + " image saving task to: " + outputFile);
 		boolean result;
 		try {
@@ -42,16 +38,14 @@ public abstract class ImageSavingTask
 		}
 		if (result) {
 			SrcLogger.logVideo("Finished writing " + getExtension() + " to " + outputFile);
-		}
-		else {
+		} else {
 			SrcLogger.error("Error while writing " + getExtension() + " to " + outputFile + " (unspecified).");
 		}
 		return result;
 	}
 
 	@Override
-	public String toString()
-	{
+	public String toString() {
 		return getExtension().toUpperCase() + "SavingTask(Frame #" + sequenceIndex + " of size " + width + "x" + height + ")";
 	}
 }

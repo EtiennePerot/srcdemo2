@@ -12,26 +12,22 @@ import org.horrabin.horrorss.RssParser;
 
 import com.trolltech.qt.core.QCoreApplication;
 
-class UpdateCheckThread extends Thread
-{
-	private static class Version implements Comparable<Version>
-	{
+class UpdateCheckThread extends Thread {
+	private static class Version implements Comparable<Version> {
 		private final static Pattern versionMatch = Pattern.compile("(\\d\\d\\d\\d)" + Strings.dateSeparator + "(\\d\\d)"
-				+ Strings.dateSeparator + "(\\d\\d)(?:\\.exe)?$", Pattern.CASE_INSENSITIVE);
+			+ Strings.dateSeparator + "(\\d\\d)(?:\\.exe)?$", Pattern.CASE_INSENSITIVE);
 		private int day;
 		private String downloadLink = null;
 		private final boolean matches;
 		private int month;
 		private int year;
 
-		private Version(final RssItemBean item)
-		{
+		private Version(final RssItemBean item) {
 			this(item.getLink());
 			downloadLink = item.getLink();
 		}
 
-		private Version(final String version)
-		{
+		private Version(final String version) {
 			final Matcher m = versionMatch.matcher(version);
 			matches = m.find();
 			if (matches) {
@@ -42,8 +38,7 @@ class UpdateCheckThread extends Thread
 		}
 
 		@Override
-		public int compareTo(final Version other)
-		{
+		public int compareTo(final Version other) {
 			if (!matches) {
 				return -1;
 			}
@@ -62,14 +57,12 @@ class UpdateCheckThread extends Thread
 			return 0;
 		}
 
-		String getDownloadLink()
-		{
+		String getDownloadLink() {
 			return downloadLink;
 		}
 
 		@Override
-		public String toString()
-		{
+		public String toString() {
 			return year + Strings.dateSeparator + month + Strings.dateSeparator + day;
 		}
 	}
@@ -79,8 +72,7 @@ class UpdateCheckThread extends Thread
 	private final AboutTab parent;
 	private final RssParser parser;
 
-	UpdateCheckThread(final AboutTab parent)
-	{
+	UpdateCheckThread(final AboutTab parent) {
 		this.parent = parent;
 		if (previousInstance != null) {
 			previousInstance.invalidate();
@@ -89,15 +81,13 @@ class UpdateCheckThread extends Thread
 		parser = new RssParser(Strings.urlUpdateFeed);
 	}
 
-	private void invalidate()
-	{
+	private void invalidate() {
 		invalidated.set(true);
 	}
 
 	@SuppressWarnings("unchecked")
 	@Override
-	public void run()
-	{
+	public void run() {
 		if (invalidated.get()) {
 			return;
 		}
@@ -138,24 +128,21 @@ class UpdateCheckThread extends Thread
 		}
 		if (versions.last().getDownloadLink() == null) {
 			setStatus("<a href=\"" + Strings.lblDefaultDownloadLink + "\">" + Strings.lblUpdateNewVersion + versions.last()
-					+ "</a>" + Strings.lblUpdateNewVersionNoLink, true);
+				+ "</a>" + Strings.lblUpdateNewVersionNoLink, true);
 			return;
 		}
 		{
 			setStatus("<a href=\"" + versions.last().getDownloadLink() + "\">" + Strings.lblUpdateNewVersion + versions.last()
-					+ "</a>", true);
+				+ "</a>", true);
 			return;
 		}
 	}
 
-	private void setStatus(final String status, final boolean switchNow)
-	{
+	private void setStatus(final String status, final boolean switchNow) {
 		if (!invalidated.get()) {
-			QCoreApplication.invokeLater(new Runnable()
-			{
+			QCoreApplication.invokeLater(new Runnable() {
 				@Override
-				public void run()
-				{
+				public void run() {
 					if (!invalidated.get()) {
 						parent.onUpdateStatus(status, switchNow);
 					}

@@ -45,15 +45,15 @@ public class VorbisEncoder implements AudioHandler {
 		}
 	}
 
-	private static final int	outputFileBuffer	= 1024;
-	private final AtomicLong	fileSize			= new AtomicLong(0L);
-	private final ReentrantLock	lock				= new ReentrantLock();
-	private FileOutputStream	output				= null;
-	private OutputStream		stdin				= null;
-	private InputStream			stdout				= null;
-	private final Condition		stdoutFinished;
-	private final AtomicBoolean	stdoutThreadDead	= new AtomicBoolean(false);
-	private long				writtenSize			= 0L;
+	private static final int outputFileBuffer = 1024;
+	private final AtomicLong fileSize = new AtomicLong(0L);
+	private final ReentrantLock lock = new ReentrantLock();
+	private FileOutputStream output = null;
+	private OutputStream stdin = null;
+	private InputStream stdout = null;
+	private final Condition stdoutFinished;
+	private final AtomicBoolean stdoutThreadDead = new AtomicBoolean(false);
+	private long writtenSize = 0L;
 
 	public VorbisEncoder(final File outputFile, final int quality) {
 		final String[] command = { Files.oggEncWindows.toString(), "-q", Integer.toString(Math.max(-2, Math.min(10, quality))),

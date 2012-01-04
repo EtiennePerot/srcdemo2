@@ -9,11 +9,11 @@ import net.srcdemo.ui.Files;
 
 public final class UserFS {
 	public static final class DokanNotInstalledException extends Exception {
-		private static final long	serialVersionUID	= -332027883155497034L;
+		private static final long serialVersionUID = -332027883155497034L;
 	}
 
 	public static final class DokanVersionException extends Exception {
-		private static final long	serialVersionUID	= -3397141069355824035L;
+		private static final long serialVersionUID = -3397141069355824035L;
 	}
 
 	private enum OperatingSystem {
@@ -23,7 +23,7 @@ public final class UserFS {
 		}
 	}
 
-	private static OperatingSystem	operatingSystem	= null;
+	private static OperatingSystem operatingSystem = null;
 
 	private static OperatingSystem getOperatingSystem() {
 		if (operatingSystem != null) {

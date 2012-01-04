@@ -7,25 +7,21 @@ import net.srcdemo.EnumUtils;
 
 import com.trolltech.qt.gui.QComboBox;
 
-class EnumComboBox<T extends Enum<T>> extends QComboBox
-{
+class EnumComboBox<T extends Enum<T>> extends QComboBox {
 	private final List<T> values = new ArrayList<T>();
 
-	EnumComboBox(final Class<T> enumType)
-	{
+	EnumComboBox(final Class<T> enumType) {
 		for (final T val : EnumUtils.iterate(enumType)) {
 			values.add(val);
 			addItem(val.toString());
 		}
 	}
 
-	T getCurrentItem()
-	{
+	T getCurrentItem() {
 		return values.get(currentIndex());
 	}
 
-	void setCurrentItem(final T item)
-	{
+	void setCurrentItem(final T item) {
 		setCurrentIndex(values.indexOf(item));
 	}
 }

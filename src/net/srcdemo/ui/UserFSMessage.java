@@ -6,10 +6,8 @@ import com.trolltech.qt.gui.QPushButton;
 import com.trolltech.qt.gui.QVBoxLayout;
 import com.trolltech.qt.gui.QWidget;
 
-class UserFSMessage extends QWidget
-{
-	UserFSMessage(final String errorMessage)
-	{
+class UserFSMessage extends QWidget {
+	UserFSMessage(final String errorMessage) {
 		setWindowTitle(Strings.errDokanTitle);
 		final QVBoxLayout vbox = new QVBoxLayout();
 		vbox.addWidget(new QLabel(errorMessage));
@@ -20,8 +18,7 @@ class UserFSMessage extends QWidget
 	}
 
 	@SuppressWarnings("unused")
-	private void onExit()
-	{
+	private void onExit() {
 		close();
 	}
 }
