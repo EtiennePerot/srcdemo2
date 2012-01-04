@@ -58,6 +58,11 @@
     <property name="osx.package.app.resources.icon.target" value="img/icon.icns"/>
     <property name="osx.package.app.resources.icon.file" value="${osx.package.app.resources.dir}/icon.icns"/>
     <property name="osx.package.app.python" value="${osx.package.dir}/static-python"/>
+    <property name="osx.package.dmg.name" value="${ant.project.name}"/>
+    <property name="osx.package.dmg.volume" value="${ant.project.name}"/>
+    <property name="osx.package.dmg.dir" value="/Volumes/${osx.package.dmg.volume}"/>
+    <property name="osx.package.dmg.script" value="${osx.package.dir}/build-dmg.pl"/>
+    <property name="osx.package.dmg.compression" value="9"/>
     <property name="program.versionscript" value="${any.package.dir}/buildversion.py"/>
     <property name="program.versionfile" value="${root.dir}/version.txt"/>
     <property name="dll.includes" value="**/*.dll"/>
@@ -178,7 +183,24 @@
 		<symlink link="${osx.package.app.resources.icon.file}" resource="${osx.package.app.resources.icon.target}"/>
 	</target>
 	<target name="package-osx" depends="buildapp-osx">
-		<antcall target="package-finalize"/>
+		<exec executable="hdiutil" error="/dev/null">
+			<arg value="detach"/>
+			<arg value="${osx.package.dmg.dir}"/>
+		</exec>
+		<exec executable="perl">
+			<arg value="${osx.package.dmg.script}"/>
+			<arg value="-dmgName"/>
+			<arg value="${osx.package.dmg.name}"/>
+			<arg value="-volName"/>
+			<arg value="${osx.package.dmg.volume}"/>
+			<arg value="-buildDir"/>
+			<arg value="./"/>
+			<arg value="-deleteHeaders"/>
+			<arg value="-compressionLevel"/>
+			<arg value="${osx.package.dmg.compression}"/>
+			<arg value="${osx.package.app.dir}"/>
+		</exec>
+		<!-- temp <antcall target="package-finalize"/> -->
 	</target>
 	<target name="package-finalize">
 		<antcall target="clean"/>
