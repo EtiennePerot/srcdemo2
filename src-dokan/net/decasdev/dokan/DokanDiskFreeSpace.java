@@ -8,27 +8,23 @@
  */
 package net.decasdev.dokan;
 
-public class DokanDiskFreeSpace
-{
+public class DokanDiskFreeSpace {
 	public long freeBytesAvailable;
 	public long totalNumberOfBytes;
 	public long totalNumberOfFreeBytes;
 
-	public DokanDiskFreeSpace()
-	{
+	public DokanDiskFreeSpace() {
 	}
 
-	public DokanDiskFreeSpace(final long freeBytes, final long totalBytes)
-	{
+	public DokanDiskFreeSpace(final long freeBytes, final long totalFree, final long totalBytes) {
 		freeBytesAvailable = freeBytes;
-		totalNumberOfFreeBytes = freeBytes;
+		totalNumberOfFreeBytes = totalFree;
 		totalNumberOfBytes = totalBytes;
 	}
 
 	@Override
-	public String toString()
-	{
+	public String toString() {
 		return "DokanDiskFreeSpace(" + "freeBytesAvailable=" + freeBytesAvailable + "," + "totalNumberOfBytes="
-				+ totalNumberOfBytes + "," + "totalNumberOfFreeBytes=" + totalNumberOfFreeBytes + ")";
+			+ totalNumberOfBytes + "," + "totalNumberOfFreeBytes=" + totalNumberOfFreeBytes + ")";
 	}
 }

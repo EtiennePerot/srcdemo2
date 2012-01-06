@@ -11,9 +11,11 @@ import java.util.concurrent.locks.ReentrantLock;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import net.decasdev.dokan.CreationDispositionEnum;
 import net.srcdemo.audio.AudioHandlerFactory;
 import net.srcdemo.audio.BufferedAudioHandler.AudioBufferStatus;
+import net.srcdemo.userfs.FileCreationFlags;
+import net.srcdemo.userfs.FileInfo;
+import net.srcdemo.userfs.LoopbackFS;
 import net.srcdemo.video.VideoHandlerFactory;
 
 public class SrcDemoFS extends LoopbackFS {
@@ -45,7 +47,7 @@ public class SrcDemoFS extends LoopbackFS {
 	}
 
 	@Override
-	protected boolean createFile(final String fileName, final CreationDispositionEnum creation) {
+	protected boolean createFile(final String fileName, final FileCreationFlags creation) {
 		if (!creation.shouldCreate()) {
 			return super.createFile(fileName, creation);
 		}
@@ -73,12 +75,6 @@ public class SrcDemoFS extends LoopbackFS {
 			demos.remove(toDelete);
 		}
 		demoLock.unlock();
-	}
-
-	@Override
-	protected Collection<String> findFiles(final String pathName) {
-		// To avoid lack of garbage collection on those objects, return null
-		return null;
 	}
 
 	public void flushAudioBuffer(final boolean block) {
@@ -123,6 +119,12 @@ public class SrcDemoFS extends LoopbackFS {
 		return demo.getFileInfo(fileName);
 	}
 
+	@Override
+	protected Collection<String> listDirectory(final String pathName) {
+		// To avoid lack of garbage collection on those objects, return null
+		return null;
+	}
+
 	void notifyAudioBuffer(final AudioBufferStatus status, final int occupied, final int total) {
 		for (final SrcDemoListener listener : demoListeners) {
 			listener.onAudioBuffer(status, occupied, total);
@@ -156,13 +158,13 @@ public class SrcDemoFS extends LoopbackFS {
 	}
 
 	@Override
-	public void unmount() {
+	public boolean unmount() {
 		demoLock.lock();
 		for (final SrcDemo demo : demos.values()) {
 			demo.destroy();
 		}
 		demoLock.unlock();
-		super.unmount();
+		return true;
 	}
 
 	@Override

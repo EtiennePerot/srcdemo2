@@ -1,81 +1,172 @@
 package net.srcdemo.userfs;
 
 import java.io.File;
-import java.lang.reflect.Field;
+import java.nio.ByteBuffer;
+import java.util.Collection;
 
-import net.decasdev.dokan.Dokan;
 import net.srcdemo.SrcLogger;
-import net.srcdemo.ui.Files;
+import net.srcdemo.SymlinkResolver;
 
-public final class UserFS {
-	public static final class DokanNotInstalledException extends Exception {
-		private static final long serialVersionUID = -332027883155497034L;
+public abstract class UserFS {
+	private final UserFSBackend backend;
+	private File mountPoint;
+
+	public UserFS() {
+		backend = UserFSUtils.getNewBackend();
 	}
 
-	public static final class DokanVersionException extends Exception {
-		private static final long serialVersionUID = -3397141069355824035L;
+	final void _closeFile(final String fileName) {
+		log("CloseFile", "Close file: " + fileName);
+		closeFile(fileName);
 	}
 
-	private enum OperatingSystem {
-		LINUX32, LINUX64, OSX32, WIN32;
-		private boolean isWindows() {
-			return equals(WIN32);
+	final void _createDirectory(final String fileName) {
+		log("CreateDirectory", "Create directory: " + fileName);
+		createDirectory(fileName);
+	}
+
+	final boolean _createFile(final String fileName, final FileCreationFlags flags) {
+		log("CreateFile", "Create file: " + fileName + " / Creation flags: " + flags);
+		return createFile(fileName, flags);
+	}
+
+	final void _deleteDirectory(final String fileName) {
+		log("DeleteDirectory", "Delete directory: " + fileName);
+		deleteDirectory(fileName);
+	}
+
+	final void _deleteFile(final String fileName) {
+		log("DeleteFile", "Delete file: " + fileName);
+		deleteFile(fileName);
+	}
+
+	final void _flushFile(final String fileName) {
+		log("FlushFileBuffer", "Flush file buffer: " + fileName);
+		flushFile(fileName);
+	}
+
+	final FileInfo _getFileInfo(final String fileName) {
+		log("GetFileInfo", "Getting file info of " + fileName);
+		return getFileInfo(fileName);
+	}
+
+	final Collection<String> _listDirectory(final String pathName) {
+		log("FindFiles", "Find files in: " + pathName);
+		return listDirectory(pathName);
+	}
+
+	final void _lockFile(final String fileName, final long byteOffset, final long length) {
+		log("LockFile", "Lock file: " + fileName);
+		lockFile(fileName, byteOffset, length);
+	}
+
+	final void _moveFile(final String existingFileName, final String newFileName, final boolean replaceExisiting) {
+		log("MoveFile", "Move file: " + existingFileName + " -> " + newFileName);
+		moveFile(existingFileName, newFileName, replaceExisiting);
+	}
+
+	final int _readFile(final String fileName, final ByteBuffer buffer, final long offset) {
+		log("ReadFile", "Read file: " + fileName);
+		return readFile(fileName, buffer, offset);
+	}
+
+	final void _truncateFile(final String fileName, final long length) {
+		log("SetEndOfFile", "Set end of file: " + fileName + " at " + length);
+		truncateFile(fileName, length);
+	}
+
+	final void _unlockFile(final String fileName, final long byteOffset, final long length) {
+		log("UnlockFile", "Unlock file: " + fileName);
+		unlockFile(fileName, byteOffset, length);
+	}
+
+	final boolean _unmount() {
+		log("Unmount", "Unmounting.");
+		if (unmount()) {
+			return backend.unmount(mountPoint);
 		}
+		return false;
 	}
 
-	private static OperatingSystem operatingSystem = null;
-
-	private static OperatingSystem getOperatingSystem() {
-		if (operatingSystem != null) {
-			return operatingSystem;
-		}
-		if (System.getProperty("os.name").toLowerCase().contains("windows")) {
-			operatingSystem = OperatingSystem.WIN32;
-		} else if (System.getProperty("os.name").toLowerCase().contains("mac")) {
-			operatingSystem = OperatingSystem.OSX32;
-		}
-		return operatingSystem;
+	final int _writeFile(final String fileName, final ByteBuffer buffer, final long offset) {
+		log("WriteFile", "Write file: " + fileName);
+		return writeFile(fileName, buffer, offset);
 	}
 
-	/**
-	 * Initialize the user filesystem library. Will throw an exception if things go wrong.
-	 * 
-	 * @throws DokanNotInstalledException
-	 *             When Dokan is not installed
-	 * @throws DokanVersionException
-	 *             When Dokan is installed but doesn't have the right version number
-	 * @return True if successful
-	 */
-	public static boolean init() throws DokanNotInstalledException, DokanVersionException {
-		if (getOperatingSystem().isWindows()) {
-			try {
-				final String newLibPath = Files.libDirectoryWindows.getAbsolutePath() + File.pathSeparator
-					+ System.getProperty("java.library.path");
-				System.setProperty("java.library.path", newLibPath);
-				Field fieldSysPath;
-				try {
-					fieldSysPath = ClassLoader.class.getDeclaredField("sys_paths");
-					fieldSysPath.setAccessible(true);
-					if (fieldSysPath != null) {
-						fieldSysPath.set(System.class.getClassLoader(), null);
-					}
+	protected abstract void closeFile(String fileName);
+
+	protected abstract void createDirectory(String fileName);
+
+	protected abstract boolean createFile(String fileName, FileCreationFlags flags);
+
+	protected abstract void deleteDirectory(String fileName);
+
+	protected abstract void deleteFile(String fileName);
+
+	protected void flushFile(final String fileName) {
+		// Do nothing
+	}
+
+	protected abstract FileInfo getFileInfo(String fileName);
+
+	protected abstract String getFilesystemName();
+
+	protected abstract long getFreeBytes();
+
+	protected int getMaximumComponentLength() {
+		return 255;
+	}
+
+	protected abstract long getTotalBytes();
+
+	protected abstract long getUsableBytes();
+
+	protected abstract String getVolumeName();
+
+	final void implLog(final String method, final String message) {
+		SrcLogger.logFS("(U) " + method + ": " + message);
+	}
+
+	protected abstract Collection<String> listDirectory(String pathName);
+
+	protected void lockFile(final String fileName, final long byteOffset, final long length) {
+		// Do nothing
+	}
+
+	private final void log(final String method, final String message) {
+		SrcLogger.logFS(method + ": " + message);
+	}
+
+	public final boolean mount(final File mountPoint, final boolean blocking) {
+		if (!blocking) {
+			new Thread() {
+				@Override
+				public void run() {
+					mount(mountPoint, true);
 				}
-				catch (final Exception e) {
-					// Oh well
-				}
-				if (Dokan.getVersion() == 600) {
-					SrcLogger.log("Starting with version = " + Dokan.getVersion() + " / Driver = " + Dokan.getDriverVersion()
-						+ ".");
-					return true;
-				}
-				SrcLogger.error("Invalid Dokan version: " + Dokan.getVersion());
-			}
-			catch (final Throwable e) {
-				SrcLogger.error("Error caught while initializing Dokan", e);
-				throw new DokanNotInstalledException();
-			}
-			throw new DokanVersionException();
+			}.start();
+			return true;
 		}
+		this.mountPoint = SymlinkResolver.resolveSymlinks(mountPoint);
+		log("Mount", "Mounting to: " + this.mountPoint);
+		final boolean result = backend.mount(this, mountPoint);
+		log("Mount", "Mounting " + (result ? "succeeded" : "failed"));
+		return result;
+	}
+
+	protected abstract void moveFile(String existingFileName, String newFileName, boolean replaceExisiting);
+
+	protected abstract int readFile(String fileName, ByteBuffer buffer, long offset);
+
+	protected abstract void truncateFile(String fileName, long length);
+
+	protected void unlockFile(final String fileName, final long byteOffset, final long length) {
+		// Do nothing
+	}
+
+	protected boolean unmount() {
 		return true;
 	}
+
+	protected abstract int writeFile(String fileName, ByteBuffer buffer, long offset);
 }

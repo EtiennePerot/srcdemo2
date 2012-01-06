@@ -7,9 +7,9 @@ import java.util.concurrent.locks.ReentrantLock;
 
 import net.srcdemo.SrcDemoFS;
 import net.srcdemo.SrcLogger;
-import net.srcdemo.userfs.UserFS;
-import net.srcdemo.userfs.UserFS.DokanNotInstalledException;
-import net.srcdemo.userfs.UserFS.DokanVersionException;
+import net.srcdemo.userfs.UserFSUtils;
+import net.srcdemo.userfs.UserFSUtils.DokanNotInstalledException;
+import net.srcdemo.userfs.UserFSUtils.DokanVersionException;
 
 import org.apache.commons.io.FileUtils;
 
@@ -61,8 +61,9 @@ public class SrcDemoUI extends QWidget {
 				debugMode = true;
 				SrcLogger.setLogMisc(true);
 			}
-			if (arg.equals(Strings.cmdFlagDokanDebug)) {
-				dokanLoggingMode = true;
+			if (arg.equals(Strings.cmdFlagDebugFS)) {
+				debugMode = true;
+				SrcLogger.setLogFS(true);
 			}
 		}
 		if (Files.versionFile.exists()) {
@@ -81,7 +82,7 @@ public class SrcDemoUI extends QWidget {
 		}
 		boolean initialized = false;
 		try {
-			initialized = UserFS.init();
+			initialized = UserFSUtils.init();
 		}
 		catch (final DokanNotInstalledException e) {
 			new UserFSMessage(Strings.errDokanNotInstalled).show();
@@ -298,8 +299,7 @@ public class SrcDemoUI extends QWidget {
 		fsLock.lock();
 		mountedFS = new SrcDemoFS(getBackingDirectory().getAbsolutePath(), videoUi.getFactory(), audioUi.getFactory());
 		mountedFS.addListener(renderTab);
-		mountedFS.setLogging(dokanLoggingMode);
-		mountedFS.mount(getMountpoint());
+		mountedFS.mount(getMountpoint(), false);
 		fsLock.unlock();
 		updateStatus();
 		selectTab(renderTab);

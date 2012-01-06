@@ -8,6 +8,7 @@ import net.srcdemo.Mortician.Morticianed;
 import net.srcdemo.audio.AudioHandler;
 import net.srcdemo.audio.AudioHandlerFactory;
 import net.srcdemo.audio.BufferedAudioHandler.AudioBufferStatus;
+import net.srcdemo.userfs.FileInfo;
 import net.srcdemo.video.VideoHandler;
 import net.srcdemo.video.VideoHandlerFactory;
 

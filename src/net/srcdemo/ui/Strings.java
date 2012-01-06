@@ -25,10 +25,10 @@ interface Strings {
 	final String chkUpdateAutoCheck = "Check for updates when starting";
 	final String cmdFlagDebugAudio = "--srcdemo-debug-audio";
 	final String cmdFlagDebugDemo = "--srcdemo-debug-demo";
+	final String cmdFlagDebugFS = "--srcdemo-debug-fs";
 	final String cmdFlagDebugMisc = "--srcdemo-debug-misc";
 	final String cmdFlagDebugMode = "--srcdemo-debug";
 	final String cmdFlagDebugVideo = "--srcdemo-debug-video";
-	final String cmdFlagDokanDebug = "--dokan-debug";
 	final String cmdHostFramerate = "host_framerate ";
 	final String dateSeparator = "-";
 	final String errDirectoriesEqual = "Directories must not be equal";

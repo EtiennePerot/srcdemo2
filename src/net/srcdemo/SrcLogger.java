@@ -3,6 +3,7 @@ package net.srcdemo;
 public class SrcLogger {
 	private static boolean logAudio = false;
 	private static boolean logDemo = false;
+	private static boolean logFS = false;
 	private static boolean logMisc = false;
 	private static boolean logVideo = false;
 
@@ -33,6 +34,12 @@ public class SrcLogger {
 		}
 	}
 
+	public static void logFS(final String message) {
+		if (logFS) {
+			System.out.println("[F] " + message);
+		}
+	}
+
 	public static void logVideo(final String message) {
 		if (logVideo) {
 			System.out.println("[V] " + message);
@@ -44,6 +51,7 @@ public class SrcLogger {
 		setLogDemo(log);
 		setLogMisc(log);
 		setLogVideo(log);
+		setLogFS(log);
 	}
 
 	public static void setLogAudio(final boolean log) {
@@ -52,6 +60,10 @@ public class SrcLogger {
 
 	public static void setLogDemo(final boolean log) {
 		logDemo = log;
+	}
+
+	public static void setLogFS(final boolean log) {
+		logFS = log;
 	}
 
 	public static void setLogMisc(final boolean log) {

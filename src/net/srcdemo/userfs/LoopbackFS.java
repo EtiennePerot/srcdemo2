@@ -1,4 +1,4 @@
-package net.srcdemo;
+package net.srcdemo.userfs;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -12,9 +12,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.locks.ReentrantLock;
 
-import net.decasdev.dokan.CreationDispositionEnum;
 
-public class LoopbackFS extends DokanFSStub {
+public class LoopbackFS extends UserFS {
 	private final File backingStorage;
 	private final ReentrantLock filesHandleLock = new ReentrantLock();
 	private final Map<File, FileChannel> openedFiles = new HashMap<File, FileChannel>();
@@ -52,7 +51,7 @@ public class LoopbackFS extends DokanFSStub {
 	}
 
 	@Override
-	protected boolean createFile(final String fileName, final CreationDispositionEnum creation) {
+	protected boolean createFile(final String fileName, final FileCreationFlags creation) {
 		if (creation.shouldCreate()) {
 			try {
 				getBackedFile(fileName).createNewFile();
@@ -81,21 +80,11 @@ public class LoopbackFS extends DokanFSStub {
 	}
 
 	@Override
-	protected Collection<String> findFiles(final String pathName) {
-		final String[] files = getBackedFile(pathName).list();
-		final ArrayList<String> list = new ArrayList<String>(files.length);
-		for (final String s : files) {
-			list.add(new File(pathName, s).getPath());
-		}
-		return list;
-	}
-
-	@Override
-	protected void flushFileBuffer(final String fileName) {
+	protected void flushFile(final String fileName) {
 		closeFile(fileName);
 	}
 
-	protected File getBackedFile(final String subPath) {
+	public File getBackedFile(final String subPath) {
 		return new File(backingStorage, subPath);
 	}
 
@@ -162,6 +151,16 @@ public class LoopbackFS extends DokanFSStub {
 	@Override
 	protected String getVolumeName() {
 		return "SrcDemo";
+	}
+
+	@Override
+	protected Collection<String> listDirectory(final String pathName) {
+		final String[] files = getBackedFile(pathName).list();
+		final ArrayList<String> list = new ArrayList<String>(files.length);
+		for (final String s : files) {
+			list.add(new File(pathName, s).getPath());
+		}
+		return list;
 	}
 
 	@Override

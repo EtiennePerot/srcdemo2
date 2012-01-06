@@ -1,10 +1,10 @@
-package net.decasdev.dokan;
+package net.srcdemo.userfs;
 
-public enum CreationDispositionEnum
-{
+import net.decasdev.dokan.CreationDisposition;
+
+public enum FileCreationFlags {
 	CREATE_ALWAYS, CREATE_NEW, OPEN_ALWAYS, OPEN_EXISTING, TRUNCATE_EXISTING;
-	public static CreationDispositionEnum fromInt(final int value)
-	{
+	public static FileCreationFlags fromInt(final int value) {
 		switch (value) {
 			case CreationDisposition.CREATE_NEW:
 				return CREATE_NEW;
@@ -20,23 +20,19 @@ public enum CreationDispositionEnum
 		return null;
 	}
 
-	public boolean hasToExist()
-	{
+	public boolean hasToExist() {
 		return shouldOpen() || shouldTruncate();
 	}
 
-	public boolean shouldCreate()
-	{
+	public boolean shouldCreate() {
 		return equals(CREATE_NEW) || equals(CREATE_ALWAYS) || equals(OPEN_ALWAYS);
 	}
 
-	public boolean shouldOpen()
-	{
+	public boolean shouldOpen() {
 		return equals(OPEN_ALWAYS) || equals(OPEN_EXISTING);
 	}
 
-	public boolean shouldTruncate()
-	{
+	public boolean shouldTruncate() {
 		return equals(TRUNCATE_EXISTING);
 	}
 }

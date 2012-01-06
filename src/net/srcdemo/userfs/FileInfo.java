@@ -1,4 +1,4 @@
-package net.srcdemo;
+package net.srcdemo.userfs;
 
 import java.io.File;
 import java.util.HashMap;
