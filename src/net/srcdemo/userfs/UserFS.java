@@ -5,7 +5,6 @@ import java.nio.ByteBuffer;
 import java.util.Collection;
 
 import net.srcdemo.SrcLogger;
-import net.srcdemo.SymlinkResolver;
 
 public abstract class UserFS {
 	private final UserFSBackend backend;

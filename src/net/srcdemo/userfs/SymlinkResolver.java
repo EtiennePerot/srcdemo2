@@ -1,4 +1,4 @@
-package net.srcdemo;
+package net.srcdemo.userfs;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -12,6 +12,14 @@ import net.srcdemo.ui.Files;
 public final class SymlinkResolver {
 	public static File resolveSymlinks(File file) {
 		file = file.getAbsoluteFile();
+		if (!UserFSUtils.getOperatingSystem().isWindows()) {
+			try {
+				return file.getCanonicalFile();
+			}
+			catch (final IOException e) {
+				return file;
+			}
+		}
 		Process resolveSymlinks = null;
 		try {
 			resolveSymlinks = new ProcessBuilder(Files.resolveSymlinksWindows.toString()).start();

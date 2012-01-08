@@ -1,18 +1,13 @@
 package net.srcdemo.userfs;
 
 import java.io.File;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.concurrent.locks.ReentrantLock;
 
 import net.decasdev.dokan.ByHandleFileInformation;
 import net.decasdev.dokan.FileAttribute;
 import net.decasdev.dokan.Win32FindData;
+import fuse.FuseFtypeConstants;
 
 public class FileInfo {
-	private static Map<String, Long> fileIndex = new HashMap<String, Long>();
-	private static long maxIndex = 2;
-
 	public static FileInfo fromDirectory(final String fileName) {
 		return new FileInfo(fileName, true, 0);
 	}
@@ -23,16 +18,17 @@ public class FileInfo {
 
 	private final String fileName;
 	private final long fileSize;
-	private final ReentrantLock indexLock = new ReentrantLock();
+	private final int index;
 	private final boolean isDirectory;
 
 	private FileInfo(final String fileName, final boolean isDirectory, final long fileSize) {
 		this.fileName = fileName;
 		this.isDirectory = isDirectory;
 		this.fileSize = fileSize;
+		index = fileName.hashCode();
 	}
 
-	public int getAttributes() {
+	public int getDokanAttributes() {
 		int attrib = FileAttribute.FILE_ATTRIBUTE_NORMAL;
 		if (isDirectory) {
 			attrib |= FileAttribute.FILE_ATTRIBUTE_DIRECTORY;
@@ -40,25 +36,33 @@ public class FileInfo {
 		return attrib;
 	}
 
-	private long getFileIndex() {
-		final String lookup = (isDirectory ? "d" : "f") + fileName;
-		indexLock.lock();
-		if (!fileIndex.containsKey(lookup)) {
-			maxIndex++;
-			fileIndex.put(lookup, maxIndex);
-		}
-		final long ret = fileIndex.get(lookup);
-		indexLock.unlock();
-		return ret;
+	public long getIndexInt() {
+		return index;
+	}
+
+	public long getIndexLong() {
+		return index;
+	}
+
+	public long getSize() {
+		return fileSize;
+	}
+
+	public int getUnixMode() {
+		return 0777 | (isDirectory ? FuseFtypeConstants.TYPE_DIR : FuseFtypeConstants.TYPE_FILE);
+	}
+
+	public boolean isDirectory() {
+		return isDirectory;
 	}
 
 	public ByHandleFileInformation toByhandleFileInformation(final int volumeSerialNumber) {
-		return new ByHandleFileInformation(getAttributes(), 0, 0, 0, volumeSerialNumber, fileSize, 1, getFileIndex());
+		return new ByHandleFileInformation(getDokanAttributes(), 0, 0, 0, volumeSerialNumber, fileSize, 1, index);
 	}
 
 	public Win32FindData toFindData() {
 		final String name = new File(fileName).getName();
-		return new Win32FindData(getAttributes(), 0, 0, 0, fileSize, 0, 0, name, name);
+		return new Win32FindData(getDokanAttributes(), 0, 0, 0, fileSize, 0, 0, name, name);
 	}
 
 	@Override

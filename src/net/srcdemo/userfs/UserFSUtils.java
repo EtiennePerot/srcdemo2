@@ -16,9 +16,24 @@ public final class UserFSUtils {
 		private static final long serialVersionUID = -3397141069355824035L;
 	}
 
-	private enum OperatingSystem {
+	enum OperatingSystem {
 		LINUX32, LINUX64, OSX32, WIN32;
-		private boolean isWindows() {
+		private File getLibraryPath() {
+			switch (this) {
+				case WIN32:
+					return Files.libDirectoryWindows;
+				case OSX32:
+					return Files.libDirectoryOSX;
+				case LINUX32:
+					return Files.libDirectoryLinux32;
+				case LINUX64:
+					return Files.libDirectoryLinux64;
+				default:
+					return null;
+			}
+		}
+
+		boolean isWindows() {
 			return equals(WIN32);
 		}
 	}
@@ -29,14 +44,31 @@ public final class UserFSUtils {
 	private static Boolean initStatus = null;
 	private static OperatingSystem operatingSystem = null;
 
+	private static void addPathToLibrary(final File path) {
+		final String newLibPath = path.getAbsolutePath() + File.pathSeparator + System.getProperty("java.library.path");
+		System.setProperty("java.library.path", newLibPath);
+		Field fieldSysPath;
+		try {
+			fieldSysPath = ClassLoader.class.getDeclaredField("sys_paths");
+			fieldSysPath.setAccessible(true);
+			if (fieldSysPath != null) {
+				fieldSysPath.set(System.class.getClassLoader(), null);
+			}
+		}
+		catch (final Exception e) {
+			// Oh well
+		}
+	}
+
 	public static UserFSBackend getNewBackend() {
 		if (getOperatingSystem().isWindows()) {
 			return new DokanUserFS();
+		} else {
+			return new FuseUserFS();
 		}
-		return null;
 	}
 
-	private static OperatingSystem getOperatingSystem() {
+	static OperatingSystem getOperatingSystem() {
 		if (operatingSystem != null) {
 			return operatingSystem;
 		}
@@ -44,6 +76,10 @@ public final class UserFSUtils {
 			operatingSystem = OperatingSystem.WIN32;
 		} else if (System.getProperty("os.name").toLowerCase().contains("mac")) {
 			operatingSystem = OperatingSystem.OSX32;
+		} else if (System.getProperty("os.arch").contains("64")) {
+			operatingSystem = OperatingSystem.LINUX64;
+		} else {
+			operatingSystem = OperatingSystem.LINUX32;
 		}
 		return operatingSystem;
 	}
@@ -61,22 +97,10 @@ public final class UserFSUtils {
 		if (initStatus != null) {
 			return initStatus;
 		}
-		if (getOperatingSystem().isWindows()) {
+		final OperatingSystem os = getOperatingSystem();
+		addPathToLibrary(os.getLibraryPath());
+		if (os.isWindows()) {
 			try {
-				final String newLibPath = Files.libDirectoryWindows.getAbsolutePath() + File.pathSeparator
-					+ System.getProperty("java.library.path");
-				System.setProperty("java.library.path", newLibPath);
-				Field fieldSysPath;
-				try {
-					fieldSysPath = ClassLoader.class.getDeclaredField("sys_paths");
-					fieldSysPath.setAccessible(true);
-					if (fieldSysPath != null) {
-						fieldSysPath.set(System.class.getClassLoader(), null);
-					}
-				}
-				catch (final Exception e) {
-					// Oh well
-				}
 				if (Dokan.getVersion() == 600) {
 					SrcLogger.log("Starting with version = " + Dokan.getVersion() + " / Driver = " + Dokan.getDriverVersion()
 						+ ".");

@@ -11,7 +11,9 @@ public interface Files {
 	static final File iconRenderingDefault = new File("img/icon-92.png");
 	static final File iconWindowDebug = new File("img/debug-256.png");
 	static final File iconWindowMain = new File("img/icon-512.png");
-	static final File libDirectoryOSX = new File(_libDirectory, "windows");
+	static final File libDirectoryLinux32 = new File(_libDirectory, "linux32");
+	static final File libDirectoryLinux64 = new File(_libDirectory, "linux64");
+	static final File libDirectoryOSX = new File(_libDirectory, "osx");
 	static final File libDirectoryWindows = new File(_libDirectory, "windows");
 	static final File oggEncWindows = new File(_toolsDirectoryWindows, "oggenc2/oggenc2.exe");
 	static final File resolveSymlinksWindows = new File(_toolsDirectoryWindows, "resolve-symlinks/resolve-symlinks.exe");

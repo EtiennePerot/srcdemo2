@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
 	<classpathentry kind="src" path="src"/>
+	<classpathentry kind="src" path="src-fuse4j"/>
 	<classpathentry kind="src" path="src-dokan">
 		<attributes>
 			<attribute name="org.eclipse.jdt.launching.CLASSPATH_ATTR_LIBRARY_PATH_ENTRY" value="SrcDemo2/lib/windows"/>
@@ -12,7 +13,6 @@
 			<attribute name="org.eclipse.jdt.launching.CLASSPATH_ATTR_LIBRARY_PATH_ENTRY" value="SrcDemo2/lib"/>
 		</attributes>
 	</classpathentry>
-	<classpathentry kind="lib" path="lib/any/commons-io/commons-io-1.4.jar"/>
 	<classpathentry kind="lib" path="lib/any/horrorss/horrorss.jar" sourcepath="lib/any/horrorss/horrorss.src.zip">
 		<attributes>
 			<attribute name="javadoc_location" value="jar:platform:/resource/SrcDemo2/lib/any/horrorss/horrorss.javadoc.zip!/"/>
@@ -25,5 +25,15 @@
 	<classpathentry kind="lib" path="lib/osx/qtjambi/qtjambi-util-4.7.0.jar"/>
 	<classpathentry kind="lib" path="lib/windows/qtjambi/qtjambi-4.7.1.jar"/>
 	<classpathentry kind="lib" path="lib/windows/qtjambi/qtjambi-win32-msvc2008-4.7.1.jar"/>
+	<classpathentry kind="lib" path="lib/any/commons-io/commons-io-2.1.jar" sourcepath="lib/any/commons-io/commons-io-2.1-sources.jar">
+		<attributes>
+			<attribute name="javadoc_location" value="jar:platform:/resource/srcdemo2/lib/any/commons-io/commons-io-2.1-javadoc.jar!/"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="lib" path="lib/any/commons-logging/commons-logging-1.1.1.jar" sourcepath="lib/any/commons-logging/commons-logging-1.1.1-sources.jar">
+		<attributes>
+			<attribute name="javadoc_location" value="jar:platform:/resource/srcdemo2/lib/any/commons-logging/commons-logging-1.1.1-javadoc.jar!/"/>
+		</attributes>
+	</classpathentry>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

@@ -62,7 +62,7 @@ public class DokanUserFS implements DokanOperations, UserFSBackend {
 	public final long onCreateFile(final String fileName, final int desiredAccess, final int shareMode,
 		final int creationDisposition, final int flagsAndAttributes, final DokanFileInfo fileInfo)
 		throws DokanOperationException {
-		final FileCreationFlags disposition = FileCreationFlags.fromInt(creationDisposition);
+		final FileCreationFlags disposition = FileCreationFlags.fromDokan(creationDisposition);
 		if (!userFS._createFile(fileName, disposition)) {
 			throw new DokanOperationException(ERROR_FILE_NOT_FOUND);
 		}
@@ -88,8 +88,9 @@ public class DokanUserFS implements DokanOperations, UserFSBackend {
 		}
 		final Win32FindData[] data = new Win32FindData[files.size()];
 		int index = 0;
+		FileInfo info;
 		for (final String s : files) {
-			final FileInfo info = userFS._getFileInfo(s);
+			info = userFS._getFileInfo(s);
 			if (info != null) {
 				data[index] = info.toFindData();
 				index++;

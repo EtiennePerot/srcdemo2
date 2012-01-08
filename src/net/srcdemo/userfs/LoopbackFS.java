@@ -12,8 +12,26 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.locks.ReentrantLock;
 
+import net.srcdemo.SrcLogger;
 
 public class LoopbackFS extends UserFS {
+	public static void main(final String... args) {
+		if (args.length != 2) {
+			System.err.println("Usage: loopbackfs backingDirectory mountpoint");
+			System.exit(1);
+		}
+		SrcLogger.setLogAll(true);
+		try {
+			UserFSUtils.init();
+		}
+		catch (final Exception e) {
+			System.err.println(e);
+			e.printStackTrace();
+			System.exit(1);
+		}
+		new LoopbackFS(args[0]).mount(new File(args[1]), true);
+	}
+
 	private final File backingStorage;
 	private final ReentrantLock filesHandleLock = new ReentrantLock();
 	private final Map<File, FileChannel> openedFiles = new HashMap<File, FileChannel>();
