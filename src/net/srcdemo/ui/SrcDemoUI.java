@@ -30,7 +30,6 @@ import com.trolltech.qt.gui.QWidget;
 
 public class SrcDemoUI extends QWidget {
 	private static boolean debugMode = false;
-	private static boolean dokanLoggingMode = false;
 	private static final int relaunchStatusCode = 1337;
 	private static int returnCode = 0;
 	private static String version = null;

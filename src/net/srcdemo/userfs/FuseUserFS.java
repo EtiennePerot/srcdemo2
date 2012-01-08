@@ -1,6 +1,9 @@
 package net.srcdemo.userfs;
 
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.nio.BufferOverflowException;
 import java.nio.ByteBuffer;
 import java.nio.CharBuffer;
@@ -9,8 +12,6 @@ import java.util.Collection;
 import net.srcdemo.SrcLogger;
 
 import org.apache.commons.logging.Log;
-
-import com.sun.security.auth.module.UnixSystem;
 
 import fuse.Errno;
 import fuse.Filesystem3;
@@ -25,7 +26,7 @@ import fuse.XattrLister;
 import fuse.XattrSupport;
 
 public class FuseUserFS implements Filesystem3, UserFSBackend, XattrSupport {
-	private static class NullLogger implements Log {
+	private static final class NullLogger implements Log {
 		@Override
 		public void debug(final Object message) {
 		}
@@ -105,13 +106,46 @@ public class FuseUserFS implements Filesystem3, UserFSBackend, XattrSupport {
 		}
 	}
 
-	private static final int userGID;
-	private static final int userUID;
-	static {
-		final UnixSystem unix = new UnixSystem();
-		userUID = (int) unix.getUid();
-		userGID = (int) unix.getGid();
+	/**
+	 * This replicates Sun's UnixSystem methods for getUid() and getGid().
+	 */
+	private static final class UnixUser {
+		private static long getGid() {
+			return getNumber("id", "-g");
+		}
+
+		private static long getNumber(final String... args) {
+			long number = 0L;
+			try {
+				final Process process = new ProcessBuilder(args).start();
+				final BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
+				String line = null;
+				while ((line = reader.readLine()) != null) {
+					try {
+						number = Long.parseLong(line.trim());
+					}
+					catch (final NumberFormatException e) {
+						// Do nothing
+					}
+				}
+				process.waitFor();
+			}
+			catch (final IOException e1) {
+				// Do nothing
+			}
+			catch (final InterruptedException e) {
+				// Do nothing
+			}
+			return number;
+		}
+
+		private static long getUid() {
+			return getNumber("id", "-u");
+		}
 	}
+
+	private static final int userGID = (int) UnixUser.getUid();
+	private static final int userUID = (int) UnixUser.getGid();;
 	private String mountPoint = null;
 	private UserFS userFS = null;
 
@@ -262,7 +296,7 @@ public class FuseUserFS implements Filesystem3, UserFSBackend, XattrSupport {
 	@Override
 	public int setxattr(final String path, final String name, final ByteBuffer value, final int flags, final int position)
 		throws FuseException {
-		// TODO Auto-generated method stub
+		userFS.implLog("setxattr", "Tried to remove set " + name + " on " + path);
 		return 0;
 	}
 
