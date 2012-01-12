@@ -1,11 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project name="SrcDemo2">
     <property name="displayname" value="SrcDemo²"/>
+    <property name="displayname.shell" value="SrcDemo\xc2\xb2"/>
     <property name="root.dir" value="."/>
     <property name="src.dir" value="${root.dir}/src"/>
     <property name="dokan.src.dir" value="${root.dir}/src-dokan"/>
+    <property name="fuse4j.src.dir" value="${root.dir}/src-fuse4j"/>
     <property name="flac.src.dir" value="${root.dir}/src-flac"/>
-    <property name="any.src.dir" value="${src.dir};${flac.src.dir}"/>
     <property name="lib.dir" value="${root.dir}/lib"/>
     <property name="windows.lib.dir" value="${lib.dir}/windows"/>
     <property name="osx.lib.dir" value="${lib.dir}/osx"/>
@@ -45,7 +46,8 @@
     <property name="windows.package.nsiant" value="${windows.package.dir}/nsisant.jar"/>
     <property name="windows.package.script" value="${windows.package.dir}/setup.nsi"/>
     <property name="windows.package.file" value="${ant.project.name}-setup.exe"/>
-    <property name="osx.package.app.dir" value="${build.dir}/${displayname}.app"/>
+    <property name="osx.package.app.dir" value="${build.dir}/${ant.project.name}.app"/>
+    <property name="osx.package.app.shell.dir" value="${build.dir}/`echo -en '${displayname.shell}'`.app"/>
     <property name="osx.package.app.contents.dir" value="${osx.package.app.dir}/Contents"/>
     <property name="osx.package.app.info.script" value="${osx.package.dir}/make-plist.py"/>
     <property name="osx.package.app.info.output" value="${osx.package.dir}/Info.plist"/>
@@ -55,9 +57,11 @@
     <property name="osx.package.app.macos.launcher.dest" value="${osx.package.app.macos.dir}/srcdemo2"/>
     <property name="osx.package.app.resources.dir" value="${osx.package.app.contents.dir}/Resources"/>
     <property name="osx.package.app.resources.python.dir" value="${osx.package.app.resources.dir}/static-python"/>
+    <property name="osx.package.app.resources.jre.dir" value="${osx.package.app.resources.dir}/jre-1.7.0"/>
     <property name="osx.package.app.resources.icon.target" value="img/icon.icns"/>
     <property name="osx.package.app.resources.icon.file" value="${osx.package.app.resources.dir}/icon.icns"/>
     <property name="osx.package.app.python" value="${osx.package.dir}/static-python"/>
+    <property name="osx.package.app.jre" value="${osx.package.dir}/jre-1.7.0"/>
     <property name="osx.package.dmg.name" value="${ant.project.name}"/>
     <property name="osx.package.dmg.volume" value="${ant.project.name}"/>
     <property name="osx.package.dmg.dir" value="/Volumes/${osx.package.dmg.volume}"/>
@@ -68,19 +72,27 @@
     <property name="dll.includes" value="**/*.dll"/>
     <property name="svn.excludes" value="**/*.svn"/>
     <property name="img.excludes" value="**/*.psd"/>
-	<target name="clean">
+	<target name="cleanbuild-unix" if="isUnix">
+		<exec executable="rm">
+			<arg value="-r"/>
+			<arg value="${build.dir}"/>
+		</exec>
+	</target>
+	<target name="cleanbuild-windows" unless="isUnix">
 		<delete dir="${build.dir}"/>
+	</target>
+	<target name="clean">
+		<condition property="isUnix">
+			<os family="unix"/>
+		</condition>
+		<antcall target="cleanbuild-unix"/>
+		<antcall target="cleanbuild-windows"/>
 		<delete file="${program.versionfile}"/>
 		<delete file="${osx.package.app.info.output}"/>
 	</target>
     <target name="compile" depends="clean">
         <mkdir dir="${classes.dir}"/>
-    </target>
-    <target name="compile-windows" depends="compile">
-        <javac srcdir="${any.src.dir};${dokan.src.dir}" destdir="${classes.dir}" classpathref="classpath"/>
-    </target>
-    <target name="compile-osx" depends="compile">
-        <javac srcdir="${any.src.dir};${dokan.src.dir}" destdir="${classes.dir}" classpathref="classpath"/>
+    	<javac srcdir="${src.dir};${flac.src.dir};${dokan.src.dir};${fuse4j.src.dir}" destdir="${classes.dir}" classpathref="classpath"/>
     </target>
 	<target name="jar-init" depends="compile">
         <mkdir dir="${jar.dir}"/>
@@ -110,7 +122,7 @@
             </manifest>
         </jar>
     </target>
-	<target name="jar-windows" depends="compile-windows,jar-init">
+	<target name="jar-windows" depends="compile,jar-init">
         <copy todir="${jar.windows.lib.dir}">
             <fileset dir="${windows.lib.dir}" excludes="${svn.excludes}"/>
         </copy>
@@ -122,7 +134,7 @@
 		</move>
 		<antcall target="jar-finalize"/>
 	</target>
-	<target name="jar-osx" depends="compile-osx,jar-init">
+	<target name="jar-osx" depends="compile,jar-init">
         <copy todir="${jar.osx.lib.dir}">
             <fileset dir="${osx.lib.dir}" excludes="${svn.excludes}"/>
         </copy>
@@ -174,6 +186,12 @@
 		<chmod perm="ugo+rx" maxparallel="100">
 			<fileset dir="${osx.package.app.resources.python.dir}" includes="**/*"/>
 		</chmod>
+        <copy todir="${osx.package.app.resources.jre.dir}">
+            <fileset dir="${osx.package.app.jre}" excludes="${svn.excludes}"/>
+        </copy>
+		<chmod perm="ugo+rx" maxparallel="100">
+			<fileset dir="${osx.package.app.resources.jre.dir}" includes="**/*"/>
+		</chmod>
 		<copy todir="${osx.package.app.resources.dir}">
 			<fileset dir="${launcher.dir}" includes="${launcher.source}"/>
 		</copy>
@@ -181,26 +199,21 @@
 			<fileset dir="${jar.dir}" includes="**/*"/>
 		</copy>
 		<symlink link="${osx.package.app.resources.icon.file}" resource="${osx.package.app.resources.icon.target}"/>
+		<exec executable="bash">
+			<arg value="-c"/>
+			<arg value="mv &quot;${osx.package.app.dir}&quot; &quot;${osx.package.app.shell.dir}&quot;"/>
+		</exec>
 	</target>
 	<target name="package-osx" depends="buildapp-osx">
 		<exec executable="hdiutil" error="/dev/null">
 			<arg value="detach"/>
 			<arg value="${osx.package.dmg.dir}"/>
 		</exec>
-		<exec executable="perl">
-			<arg value="${osx.package.dmg.script}"/>
-			<arg value="-dmgName"/>
-			<arg value="${osx.package.dmg.name}"/>
-			<arg value="-volName"/>
-			<arg value="${osx.package.dmg.volume}"/>
-			<arg value="-buildDir"/>
-			<arg value="./"/>
-			<arg value="-deleteHeaders"/>
-			<arg value="-compressionLevel"/>
-			<arg value="${osx.package.dmg.compression}"/>
-			<arg value="${osx.package.app.dir}"/>
+		<exec executable="bash">
+			<arg value="-c"/>
+			<arg value="&quot;${osx.package.dmg.script}&quot; -dmgName &quot;${osx.package.dmg.name}&quot; -volName &quot;${osx.package.dmg.volume}&quot; -buildDir ./ -deleteHeader -compressionLevel &quot;${osx.package.dmg.compression}&quot; &quot;${osx.package.app.shell.dir}&quot;"/>
 		</exec>
-		<!-- temp <antcall target="package-finalize"/> -->
+		<antcall target="package-finalize"/>
 	</target>
 	<target name="package-finalize">
 		<antcall target="clean"/>

@@ -63,7 +63,7 @@ def get_java():
 			if foundJre is not None:
 				break
 	elif is_osx():
-		return ['java', '-d32', '-XstartOnFirstThread']
+		return ['jre-1.7.0/bin/java', '-d32', '-XstartOnFirstThread']
 	return None
 
 def launch(debugMode=False):
@@ -81,6 +81,9 @@ def launch(debugMode=False):
 			print 'The Java runtime environment was not found.'
 	if type(foundJre) is not type([]):
 		foundJre = [foundJre]
+	javaHome = os.path.abspath(os.path.dirname(os.path.dirname(foundJre[0])))
+	javaEnv = os.environ.copy()
+	javaEnv['JAVA_HOME'] = javaHome
 	command = foundJre + ['-jar', 'SrcDemo2.jar']
 	outStreams = [sys.stdout]
 	errStreams = [sys.stderr]
@@ -108,6 +111,7 @@ def launch(debugMode=False):
 	returnCode = 0
 	kwargs = {
 		'cwd': selfDir,
+		'env': javaEnv,
 		'stdin': subprocess.PIPE,
 		'stdout': subprocess.PIPE,
 		'stderr': subprocess.PIPE
