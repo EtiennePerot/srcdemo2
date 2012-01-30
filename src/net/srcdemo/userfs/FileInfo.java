@@ -5,7 +5,6 @@ import java.io.File;
 import net.decasdev.dokan.ByHandleFileInformation;
 import net.decasdev.dokan.FileAttribute;
 import net.decasdev.dokan.Win32FindData;
-import fuse.FuseFtypeConstants;
 
 public class FileInfo {
 	public static FileInfo fromDirectory(final String fileName) {
@@ -46,10 +45,6 @@ public class FileInfo {
 
 	public long getSize() {
 		return fileSize;
-	}
-
-	public int getUnixMode() {
-		return 0777 | (isDirectory ? FuseFtypeConstants.TYPE_DIR : FuseFtypeConstants.TYPE_FILE);
 	}
 
 	public boolean isDirectory() {

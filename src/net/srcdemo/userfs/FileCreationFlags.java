@@ -1,7 +1,6 @@
 package net.srcdemo.userfs;
 
 import net.decasdev.dokan.CreationDisposition;
-import fuse.FilesystemConstants;
 
 public enum FileCreationFlags {
 	CREATE_ALWAYS, CREATE_NEW, OPEN_ALWAYS, OPEN_EXISTING, TRUNCATE_EXISTING;
@@ -19,13 +18,6 @@ public enum FileCreationFlags {
 				return TRUNCATE_EXISTING;
 		}
 		return null;
-	}
-
-	public static FileCreationFlags fromFuse(final int value) {
-		if ((value & (FilesystemConstants.O_WRONLY | FilesystemConstants.O_RDWR)) != 0) {
-			return CREATE_ALWAYS;
-		}
-		return OPEN_EXISTING;
 	}
 
 	public boolean hasToExist() {

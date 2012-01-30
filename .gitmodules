@@ -1,0 +1,6 @@
+[submodule "submodules/commons-io"]
+	path = submodules/commons-io
+	url = git://git.apache.org/commons-io.git
+[submodule "submodules/fuse-jna"]
+	path = submodules/fuse-jna
+	url = git://github.com/EtiennePerot/fuse-jna.git

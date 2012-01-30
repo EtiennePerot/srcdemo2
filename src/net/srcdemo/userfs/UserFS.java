@@ -82,7 +82,7 @@ public abstract class UserFS {
 	final boolean _unmount() {
 		log("Unmount", "Unmounting.");
 		if (unmount()) {
-			return backend.unmount(mountPoint);
+			return backend.userfs_unmount(mountPoint);
 		}
 		return false;
 	}
@@ -148,7 +148,7 @@ public abstract class UserFS {
 		}
 		this.mountPoint = SymlinkResolver.resolveSymlinks(mountPoint);
 		log("Mount", "Mounting to: " + this.mountPoint);
-		final boolean result = backend.mount(this, mountPoint);
+		final boolean result = backend.userfs_mount(this, mountPoint);
 		log("Mount", "Mounting " + (result ? "succeeded" : "failed"));
 		return result;
 	}

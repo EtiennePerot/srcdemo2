@@ -27,22 +27,6 @@ public class DokanUserFS implements DokanOperations, UserFSBackend {
 	private UserFS userFS = null;
 
 	@Override
-	public boolean mount(final UserFS userFS, final File mountPoint) {
-		this.userFS = userFS;
-		this.mountPoint = mountPoint.getAbsolutePath();
-		try {
-			Dokan.removeMountPoint(this.mountPoint);
-		}
-		catch (final Throwable e) {
-			// Too bad
-		}
-		final DokanOptions dokanOptions = new DokanOptions(this.mountPoint, 0, 0);
-		final int result = Dokan.mount(dokanOptions, this);
-		System.out.println(result);
-		return result == Dokan.DOKAN_SUCCESS;
-	}
-
-	@Override
 	public final void onCleanup(final String fileName, final DokanFileInfo fileInfo) throws DokanOperationException {
 		userFS.implLog("Cleanup", "Clean up: " + fileName);
 		// Do nothing
@@ -198,7 +182,23 @@ public class DokanUserFS implements DokanOperations, UserFSBackend {
 	}
 
 	@Override
-	public boolean unmount(final File mountPoint) {
+	public boolean userfs_mount(final UserFS userFS, final File mountPoint) {
+		this.userFS = userFS;
+		this.mountPoint = mountPoint.getAbsolutePath();
+		try {
+			Dokan.removeMountPoint(this.mountPoint);
+		}
+		catch (final Throwable e) {
+			// Too bad
+		}
+		final DokanOptions dokanOptions = new DokanOptions(this.mountPoint, 0, 0);
+		final int result = Dokan.mount(dokanOptions, this);
+		System.out.println(result);
+		return result == Dokan.DOKAN_SUCCESS;
+	}
+
+	@Override
+	public boolean userfs_unmount(final File mountPoint) {
 		return Dokan.removeMountPoint(mountPoint.getAbsolutePath());
 	}
 }
