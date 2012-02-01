@@ -172,7 +172,7 @@ public class DokanUserFS implements DokanOperations, UserFSBackend {
 
 	@Override
 	public final void onUnmount(final DokanFileInfo fileInfo) throws DokanOperationException {
-		userFS._unmount();
+		userFS._onUnmount();
 	}
 
 	@Override
@@ -193,7 +193,6 @@ public class DokanUserFS implements DokanOperations, UserFSBackend {
 		}
 		final DokanOptions dokanOptions = new DokanOptions(this.mountPoint, 0, 0);
 		final int result = Dokan.mount(dokanOptions, this);
-		System.out.println(result);
 		return result == Dokan.DOKAN_SUCCESS;
 	}
 

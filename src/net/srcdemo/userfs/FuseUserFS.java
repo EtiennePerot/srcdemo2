@@ -5,6 +5,7 @@ import java.nio.ByteBuffer;
 import java.util.Collection;
 
 import net.fusejna.DirectoryFiller;
+import net.fusejna.ErrorCodes;
 import net.fusejna.FuseException;
 import net.fusejna.StructFuseFileInfo.FileInfoWrapper;
 import net.fusejna.StructStat.StatWrapper;
@@ -24,6 +25,11 @@ public final class FuseUserFS extends FuseFilesystemAdapterFull implements UserF
 	}
 
 	@Override
+	public void destroy() {
+		userFS._onUnmount();
+	}
+
+	@Override
 	public int flush(final String path, final FileInfoWrapper info) {
 		userFS._flushFile(path);
 		return 0;
@@ -32,8 +38,10 @@ public final class FuseUserFS extends FuseFilesystemAdapterFull implements UserF
 	@Override
 	public int getattr(final String path, final StatWrapper stat) {
 		final FileInfo info = userFS._getFileInfo(path);
-		stat.setMode(info.isDirectory() ? NodeType.DIRECTORY : NodeType.FILE).size(info.getSize());
-		return 0;
+		if (info != null) {
+			stat.setMode(info.isDirectory() ? NodeType.DIRECTORY : NodeType.FILE).size(info.getSize());
+		}
+		return info == null ? -ErrorCodes.ENOENT : 0;
 	}
 
 	@Override
@@ -108,7 +116,7 @@ public final class FuseUserFS extends FuseFilesystemAdapterFull implements UserF
 	public boolean userfs_mount(final UserFS userFS, final File mountPoint) {
 		this.userFS = userFS;
 		try {
-			this.mount(mountPoint, true);
+			mount(mountPoint, true);
 		}
 		catch (final FuseException e) {
 			return false;
@@ -118,7 +126,13 @@ public final class FuseUserFS extends FuseFilesystemAdapterFull implements UserF
 
 	@Override
 	public boolean userfs_unmount(final File mountPoint) {
-		return userFS.unmount();
+		try {
+			unmount();
+		}
+		catch (final Exception e) {
+			return false;
+		}
+		return true;
 	}
 
 	@Override

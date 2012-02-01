@@ -64,6 +64,11 @@ public abstract class UserFS {
 		moveFile(existingFileName, newFileName, replaceExisiting);
 	}
 
+	final boolean _onUnmount() {
+		log("Unmount", "Unmounting.");
+		return onUnmount(mountPoint);
+	}
+
 	final int _readFile(final String fileName, final ByteBuffer buffer, final long offset) {
 		log("ReadFile", "Read file: " + fileName);
 		return readFile(fileName, buffer, offset);
@@ -77,14 +82,6 @@ public abstract class UserFS {
 	final void _unlockFile(final String fileName, final long byteOffset, final long length) {
 		log("UnlockFile", "Unlock file: " + fileName);
 		unlockFile(fileName, byteOffset, length);
-	}
-
-	final boolean _unmount() {
-		log("Unmount", "Unmounting.");
-		if (unmount()) {
-			return backend.userfs_unmount(mountPoint);
-		}
-		return false;
 	}
 
 	final int _writeFile(final String fileName, final ByteBuffer buffer, final long offset) {
@@ -155,6 +152,10 @@ public abstract class UserFS {
 
 	protected abstract void moveFile(String existingFileName, String newFileName, boolean replaceExisiting);
 
+	protected boolean onUnmount(final File mountPoint) {
+		return true;
+	}
+
 	protected abstract int readFile(String fileName, ByteBuffer buffer, long offset);
 
 	protected abstract void truncateFile(String fileName, long length);
@@ -163,8 +164,8 @@ public abstract class UserFS {
 		// Do nothing
 	}
 
-	protected boolean unmount() {
-		return true;
+	public final boolean unmount() {
+		return backend.userfs_unmount(mountPoint);
 	}
 
 	protected abstract int writeFile(String fileName, ByteBuffer buffer, long offset);

@@ -24,13 +24,15 @@ public class DiskAudioHandler implements AudioHandler {
 	@Override
 	public void close() {
 		lock.lock();
-		try {
-			fileChannel.close();
+		if (fileChannel != null) {
+			try {
+				fileChannel.close();
+			}
+			catch (final IOException e) {
+				SrcLogger.logAudio("Warning: Error while closing audio file at " + file + ".");
+			}
+			fileChannel = null;
 		}
-		catch (final IOException e) {
-			SrcLogger.logAudio("Warning: Error while closing audio file at " + file + ".");
-		}
-		fileChannel = null;
 		lock.unlock();
 	}
 

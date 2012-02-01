@@ -143,6 +143,15 @@ public class SrcDemoFS extends LoopbackFS {
 		}
 	}
 
+	protected boolean onUnmount() {
+		demoLock.lock();
+		for (final SrcDemo demo : demos.values()) {
+			demo.destroy();
+		}
+		demoLock.unlock();
+		return true;
+	}
+
 	public void removeListener(final SrcDemoListener listener) {
 		demoListeners.remove(listener);
 	}
@@ -155,16 +164,6 @@ public class SrcDemoFS extends LoopbackFS {
 		} else {
 			demo.truncateFile(fileName, length);
 		}
-	}
-
-	@Override
-	public boolean unmount() {
-		demoLock.lock();
-		for (final SrcDemo demo : demos.values()) {
-			demo.destroy();
-		}
-		demoLock.unlock();
-		return true;
 	}
 
 	@Override

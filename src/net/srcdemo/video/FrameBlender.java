@@ -51,6 +51,11 @@ public class FrameBlender implements VideoHandler {
 		}
 		SrcLogger.logVideo("Frame " + frameNumber + " is being closed. Processing.");
 		bufferLock.lock();
+		if (!frameData.containsKey(frameNumber)) {
+			// Duplicate close call; ignore
+			bufferLock.unlock();
+			return;
+		}
 		final ByteArrayOutputStream buffer = getFrameByte(frameNumber);
 		maxEncounteredByteSize = Math.max(maxEncounteredByteSize, buffer.size());
 		frameData.remove(frameNumber);
