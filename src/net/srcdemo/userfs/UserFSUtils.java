@@ -116,6 +116,8 @@ public final class UserFSUtils {
 			}
 			initStatus = false;
 			throw new DokanVersionException();
+		} else {
+			// TODO: Add fuse-jna check
 		}
 		initStatus = true;
 		return true;

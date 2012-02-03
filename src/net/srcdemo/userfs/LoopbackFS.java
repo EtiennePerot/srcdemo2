@@ -99,7 +99,7 @@ public class LoopbackFS extends UserFS {
 
 	@Override
 	protected void flushFile(final String fileName) {
-		closeFile(fileName);
+		// Nothing
 	}
 
 	public File getBackedFile(final String subPath) {

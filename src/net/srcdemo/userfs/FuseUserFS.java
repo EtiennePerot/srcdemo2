@@ -69,8 +69,8 @@ public final class FuseUserFS extends FuseFilesystemAdapterFull implements UserF
 	@Override
 	public int readdir(final String path, final DirectoryFiller filler) {
 		final Collection<String> files = userFS._listDirectory(path);
-		if (files != null) {
-			filler.add();
+		if (files != null && !filler.add(files)) {
+			return -ErrorCodes.ENOMEM;
 		}
 		return 0;
 	}

@@ -42,6 +42,7 @@ public class SrcDemoFS extends LoopbackFS {
 		final SrcDemo demo = getDemo(fileName);
 		if (demo == null) {
 			super.closeFile(fileName);
+			return;
 		}
 		demo.closeFile(fileName);
 	}
