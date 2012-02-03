@@ -1,4 +1,7 @@
+build
 bin
+version.txt
+package/osx/Info.plist
 *.log
 *.dll
 *.so

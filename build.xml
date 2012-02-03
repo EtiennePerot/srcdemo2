@@ -5,7 +5,12 @@
     <property name="root.dir" value="."/>
     <property name="src.dir" value="${root.dir}/src"/>
     <property name="dokan.src.dir" value="${root.dir}/src-dokan"/>
-    <property name="fuse4j.src.dir" value="${root.dir}/src-fuse4j"/>
+    <property name="submodules.dir" value="${root.dir}/submodules"/>
+    <property name="fusejna.dir" value="${submodules.dir}/fuse-jna"/>
+    <property name="fusejna.src.dir" value="${fusejna.dir}/src"/>
+    <property name="fusejna.lib.dir" value="${fusejna.dir}/lib"/>
+    <property name="commonsio.dir" value="${submodules.dir}/commons-io"/>
+    <property name="commonsio.src.dir" value="${commonsio.dir}/src/main/java"/>
     <property name="flac.src.dir" value="${root.dir}/src-flac"/>
     <property name="lib.dir" value="${root.dir}/lib"/>
     <property name="windows.lib.dir" value="${lib.dir}/windows"/>
@@ -22,9 +27,6 @@
     <property name="windows.package.dir" value="${package.dir}/windows"/>
     <property name="osx.package.dir" value="${package.dir}/osx"/>
     <property name="any.package.dir" value="${package.dir}/any"/>
-	<path id="classpath">
-		<fileset dir="${lib.dir}" includes="**/*.jar"/>
-	</path>
 	<property name="classes.dir" value="${build.dir}/classes"/>
 	<property name="jar.dir" value="${build.dir}/jar"/>
 	<property name="jar.file" value="${jar.dir}/${ant.project.name}.jar"/>
@@ -69,9 +71,15 @@
     <property name="osx.package.dmg.compression" value="9"/>
     <property name="program.versionscript" value="${any.package.dir}/buildversion.py"/>
     <property name="program.versionfile" value="${root.dir}/version.txt"/>
+    <property name="jar.includes" value="**/*.jar"/>
     <property name="dll.includes" value="**/*.dll"/>
+    <property name="LICENSE.excludes" value="**/LICENSE*"/>
     <property name="svn.excludes" value="**/*.svn"/>
     <property name="img.excludes" value="**/*.psd"/>
+	<path id="classpath">
+		<fileset dir="${lib.dir}" includes="${jar.includes}"/>
+		<fileset dir="${fusejna.lib.dir}" includes="${jar.includes}"/>
+	</path>
 	<target name="cleanbuild-unix" if="isUnix">
 		<exec executable="rm">
 			<arg value="-r"/>
@@ -92,7 +100,7 @@
 	</target>
     <target name="compile" depends="clean">
         <mkdir dir="${classes.dir}"/>
-    	<javac srcdir="${src.dir};${flac.src.dir};${dokan.src.dir};${fuse4j.src.dir}" destdir="${classes.dir}" classpathref="classpath"/>
+    	<javac srcdir="${src.dir};${flac.src.dir};${dokan.src.dir};${fusejna.src.dir};${commonsio.src.dir}" destdir="${classes.dir}" classpathref="classpath"/>
     </target>
 	<target name="jar-init" depends="compile">
         <mkdir dir="${jar.dir}"/>
@@ -106,6 +114,7 @@
         </copy>
         <copy todir="${jar.any.lib.dir}">
             <fileset dir="${any.lib.dir}" excludes="${svn.excludes}"/>
+            <fileset dir="${fusejna.lib.dir}" includes="${jar.includes}" excludes="${svn.excludes}"/>
         </copy>
 	</target>
     <target name="jar-finalize">
@@ -184,7 +193,7 @@
             <fileset dir="${osx.package.app.python}" excludes="${svn.excludes}"/>
         </copy>
 		<chmod perm="ugo+rx" maxparallel="100">
-			<fileset dir="${osx.package.app.resources.python.dir}" includes="**/*"/>
+			<fileset dir="${osx.package.app.resources.python.dir}" includes="**/*" excludes="${LICENSE.excludes}"/>
 		</chmod>
         <copy todir="${osx.package.app.resources.jre.dir}">
             <fileset dir="${osx.package.app.jre}" excludes="${svn.excludes}"/>
