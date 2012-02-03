@@ -81,6 +81,10 @@ public class BufferedAudioHandler implements AudioHandler, Morticianed {
 	public void flush() {
 		notifyBuffer(AudioBufferStatus.FLUSHING);
 		fileLock.lock();
+		if (buffer == null) {
+			fileLock.unlock();
+			return;
+		}
 		if (subHandler == null) {
 			create();
 		}
