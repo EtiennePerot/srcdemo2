@@ -3,9 +3,11 @@ package net.srcdemo.test;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.math.BigInteger;
+import java.nio.channels.FileChannel;
 import java.security.MessageDigest;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -25,8 +27,6 @@ import net.srcdemo.video.VideoHandlerFactory;
 import net.srcdemo.video.image.ImageSavingTask;
 import net.srcdemo.video.image.ImageSavingTaskFactory;
 import net.srcdemo.video.image.PNGSavingTask;
-
-import org.apache.commons.io.FileUtils;
 
 final class BlendFSTest implements SrcDemoListener {
 	private static final File _testImagesDirectory = new File("tests/resources/");
@@ -135,7 +135,15 @@ final class BlendFSTest implements SrcDemoListener {
 
 	private void copy(final File file) throws IOException {
 		System.out.println("Copying " + file.getName());
-		FileUtils.copyFile(file, new File(mountPoint, file.getName()));
+		final File target = new File(mountPoint, file.getName());
+		if (!target.exists()) {
+			target.createNewFile();
+		}
+		final FileChannel source = new FileInputStream(file).getChannel();
+		final FileChannel targetChannel = new FileOutputStream(target).getChannel();
+		targetChannel.transferFrom(source, 0, source.size());
+		source.close();
+		targetChannel.close();
 	}
 
 	private String md5Hash(final File file) {
