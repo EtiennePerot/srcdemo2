@@ -5,11 +5,13 @@ import com.trolltech.qt.core.QEvent;
 import com.trolltech.qt.core.QUrl;
 import com.trolltech.qt.core.Qt.AlignmentFlag;
 import com.trolltech.qt.core.Qt.CursorShape;
+import com.trolltech.qt.core.Qt.MouseButton;
 import com.trolltech.qt.gui.QCheckBox;
 import com.trolltech.qt.gui.QCursor;
 import com.trolltech.qt.gui.QDesktopServices;
 import com.trolltech.qt.gui.QHBoxLayout;
 import com.trolltech.qt.gui.QLabel;
+import com.trolltech.qt.gui.QMouseEvent;
 import com.trolltech.qt.gui.QPixmap;
 import com.trolltech.qt.gui.QPushButton;
 import com.trolltech.qt.gui.QVBoxLayout;
@@ -45,7 +47,12 @@ public class AboutTab extends QWidget {
 				@Override
 				public boolean event(final QEvent event) {
 					if (event.type().equals(QEvent.Type.MouseButtonPress)) {
-						QDesktopServices.openUrl(new QUrl(Strings.urlHomepage));
+						final QMouseEvent mEvent = (QMouseEvent) event;
+						if (mEvent.button().equals(MouseButton.LeftButton)) {
+							QDesktopServices.openUrl(new QUrl(Strings.urlHomepage));
+						} else {
+							new SecretStoatWindow();
+						}
 						return true;
 					}
 					return super.event(event);

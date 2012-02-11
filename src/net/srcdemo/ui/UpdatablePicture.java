@@ -15,24 +15,25 @@ import com.trolltech.qt.gui.QPixmap;
 import com.trolltech.qt.gui.QResizeEvent;
 import com.trolltech.qt.gui.QSizePolicy.Policy;
 
-class UpdatablePicture extends QLabel {
+public class UpdatablePicture extends QLabel {
 	private static final int imageBorderPixels = 2;
 	private String image = null;
 	private final Lock lock = new ReentrantLock();
 	private Integer maxHeight = null;
 	private Integer maxWidth = null;
 	private boolean needUpdate = true;
+	private final QPixmap pixmapOld = null;
 	private QPixmap pixmapOriginal = null;
 	private int rawHeight = 0;
 	private int[] rawPixelData;
 	private int rawWidth = 0;
 	private QSize size = null;
 
-	UpdatablePicture(final File initialImage) {
+	public UpdatablePicture(final File initialImage) {
 		this(initialImage, null, null);
 	}
 
-	UpdatablePicture(final File initialImage, final Integer maxWidth, final Integer maxHeight) {
+	public UpdatablePicture(final File initialImage, final Integer maxWidth, final Integer maxHeight) {
 		image = initialImage.getAbsolutePath();
 		this.maxWidth = maxWidth;
 		this.maxHeight = maxHeight;
@@ -40,6 +41,30 @@ class UpdatablePicture extends QLabel {
 		setSizePolicy(Policy.MinimumExpanding, Policy.MinimumExpanding);
 		setMinimumSize(1, 1);
 		updatePicture();
+	}
+
+	public UpdatablePicture(final int[] data, final int width, final int height) {
+		this(data == null ? null : data, width, height, null, null);
+	}
+
+	public UpdatablePicture(final int[] initialData, final int width, final int height, final Integer maxWidth,
+		final Integer maxHeight) {
+		rawPixelData = initialData;
+		rawWidth = width;
+		rawHeight = height;
+		if (rawWidth <= 0 || rawHeight <= 0 || initialData.length != rawWidth * rawHeight) {
+			throw new IllegalArgumentException("Image data does not match provided image dimensions.");
+		}
+		this.maxWidth = maxWidth;
+		this.maxHeight = maxHeight;
+		setAlignment(AlignmentFlag.AlignCenter);
+		setSizePolicy(Policy.MinimumExpanding, Policy.MinimumExpanding);
+		setMinimumSize(1, 1);
+		updatePicture();
+	}
+
+	public UpdatablePicture(final String initialImage) {
+		this(initialImage == null ? null : new File(initialImage), null, null);
 	}
 
 	private QSize getTargetSize() {
@@ -52,7 +77,7 @@ class UpdatablePicture extends QLabel {
 		return size;
 	}
 
-	void push(final File newImage) {
+	public void push(final File newImage) {
 		final String path = newImage.getAbsolutePath();
 		lock.lock();
 		needUpdate = !path.equals(image);
@@ -61,7 +86,11 @@ class UpdatablePicture extends QLabel {
 		lock.unlock();
 	}
 
-	void push(final int[] pixelData, final int width, final int height) {
+	public void push(final int[] pixelData, final int width, final int height) {
+		if (width <= 0 || height <= 0 || pixelData.length != width * height) {
+			// Invalid image data.
+			return;
+		}
 		lock.lock();
 		needUpdate = true; // Comparing each pixel would be expensive; assume it did change
 		image = null;
@@ -82,17 +111,18 @@ class UpdatablePicture extends QLabel {
 		lock.unlock();
 	}
 
-	void updatePicture() {
+	public void updatePicture() {
 		boolean doGc = false;
 		lock.lock();
 		if (needUpdate) {
+			// pixmapOld = pixmapOriginal;
 			if (image != null) {
 				pixmapOriginal = new QPixmap(image);
 			} else if (rawPixelData != null) {
 				final int length = rawPixelData.length;
 				int width = rawWidth;
 				int height = rawHeight;
-				byte[] rgb;
+				final byte[] rgb;
 				if ((maxWidth != null && rawWidth > maxWidth) || (maxHeight != null && rawHeight > maxHeight)) {
 					final double inverseScale = Math.max((double) width / (double) maxWidth, (double) height
 						/ (double) maxHeight);

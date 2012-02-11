@@ -76,6 +76,16 @@ interface Strings {
 	final String lblRenderAudioBufferWriting = "Writing...";
 	final String lblRenderAudioBufferWritten = "Written.";
 	final String lblShutterAngle = "Simulated <a href=\"http://www.facepunch.com/threads/1126220?p=32617404&viewfull=1#post32617404\">shutter angle</a>: ";
+	final String lblStoat0 = "<center><big><strong>Salute the Secret Stoat!</strong></big></center>";
+	final String lblStoat1 = "Praise the <strong>Secret Stoat</strong> and all it stands for: <strong>WIN</strong>.";
+	final String lblStoat2 = "<strong>Definitions of win on the Web:</strong>";
+	final String lblStoat3 = "- be the winner in a contest or competition; be victorious; \"He won the Gold Medal in skating\"; \"Our home team won\"; \"Win the game\"";
+	final String lblStoat4 = "- acquire: win something through one's efforts; \"I acquired a passing knowledge of Chinese\"; \"Gain an understanding of international finance\"";
+	final String lblStoat5 = "- gain: obtain advantages, such as points, etc.; \"The home team was gaining ground\"";
+	final String lblStoat6 = "- a victory (as in a race or other competition); \"he was happy to get the win\"";
+	final String lblStoat7 = "- winnings: something won (especially money)";
+	final String lblStoat8 = "- succeed: attain success or reach a desired goal; \"The enterprise succeeded\"; \"We succeeded in getting tickets to the show\"; \"she struggled to overcome her handicap and won\"";
+	final String lblStoatTitle = "The Secret Stoat";
 	final String lblTargetFps = "Final video FPS: ";
 	final String lblTgaCompressionRLE = "TGA RLE compression";
 	final String lblUpdateChecking = "Checking for updates...";
