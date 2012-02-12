@@ -1,0 +1,4 @@
+Credit goes to Justin Forest on Google Code for this Wiki plugin:
+http://code.google.com/p/google-code-project-hosting-gadgets/issues/detail?id=3#c2
+
+Modifications to default values and metadata by Etienne Perot.

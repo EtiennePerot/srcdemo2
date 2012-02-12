@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Module>
+ <ModulePrefs
+    title="Vimeo Plugin"
+    author="Justin Forest"
+    width="800"
+    height="450">
+   <Require feature="flash"/>
+ </ModulePrefs>
+ <UserPref name="video" datatype="string" />
+ <Content type="html">
+ <![CDATA[
+ <script type="text/javascript" src="http://googlecode-wiki-vimeo.srcdemo2.googlecode.com/git/vimeo.js"></script>
+ <script>
+ function start() {
+   gcVideoMain('__UP_video__', gadgets.flash.embedFlash, 
+               document.getElementById('video'));
+ }
+ gadgets.util.registerOnLoadHandler(start);
+ </script>
+ <div id="video"/>
+ ]]>
+ </Content>
+</Module>
