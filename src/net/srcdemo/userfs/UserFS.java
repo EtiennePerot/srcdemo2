@@ -15,77 +15,107 @@ public abstract class UserFS {
 	}
 
 	final void _closeFile(final String fileName) {
-		log("CloseFile", "Close file: " + fileName);
+		if (shouldLog()) {
+			log("CloseFile", "Close file: " + fileName);
+		}
 		closeFile(fileName);
 	}
 
 	final void _createDirectory(final String fileName) {
-		log("CreateDirectory", "Create directory: " + fileName);
+		if (shouldLog()) {
+			log("CreateDirectory", "Create directory: " + fileName);
+		}
 		createDirectory(fileName);
 	}
 
 	final boolean _createFile(final String fileName, final FileCreationFlags flags) {
-		log("CreateFile", "Create file: " + fileName + " / Creation flags: " + flags);
+		if (shouldLog()) {
+			log("CreateFile", "Create file: " + fileName + " / Creation flags: " + flags);
+		}
 		return createFile(fileName, flags);
 	}
 
 	final void _deleteDirectory(final String fileName) {
-		log("DeleteDirectory", "Delete directory: " + fileName);
+		if (shouldLog()) {
+			log("DeleteDirectory", "Delete directory: " + fileName);
+		}
 		deleteDirectory(fileName);
 	}
 
 	final void _deleteFile(final String fileName) {
-		log("DeleteFile", "Delete file: " + fileName);
+		if (shouldLog()) {
+			log("DeleteFile", "Delete file: " + fileName);
+		}
 		deleteFile(fileName);
 	}
 
 	final void _flushFile(final String fileName) {
-		log("FlushFileBuffer", "Flush file buffer: " + fileName);
+		if (shouldLog()) {
+			log("FlushFileBuffer", "Flush file buffer: " + fileName);
+		}
 		flushFile(fileName);
 	}
 
 	final FileInfo _getFileInfo(final String fileName) {
-		log("GetFileInfo", "Getting file info of " + fileName);
+		if (shouldLog()) {
+			log("GetFileInfo", "Getting file info of " + fileName);
+		}
 		return getFileInfo(fileName);
 	}
 
 	final Collection<String> _listDirectory(final String pathName) {
-		log("FindFiles", "Find files in: " + pathName);
+		if (shouldLog()) {
+			log("FindFiles", "Find files in: " + pathName);
+		}
 		return listDirectory(pathName);
 	}
 
 	final void _lockFile(final String fileName, final long byteOffset, final long length) {
-		log("LockFile", "Lock file: " + fileName);
+		if (shouldLog()) {
+			log("LockFile", "Lock file: " + fileName);
+		}
 		lockFile(fileName, byteOffset, length);
 	}
 
 	final void _moveFile(final String existingFileName, final String newFileName, final boolean replaceExisiting) {
-		log("MoveFile", "Move file: " + existingFileName + " -> " + newFileName);
+		if (shouldLog()) {
+			log("MoveFile", "Move file: " + existingFileName + " -> " + newFileName);
+		}
 		moveFile(existingFileName, newFileName, replaceExisiting);
 	}
 
 	final boolean _onUnmount() {
-		log("Unmount", "Unmounting.");
+		if (shouldLog()) {
+			log("Unmount", "Unmounting.");
+		}
 		return onUnmount(mountPoint);
 	}
 
 	final int _readFile(final String fileName, final ByteBuffer buffer, final long offset) {
-		log("ReadFile", "Read file: " + fileName);
+		if (shouldLog()) {
+			log("ReadFile", "Read file: " + fileName);
+		}
 		return readFile(fileName, buffer, offset);
 	}
 
 	final void _truncateFile(final String fileName, final long length) {
-		log("SetEndOfFile", "Set end of file: " + fileName + " at " + length);
+		if (shouldLog()) {
+			log("SetEndOfFile", "Set end of file: " + fileName + " at " + length);
+		}
 		truncateFile(fileName, length);
 	}
 
 	final void _unlockFile(final String fileName, final long byteOffset, final long length) {
-		log("UnlockFile", "Unlock file: " + fileName);
+		if (shouldLog()) {
+			log("UnlockFile", "Unlock file: " + fileName);
+		}
 		unlockFile(fileName, byteOffset, length);
 	}
 
 	final int _writeFile(final String fileName, final ByteBuffer buffer, final long offset) {
-		log("WriteFile", "Write file: " + fileName);
+		if (shouldLog()) {
+			log("WriteFile", "Write file: " + fileName);
+		}
 		return writeFile(fileName, buffer, offset);
 	}
 
@@ -124,7 +154,9 @@ public abstract class UserFS {
 	protected abstract String getVolumeName();
 
 	final void implLog(final String method, final String message) {
-		SrcLogger.logFS("(U) " + method + ": " + message);
+		if (shouldLog()) {
+			SrcLogger.logFS("(U) " + method + ": " + message);
+		}
 	}
 
 	protected abstract Collection<String> listDirectory(String pathName);
@@ -134,7 +166,9 @@ public abstract class UserFS {
 	}
 
 	private final void log(final String method, final String message) {
-		SrcLogger.logFS(method + ": " + message);
+		if (shouldLog()) {
+			SrcLogger.logFS(method + ": " + message);
+		}
 	}
 
 	public final boolean mount(final File mountPoint, final boolean blocking) {
@@ -148,9 +182,13 @@ public abstract class UserFS {
 			return true;
 		}
 		this.mountPoint = SymlinkResolver.resolveSymlinks(mountPoint);
-		log("Mount", "Mounting to: " + this.mountPoint);
+		if (shouldLog()) {
+			log("Mount", "Mounting to: " + this.mountPoint);
+		}
 		final boolean result = backend.userfs_mount(this, mountPoint);
-		log("Mount", "Mounting " + (result ? "succeeded" : "failed"));
+		if (shouldLog()) {
+			log("Mount", "Mounting " + (result ? "succeeded" : "failed"));
+		}
 		return result;
 	}
 
@@ -161,6 +199,10 @@ public abstract class UserFS {
 	}
 
 	protected abstract int readFile(String fileName, ByteBuffer buffer, long offset);
+
+	protected boolean shouldLog() {
+		return SrcLogger.getLogFS();
+	}
 
 	protected abstract void truncateFile(String fileName, long length);
 

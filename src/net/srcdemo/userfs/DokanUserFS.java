@@ -28,7 +28,9 @@ public class DokanUserFS implements DokanOperations, UserFSBackend {
 
 	@Override
 	public final void onCleanup(final String fileName, final DokanFileInfo fileInfo) throws DokanOperationException {
-		userFS.implLog("Cleanup", "Clean up: " + fileName);
+		if (userFS.shouldLog()) {
+			userFS.implLog("Cleanup", "Clean up: " + fileName);
+		}
 		// Do nothing
 	}
 
@@ -86,7 +88,9 @@ public class DokanUserFS implements DokanOperations, UserFSBackend {
 	@Override
 	public final Win32FindData[] onFindFilesWithPattern(final String pathName, final String searchPattern,
 		final DokanFileInfo fileInfo) throws DokanOperationException {
-		userFS.implLog("FindFilesWithPattern", "Find files in: " + pathName + " with pattern " + searchPattern);
+		if (userFS.shouldLog()) {
+			userFS.implLog("FindFilesWithPattern", "Find files in: " + pathName + " with pattern " + searchPattern);
+		}
 		// Unimplemented
 		return null;
 	}
@@ -114,7 +118,9 @@ public class DokanUserFS implements DokanOperations, UserFSBackend {
 	@Override
 	public final DokanVolumeInformation onGetVolumeInformation(final String volumeName, final DokanFileInfo fileInfo)
 		throws DokanOperationException {
-		userFS.implLog("GetVolumeInformation", "Get volume information");
+		if (userFS.shouldLog()) {
+			userFS.implLog("GetVolumeInformation", "Get volume information");
+		}
 		return new DokanVolumeInformation(userFS.getVolumeName(), userFS.getFilesystemName(),
 			userFS.getMaximumComponentLength(), serialNumber);
 	}
@@ -133,7 +139,9 @@ public class DokanUserFS implements DokanOperations, UserFSBackend {
 
 	@Override
 	public final long onOpenDirectory(final String fileName, final DokanFileInfo fileInfo) throws DokanOperationException {
-		userFS.implLog("OpenDirectory", "Open directory: " + fileName);
+		if (userFS.shouldLog()) {
+			userFS.implLog("OpenDirectory", "Open directory: " + fileName);
+		}
 		return currentFileHandle.incrementAndGet();
 	}
 
@@ -152,15 +160,19 @@ public class DokanUserFS implements DokanOperations, UserFSBackend {
 	@Override
 	public final void onSetFileAttributes(final String fileName, final int fileAttributes, final DokanFileInfo fileInfo)
 		throws DokanOperationException {
-		userFS.implLog("SetFileAttributes", "Set file attributes: " + fileName + " to " + fileAttributes);
+		if (userFS.shouldLog()) {
+			userFS.implLog("SetFileAttributes", "Set file attributes: " + fileName + " to " + fileAttributes);
+		}
 		// Unimplemented
 	}
 
 	@Override
 	public final void onSetFileTime(final String fileName, final long creationTime, final long lastAccessTime,
 		final long lastWriteTime, final DokanFileInfo fileInfo) throws DokanOperationException {
-		userFS.implLog("SetFileTime", "Set file time: " + fileName + " to {C: " + creationTime + "; A: " + lastAccessTime
-			+ "; W: " + lastWriteTime + "}");
+		if (userFS.shouldLog()) {
+			userFS.implLog("SetFileTime", "Set file time: " + fileName + " to {C: " + creationTime + "; A: " + lastAccessTime
+				+ "; W: " + lastWriteTime + "}");
+		}
 		// Unimplemented
 	}
 
