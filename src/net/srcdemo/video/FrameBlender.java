@@ -46,10 +46,14 @@ public class FrameBlender implements VideoHandler {
 	@Override
 	public void close(final int frameNumber) {
 		if (shouldIgnoreFrame(frameNumber)) {
-			SrcLogger.logVideo("Frame " + frameNumber + " is being closed. Ignoring.");
+			if (SrcLogger.getLogVideo()) {
+				SrcLogger.logVideo("Frame " + frameNumber + " is being closed. Ignoring.");
+			}
 			return;
 		}
-		SrcLogger.logVideo("Frame " + frameNumber + " is being closed. Processing.");
+		if (SrcLogger.getLogVideo()) {
+			SrcLogger.logVideo("Frame " + frameNumber + " is being closed. Processing.");
+		}
 		bufferLock.lock();
 		if (!frameData.containsKey(frameNumber)) {
 			// Duplicate close call; ignore
@@ -108,10 +112,14 @@ public class FrameBlender implements VideoHandler {
 		final int totalNeededSize = numPixels * 3;
 		frameLock.lock();
 		if (framePosition == minAcceptedFrame) { // First frame of the sequence
-			SrcLogger.logVideo("This is the first frame of the sequence. Allocating memory.");
+			if (SrcLogger.getLogVideo()) {
+				SrcLogger.logVideo("This is the first frame of the sequence. Allocating memory.");
+			}
 			if (totalNeededSize != currentAllocatedSize) {
-				SrcLogger.logVideo("Memmory allocation size is different. Needed: " + totalNeededSize + " / Current: "
-					+ currentAllocatedSize);
+				if (SrcLogger.getLogVideo()) {
+					SrcLogger.logVideo("Memmory allocation size is different. Needed: " + totalNeededSize + " / Current: "
+						+ currentAllocatedSize);
+				}
 				currentMergedFrame = new int[totalNeededSize];
 				currentAllocatedSize = totalNeededSize;
 			}
@@ -124,11 +132,15 @@ public class FrameBlender implements VideoHandler {
 			frameLock.unlock();
 			return;
 		}
-		SrcLogger.logVideo("Merging frame: " + frameNumber + " on thread " + Thread.currentThread().getId());
+		if (SrcLogger.getLogVideo()) {
+			SrcLogger.logVideo("Merging frame: " + frameNumber + " on thread " + Thread.currentThread().getId());
+		}
 		tga.addToArray(currentMergedFrame);
 		framesMerged++;
 		if (framePosition == maxAcceptedFrame) { // Last frame of the sequence
-			SrcLogger.logVideo("This was the last frame of the sequence. Computing final image.");
+			if (SrcLogger.getLogVideo()) {
+				SrcLogger.logVideo("This was the last frame of the sequence. Computing final image.");
+			}
 			final int[] finalPixels = new int[numPixels];
 			for (int i = 0; i < numPixels; i++) {
 				final int rPosition = i * 3;

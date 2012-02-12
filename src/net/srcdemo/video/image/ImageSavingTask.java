@@ -27,7 +27,9 @@ public abstract class ImageSavingTask {
 	}
 
 	boolean save(final File outputFile) {
-		SrcLogger.logVideo("Spawned " + getExtension() + " image saving task to: " + outputFile);
+		if (SrcLogger.getLogVideo()) {
+			SrcLogger.logVideo("Spawned " + getExtension() + " image saving task to: " + outputFile);
+		}
 		boolean result;
 		try {
 			result = doSave(outputFile);
@@ -37,7 +39,9 @@ public abstract class ImageSavingTask {
 			return false;
 		}
 		if (result) {
-			SrcLogger.logVideo("Finished writing " + getExtension() + " to " + outputFile);
+			if (SrcLogger.getLogVideo()) {
+				SrcLogger.logVideo("Finished writing " + getExtension() + " to " + outputFile);
+			}
 		} else {
 			SrcLogger.error("Error while writing " + getExtension() + " to " + outputFile + " (unspecified).");
 		}

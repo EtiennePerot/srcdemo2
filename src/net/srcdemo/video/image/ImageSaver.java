@@ -21,10 +21,14 @@ public class ImageSaver extends Thread {
 	public void add(final ImageSavingTask imgSavingTask) {
 		try {
 			tasks.put(imgSavingTask);
-			SrcLogger.logVideo("Image saving task queued: " + imgSavingTask);
+			if (SrcLogger.getLogVideo()) {
+				SrcLogger.logVideo("Image saving task queued: " + imgSavingTask);
+			}
 		}
 		catch (final InterruptedException e) {
-			SrcLogger.logVideo("ImageSaver interrupted while putting: " + imgSavingTask);
+			if (SrcLogger.getLogVideo()) {
+				SrcLogger.logVideo("ImageSaver interrupted while putting: " + imgSavingTask);
+			}
 		}
 	}
 
@@ -43,7 +47,9 @@ public class ImageSaver extends Thread {
 				task = tasks.take();
 			}
 			catch (final InterruptedException e) {
-				SrcLogger.logVideo("ImageSaver interrupted while waiting for task.");
+				if (SrcLogger.getLogVideo()) {
+					SrcLogger.logVideo("ImageSaver interrupted while waiting for task.");
+				}
 				break;
 			}
 			final File outputFile = demo.getBackedFile(task.getSequenceIndex() + "." + task.getExtension());

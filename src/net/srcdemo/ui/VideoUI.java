@@ -272,19 +272,21 @@ class VideoUI extends QWidget {
 	}
 
 	void logParams() {
-		SrcLogger.logVideo("~ Video parameters block ~");
-		final VideoType current = videoType.getCurrentItem();
-		SrcLogger.logVideo("Video type: " + current);
-		if (current.equals(VideoType.JPEG)) {
-			SrcLogger.logVideo("JPEG compression: " + jpegCompressionLevel.value());
-		} else if (current.equals(VideoType.TGA)) {
-			SrcLogger.logVideo("TGA RLE compression is " + (tgaCompressionRLE.isChecked() ? "enabled" : "disabled"));
-		} else if (!current.equals(VideoType.DISABLED)) {
-			SrcLogger.logVideo("Target framerate: " + targetFps.value());
-			SrcLogger.logVideo("Blend rate: " + blendRate.value());
-			SrcLogger.logVideo("Shutter angle: " + shutterAngle.value());
+		if (SrcLogger.getLogVideo()) {
+			SrcLogger.logVideo("~ Video parameters block ~");
+			final VideoType current = videoType.getCurrentItem();
+			SrcLogger.logVideo("Video type: " + current);
+			if (current.equals(VideoType.JPEG)) {
+				SrcLogger.logVideo("JPEG compression: " + jpegCompressionLevel.value());
+			} else if (current.equals(VideoType.TGA)) {
+				SrcLogger.logVideo("TGA RLE compression is " + (tgaCompressionRLE.isChecked() ? "enabled" : "disabled"));
+			} else if (!current.equals(VideoType.DISABLED)) {
+				SrcLogger.logVideo("Target framerate: " + targetFps.value());
+				SrcLogger.logVideo("Blend rate: " + blendRate.value());
+				SrcLogger.logVideo("Shutter angle: " + shutterAngle.value());
+			}
+			SrcLogger.logVideo("~ End of video parameters block ~");
 		}
-		SrcLogger.logVideo("~ End of video parameters block ~");
 	}
 
 	private void saveVideoSettings() {
