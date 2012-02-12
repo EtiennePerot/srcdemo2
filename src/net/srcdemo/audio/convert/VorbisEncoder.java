@@ -58,7 +58,9 @@ public class VorbisEncoder implements AudioHandler {
 	public VorbisEncoder(final File outputFile, final int quality) {
 		final String[] command = { Files.oggEncWindows.toString(), "-q", Integer.toString(Math.max(-2, Math.min(10, quality))),
 			"--ignorelength", "--quiet", "-" };
-		SrcLogger.logAudio("Starting OggEnc: " + command);
+		if (SrcLogger.getLogAudio()) {
+			SrcLogger.logAudio("Starting OggEnc: " + command);
+		}
 		stdoutFinished = lock.newCondition();
 		Process oggEnc = null;
 		try {
@@ -110,7 +112,9 @@ public class VorbisEncoder implements AudioHandler {
 				stdoutFinished.await();
 			}
 			catch (final InterruptedException e) {
-				SrcLogger.logAudio("Interrupted while waiting for OggEnc stdout to close. Continuing anyway.");
+				if (SrcLogger.getLogAudio()) {
+					SrcLogger.logAudio("Interrupted while waiting for OggEnc stdout to close. Continuing anyway.");
+				}
 				break;
 			}
 		}

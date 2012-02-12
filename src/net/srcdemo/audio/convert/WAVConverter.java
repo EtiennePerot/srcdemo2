@@ -223,7 +223,9 @@ public class WAVConverter implements AudioHandler {
 				SrcLogger.error("Warning: Couldn't write samples bytes to audio encoder of file " + outputFile, e);
 			}
 		} else if (headerDecoded && offset < headerOffset) {
-			SrcLogger.logAudio("Writing in the header after writing samples; considering the audio file to be finalized.");
+			if (SrcLogger.getLogAudio()) {
+				SrcLogger.logAudio("Writing in the header after writing samples; considering the audio file to be finalized.");
+			}
 			flush();
 			destroy();
 		}

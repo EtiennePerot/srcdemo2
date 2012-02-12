@@ -40,14 +40,18 @@ public class BufferedAudioHandler implements AudioHandler, Morticianed {
 			new Runnable() {
 				@Override
 				public void run() {
-					SrcLogger.logAudio("Audio buffer timeout fired. Flushing.");
+					if (SrcLogger.getLogAudio()) {
+						SrcLogger.logAudio("Audio buffer timeout fired. Flushing.");
+					}
 					flush();
 				}
 			});
 		this.bufferSize = bufferSize;
 		buffer = new ByteArrayOutputStream(bufferSize);
-		SrcLogger.logAudio("Initialized audio buffer for file " + file + " with size " + bufferSize + " and timeout "
-			+ bufferTimeout);
+		if (SrcLogger.getLogAudio()) {
+			SrcLogger.logAudio("Initialized audio buffer for file " + file + " with size " + bufferSize + " and timeout "
+				+ bufferTimeout);
+		}
 	}
 
 	@Override
@@ -66,7 +70,9 @@ public class BufferedAudioHandler implements AudioHandler, Morticianed {
 
 	@Override
 	public void destroy() {
-		SrcLogger.logAudio("Audio buffer is being destroyed. Writing out.");
+		if (SrcLogger.getLogAudio()) {
+			SrcLogger.logAudio("Audio buffer is being destroyed. Writing out.");
+		}
 		mortician.stopService();
 		fileLock.lock();
 		flush();
@@ -133,7 +139,9 @@ public class BufferedAudioHandler implements AudioHandler, Morticianed {
 	@Override
 	public void truncate(final long length) {
 		fileLock.lock();
-		SrcLogger.logAudio("Truncating audio buffer from " + fileSize + " to " + length);
+		if (SrcLogger.getLogAudio()) {
+			SrcLogger.logAudio("Truncating audio buffer from " + fileSize + " to " + length);
+		}
 		fileSize = Math.min(length, fileSize);
 		lastWrite.set(System.currentTimeMillis());
 		fileLock.unlock();
@@ -142,18 +150,24 @@ public class BufferedAudioHandler implements AudioHandler, Morticianed {
 	@Override
 	public int write(final byte[] buffer, final long offset) {
 		final int toWrite = buffer.length;
-		SrcLogger.logAudio("Writing " + toWrite + " bytes to audio buffer at offset " + offset);
+		if (SrcLogger.getLogAudio()) {
+			SrcLogger.logAudio("Writing " + toWrite + " bytes to audio buffer at offset " + offset);
+		}
 		fileLock.lock();
 		if (offset < fileSize) {
-			SrcLogger.logAudio("Offset is behind current buffer position; flushing and doing raw write.");
+			if (SrcLogger.getLogAudio()) {
+				SrcLogger.logAudio("Offset is behind current buffer position; flushing and doing raw write.");
+			}
 			flush();
 			subHandler.write(buffer, offset);
 			fileLock.unlock();
 			return toWrite;
 		}
 		if (offset != fileSize) {
-			SrcLogger.logAudio("Offset (" + offset + ") is in front of the current buffer position (" + fileSize
-				+ "); flushing.");
+			if (SrcLogger.getLogAudio()) {
+				SrcLogger.logAudio("Offset (" + offset + ") is in front of the current buffer position (" + fileSize
+					+ "); flushing.");
+			}
 			flush();
 			fileSize = offset;
 		}
@@ -161,12 +175,16 @@ public class BufferedAudioHandler implements AudioHandler, Morticianed {
 			this.buffer.write(buffer);
 		}
 		catch (final IOException e) {
-			SrcLogger.error("Warning: Couldn't write " + toWrite + " bytes to sound buffer.", e);
+			if (SrcLogger.getLogAudio()) {
+				SrcLogger.error("Warning: Couldn't write " + toWrite + " bytes to sound buffer.", e);
+			}
 		}
 		fileSize += toWrite;
 		bufferOccupiedSize = this.buffer.size();
 		if (bufferOccupiedSize > bufferSize) {
-			SrcLogger.logAudio("Buffer is full; flushing.");
+			if (SrcLogger.getLogAudio()) {
+				SrcLogger.logAudio("Buffer is full; flushing.");
+			}
 			flush();
 		} else {
 			notifyBuffer(AudioBufferStatus.REGULAR);
@@ -179,18 +197,24 @@ public class BufferedAudioHandler implements AudioHandler, Morticianed {
 	@Override
 	public int write(final ByteBuffer buffer, final long offset) {
 		final int toWrite = buffer.remaining();
-		SrcLogger.logAudio("Writing " + toWrite + " bytes to audio buffer at offset " + offset);
+		if (SrcLogger.getLogAudio()) {
+			SrcLogger.logAudio("Writing " + toWrite + " bytes to audio buffer at offset " + offset);
+		}
 		fileLock.lock();
 		if (offset < fileSize) {
-			SrcLogger.logAudio("Offset is behind current buffer position; flushing and doing raw write.");
+			if (SrcLogger.getLogAudio()) {
+				SrcLogger.logAudio("Offset is behind current buffer position; flushing and doing raw write.");
+			}
 			flush();
 			subHandler.write(buffer, offset);
 			fileLock.unlock();
 			return toWrite;
 		}
 		if (offset != fileSize) {
-			SrcLogger.logAudio("Offset (" + offset + ") is in front of the current buffer position (" + fileSize
-				+ "); flushing.");
+			if (SrcLogger.getLogAudio()) {
+				SrcLogger.logAudio("Offset (" + offset + ") is in front of the current buffer position (" + fileSize
+					+ "); flushing.");
+			}
 			flush();
 			fileSize = offset;
 		}
@@ -205,7 +229,9 @@ public class BufferedAudioHandler implements AudioHandler, Morticianed {
 		fileSize += toWrite;
 		bufferOccupiedSize = this.buffer.size();
 		if (bufferOccupiedSize > bufferSize) {
-			SrcLogger.logAudio("Buffer is full; flushing.");
+			if (SrcLogger.getLogAudio()) {
+				SrcLogger.logAudio("Buffer is full; flushing.");
+			}
 			flush();
 		} else {
 			notifyBuffer(AudioBufferStatus.REGULAR);

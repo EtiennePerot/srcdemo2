@@ -29,7 +29,9 @@ public class DiskAudioHandler implements AudioHandler {
 				fileChannel.close();
 			}
 			catch (final IOException e) {
-				SrcLogger.logAudio("Warning: Error while closing audio file at " + file + ".");
+				if (SrcLogger.getLogAudio()) {
+					SrcLogger.logAudio("Warning: Error while closing audio file at " + file + ".");
+				}
 			}
 			fileChannel = null;
 		}
@@ -61,7 +63,9 @@ public class DiskAudioHandler implements AudioHandler {
 			}
 		}
 		catch (final IOException e) {
-			SrcLogger.logAudio("Warning: Couldn't properly close sound file at " + file + ".");
+			if (SrcLogger.getLogAudio()) {
+				SrcLogger.logAudio("Warning: Couldn't properly close sound file at " + file + ".");
+			}
 		}
 		lock.unlock();
 	}
@@ -99,7 +103,9 @@ public class DiskAudioHandler implements AudioHandler {
 			fileChannel.truncate(length);
 		}
 		catch (final IOException e) {
-			SrcLogger.logAudio("Warning: Couldn't truncate sound file at " + file + " to size " + length + ".");
+			if (SrcLogger.getLogAudio()) {
+				SrcLogger.logAudio("Warning: Couldn't truncate sound file at " + file + " to size " + length + ".");
+			}
 		}
 		lock.unlock();
 	}
@@ -121,7 +127,9 @@ public class DiskAudioHandler implements AudioHandler {
 			return w;
 		}
 		catch (final IOException e) {
-			SrcLogger.logAudio("Warning: Couldn't write to sound file at " + file + ".");
+			if (SrcLogger.getLogAudio()) {
+				SrcLogger.logAudio("Warning: Couldn't write to sound file at " + file + ".");
+			}
 			lock.unlock();
 			return buffer.remaining();
 		}

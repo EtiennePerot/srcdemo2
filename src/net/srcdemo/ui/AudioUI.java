@@ -283,17 +283,19 @@ class AudioUI extends QWidget {
 	}
 
 	void logParams() {
-		SrcLogger.logAudio("~ Audio parameters block ~");
-		final AudioType current = audioType.getCurrentItem();
-		SrcLogger.logAudio("Audio type: " + current);
-		if (current.equals(AudioType.VORBIS)) {
-			SrcLogger.logAudio("Vorbis quality: " + Strings.lblVorbisQualityPrefix + vorbisQuality.value());
+		if (SrcLogger.getLogAudio()) {
+			SrcLogger.logAudio("~ Audio parameters block ~");
+			final AudioType current = audioType.getCurrentItem();
+			SrcLogger.logAudio("Audio type: " + current);
+			if (current.equals(AudioType.VORBIS)) {
+				SrcLogger.logAudio("Vorbis quality: " + Strings.lblVorbisQualityPrefix + vorbisQuality.value());
+			}
+			if (current.requiresBuffer()) {
+				SrcLogger.logAudio("Buffer size: " + bufferSize.value() + " kilobytes");
+				SrcLogger.logAudio("Buffer timeout: " + bufferTimeout.value() + " seconds");
+			}
+			SrcLogger.logAudio("~ End of audio parameters block ~");
 		}
-		if (current.requiresBuffer()) {
-			SrcLogger.logAudio("Buffer size: " + bufferSize.value() + " kilobytes");
-			SrcLogger.logAudio("Buffer timeout: " + bufferTimeout.value() + " seconds");
-		}
-		SrcLogger.logAudio("~ End of audio parameters block ~");
 	}
 
 	private void saveAudioSettings() {
