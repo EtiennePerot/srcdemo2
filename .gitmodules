@@ -4,3 +4,6 @@
 [submodule "submodules/fuse-jna"]
 	path = submodules/fuse-jna
 	url = git://github.com/EtiennePerot/fuse-jna.git
+[submodule "submodules/commons-codec"]
+	path = submodules/commons-codec
+	url = git://git.apache.org/commons-codec.git

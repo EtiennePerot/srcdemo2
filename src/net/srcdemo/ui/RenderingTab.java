@@ -15,6 +15,7 @@ import com.trolltech.qt.core.QCoreApplication;
 import com.trolltech.qt.core.Qt.AlignmentFlag;
 import com.trolltech.qt.core.Qt.Orientation;
 import com.trolltech.qt.gui.QCheckBox;
+import com.trolltech.qt.gui.QFocusEvent;
 import com.trolltech.qt.gui.QGroupBox;
 import com.trolltech.qt.gui.QHBoxLayout;
 import com.trolltech.qt.gui.QLabel;
@@ -69,6 +70,7 @@ class RenderingTab extends QWidget implements SrcDemoListener {
 	private final AtomicInteger framesProcessed = new AtomicInteger(0);
 	private final RollingRate framesProcessRate = new RollingRate();
 	private final AtomicInteger framesSaved = new AtomicInteger(0);
+	private boolean hasFocus = true;
 	private QLabel lblAudioBuffer1;
 	private QLabel lblAudioBuffer2;
 	private QLabel lblFramesProcessedPerSecond;
@@ -104,6 +106,21 @@ class RenderingTab extends QWidget implements SrcDemoListener {
 	private void enabledAudioWidgets(final boolean enable) {
 		for (final QWidget w : audioWidgets) {
 			w.setEnabled(enable);
+		}
+	}
+
+	@Override
+	protected void focusInEvent(final QFocusEvent event) {
+		super.focusInEvent(event);
+		hasFocus = true;
+	}
+
+	@Override
+	protected void focusOutEvent(final QFocusEvent event) {
+		super.focusOutEvent(event);
+		hasFocus = false;
+		if (previewEnabled) {
+			previewPicture.reset();
 		}
 	}
 
@@ -218,7 +235,7 @@ class RenderingTab extends QWidget implements SrcDemoListener {
 	@Override
 	public void onFrameSaved(final File savedFrame, final int[] pixels, final int width, final int height) {
 		framesSaved.incrementAndGet();
-		if (previewEnabled) {
+		if (previewEnabled && hasFocus) {
 			previewPicture.push(pixels, width, height);
 		}
 	}

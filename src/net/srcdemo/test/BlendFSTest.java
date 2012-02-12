@@ -70,7 +70,7 @@ final class BlendFSTest implements SrcDemoListener {
 	private BlendFSTest(final String outputdir, final String mountPoint) throws Exception {
 		SrcLogger.setLogAll(true);
 		this.mountPoint = new File(mountPoint);
-		final SrcDemoFS mountedFS = new SrcDemoFS(new File(outputdir).getAbsolutePath(), new VideoHandlerFactory() {
+		final SrcDemoFS mountedFS = new SrcDemoFS(new File(outputdir), new VideoHandlerFactory() {
 			@Override
 			public VideoHandler buildHandler(final SrcDemo demo) {
 				return new FrameBlender(demo, new ImageSavingTaskFactory() {

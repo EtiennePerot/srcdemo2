@@ -1,5 +1,9 @@
 import sys
 import os
+import re
+import time
+import base64
+import tempfile
 import subprocess
 import threading
 
@@ -9,17 +13,42 @@ def module_path():
 	return os.path.dirname(unicode(__file__, sys.getfilesystemencoding()))
 selfDir = os.path.abspath(module_path())
 
+allowedCommands = {}
+def addCommand(commandName, command):
+	global allowedCommands
+	allowedCommands[commandName] = command
+
+stringRe = re.compile(r'"((?:[^"\\]|\\.)*)"')
+def parse_command(command):
+	global stringRe, allowedCommands
+	command = base64.b64decode(command).decode('utf8')
+	allStrings = stringRe.findall(command)
+	if not allStrings:
+		return
+	allStrings = [x.replace(u'\\"', u'"').replace(u'\\\\', u'\\') for x in allStrings]
+	commandName = allStrings[0]
+	arguments = allStrings[1:]
+	if commandName in allowedCommands:
+		print '[C] Executing command', commandName, 'with arguments', arguments
+		try:
+			allowedCommands[commandName](*arguments)
+		except:
+			print >> sys.stderr, 'Error while running command', commandName, 'with arguments', arguments
+
 class StreamRunner(threading.Thread):
-	def __init__(self, process, streamIn, streamsOut):
+	def __init__(self, process, streamIn, streamsOut, parseCommands=False):
 		self.process = process
 		self.streamIn = streamIn
 		self.streamsOut = streamsOut
+		self.parseCommands = parseCommands
 		threading.Thread.__init__(self)
 	def run(self):
 		while self.process.poll() is None:
 			l = self.streamIn.readline()
 			for s in self.streamsOut:
 				s.write(l)
+			if self.parseCommands and len(l) > 4 and l[:3] == '[C]':
+				parse_command(l[4:])
 
 def is_windows():
 	return sys.platform[:3].lower() == 'win'
@@ -27,7 +56,7 @@ def is_windows():
 def is_osx():
 	return sys.platform.lower().find('darwin') != -1 or sys.platform.lower().find('osx') != -1
 
-def get_java():
+def get_java(debugMode):
 	if is_windows():
 		hiPriority = 'javaw.exe'
 		loPriority = 'java.exe'
@@ -61,16 +90,41 @@ def get_java():
 		for p in lookIn:
 			foundJre = findJre(p)
 			if foundJre is not None:
-				break
+				return foundJre
 	elif is_osx():
 		return ['jre-1.7.0/bin/java', '-d32', '-XstartOnFirstThread']
 	return None
+
+def add_subprocess_creationflags(kwargs):
+	if is_windows():
+		import win32process
+		kwargs['creationflags'] = win32process.CREATE_NO_WINDOW
+	return kwargs
+
+def attempt_unmount(mountpoint):
+	global selfDir
+	if is_windows():
+		kwargs = add_subprocess_creationflags({})
+		subprocess.call([selfDir + os.sep + 'tools' + os.sep + 'windows' + os.sep + 'dokanctl' + os.sep + 'dokanctl.exe', '/u', mountpoint.encode(sys.getfilesystemencoding()), '/f'], stdout=subprocess.PIPE, stderr=subprocess.PIPE, **kwargs)
+addCommand('unmount', attempt_unmount)
+
+lastMountPoint = None
+def register_mountpoint(mountpoint):
+	global lastMountPoint
+	lastMountPoint = mountpoint
+addCommand('register_mountpoint', register_mountpoint)
+
+def unmount_registered_mountpoint():
+	global lastMountPoint
+	if lastMountPoint is not None:
+		print 'Attempting unmount of', lastMountPoint
+		attempt_unmount(lastMountPoint)
 
 def launch(debugMode=False):
 	global selfDir
 	debugMode = debugMode or '--srcdemo-debug' in sys.argv[1:]
 	print 'Debug mode:', debugMode
-	foundJre = get_java()
+	foundJre = get_java(debugMode)
 	if foundJre is None:
 		print 'JRE not found.'
 		if is_windows():
@@ -85,22 +139,31 @@ def launch(debugMode=False):
 	javaEnv = os.environ.copy()
 	javaEnv['JAVA_HOME'] = javaHome
 	command = foundJre + ['-jar', 'SrcDemo2.jar']
-	outStreams = [sys.stdout]
-	errStreams = [sys.stderr]
+	outStreams = []
+	errStreams = []
 	if debugMode:
+		outStreams.append(sys.stdout)
+		errStreams.append(sys.stderr)
 		command.append('--srcdemo-debug')
 		print 'Debug mode allows the console output to be logged to a file.'
 		print 'You may enter the complete path of the file to log to below.'
 		print 'Make sure it is writable (i.e. don\'t put it in the installation directory).'
 		print 'If you don\'t want the output to be logged, leave the line blank.'
+		print 'If you\'re not sure what to type, type "?" and SrcDemo2 will guess a filename for you.'
 		while True:
-			logFile = raw_input('Log file (blank to not log): ').strip()
+			logFile = raw_input('Log file (blank to not log, "?" for auto): ').strip()
 			if logFile:
+				if logFile in (u'"?"', u'?'):
+					logFile = tempfile.mkstemp(suffix='.log', prefix='srcdemo2-' + time.strftime('%Y-%m-%d-at-%H-%M-%S') + '-', text=False)
+					os.close(logFile[0])
+					logFile = logFile[1]
+					print 'Guessed log file:', logFile
 				try:
 					logHandle = open(logFile, 'wb')
 					logHandle.write(u'Opened log.\n'.encode('utf8'))
 					outStreams.append(logHandle)
 					errStreams.append(logHandle)
+					print 'Log file:', logFile
 					break
 				except:
 					print 'Couldn\'t open this file for writing.'
@@ -109,26 +172,24 @@ def launch(debugMode=False):
 				break
 	command.extend(sys.argv[1:])
 	returnCode = 0
-	kwargs = {
+	kwargs = add_subprocess_creationflags({
 		'cwd': selfDir,
 		'env': javaEnv,
 		'stdin': subprocess.PIPE,
 		'stdout': subprocess.PIPE,
 		'stderr': subprocess.PIPE
-	}
-	if is_windows():
-		import win32process
-		kwargs['creationflags'] = win32process.CREATE_NO_WINDOW
+	})
 	while True:
 		print 'Running', command
 		p = subprocess.Popen(command, **kwargs)
 		p.stdin.close()
-		if debugMode:
-			StreamRunner(p, p.stdout, outStreams).start()
-			StreamRunner(p, p.stderr, errStreams).start()
+		StreamRunner(p, p.stdout, outStreams, parseCommands=True).start()
+		StreamRunner(p, p.stderr, errStreams).start()
 		returnCode = p.wait()
 		print 'Process finished with return code:', returnCode
+		unmount_registered_mountpoint()
 		if returnCode != 1337:
 			break
 	print 'Done.'
-	sys.exit(returnCode)
+	if returnCode:
+		sys.exit(returnCode)

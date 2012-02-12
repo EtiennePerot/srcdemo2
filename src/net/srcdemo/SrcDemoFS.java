@@ -26,7 +26,7 @@ public class SrcDemoFS extends LoopbackFS {
 	private final Map<String, SrcDemo> demos = new HashMap<String, SrcDemo>();
 	private final VideoHandlerFactory videoHandlerFactory;
 
-	public SrcDemoFS(final String backingStorage, final VideoHandlerFactory videoHandlerFactory,
+	public SrcDemoFS(final File backingStorage, final VideoHandlerFactory videoHandlerFactory,
 		final AudioHandlerFactory audioHandlerFactory) {
 		super(backingStorage);
 		this.audioHandlerFactory = audioHandlerFactory;

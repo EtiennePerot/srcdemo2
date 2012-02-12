@@ -17,7 +17,7 @@ class SrcSettings extends QSettings {
 	}
 
 	int getLastAudioBufferSize() {
-		return (Integer) value("audioBufferSize", 4096);
+		return (Integer) value("audioBufferSize", 1024);
 	}
 
 	int getLastAudioBufferTimeout() {

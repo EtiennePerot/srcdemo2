@@ -1,6 +1,10 @@
 package net.srcdemo.ui;
 
 import java.io.File;
+import java.io.IOException;
+import java.net.InetAddress;
+import java.net.ServerSocket;
+import java.net.UnknownHostException;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.locks.ReentrantLock;
@@ -29,7 +33,9 @@ import com.trolltech.qt.gui.QVBoxLayout;
 import com.trolltech.qt.gui.QWidget;
 
 public class SrcDemoUI extends QWidget {
+	private static final int concurrentRunPort = 63281;
 	private static boolean debugMode = false;
+	private static boolean isRunningConcurrently = false;
 	private static final int relaunchStatusCode = 1337;
 	private static int returnCode = 0;
 	private static String version = null;
@@ -89,6 +95,21 @@ public class SrcDemoUI extends QWidget {
 		catch (final DokanVersionException e) {
 			new UserFSMessage(Strings.errInvalidDokan).show();
 		}
+		ServerSocket socket = null;
+		try {
+			socket = new ServerSocket(concurrentRunPort, 8, InetAddress.getLocalHost());
+			SrcLogger.log("Bound to port " + concurrentRunPort + "; first instance running.");
+		}
+		catch (final UnknownHostException e) {
+			// Shouldn't happen, but if it does then we're pretty screwed
+			SrcLogger.error("Couldn't get localhost address", e);
+			System.exit(1);
+		}
+		catch (final IOException e) {
+			// Port taken
+			SrcLogger.log("Could not bind to port " + concurrentRunPort + "; assuming another instance is running.");
+			isRunningConcurrently = true;
+		}
 		if (initialized) {
 			final SrcDemoUI ui = new SrcDemoUI();
 			Runtime.getRuntime().addShutdownHook(new Thread("Unmount shtudown hook") {
@@ -99,6 +120,14 @@ public class SrcDemoUI extends QWidget {
 				}
 			});
 			QApplication.exec();
+		}
+		if (socket != null) {
+			try {
+				socket.close();
+			}
+			catch (final IOException e) {
+				// We don't really care at this point
+			}
 		}
 		System.exit(returnCode);
 	}
@@ -131,6 +160,11 @@ public class SrcDemoUI extends QWidget {
 		QApplication.setWindowIcon(icon);
 		setWindowIcon(icon);
 		settings = new SrcSettings();
+		// Attempt unmount in case something went bad last time
+		final String lastMountPoint = settings.getLastMountpoint();
+		if (!isRunningConcurrently && lastMountPoint != null && !lastMountPoint.isEmpty()) {
+			SrcLogger.commandUnmount(new File(lastMountPoint));
+		}
 		// Build a dummy QMenuBar to make the OS X guys happy
 		@SuppressWarnings("unused")
 		final QMenuBar dummyBar = new QMenuBar();
@@ -291,14 +325,17 @@ public class SrcDemoUI extends QWidget {
 
 	@SuppressWarnings("unused")
 	private void onMount() {
-		SrcLogger.log("Mounting to: " + getMountpoint().getAbsolutePath());
-		SrcLogger.log("Backing directory: " + getBackingDirectory().getAbsolutePath());
+		final File mountPoint = getMountpoint();
+		final File backingDirectory = getBackingDirectory();
+		SrcLogger.log("Mounting to: " + mountPoint.getAbsolutePath());
+		SrcLogger.log("Backing directory: " + backingDirectory.getAbsolutePath());
 		videoUi.logParams();
 		audioUi.logParams();
 		fsLock.lock();
-		mountedFS = new SrcDemoFS(getBackingDirectory().getAbsolutePath(), videoUi.getFactory(), audioUi.getFactory());
+		mountedFS = new SrcDemoFS(backingDirectory, videoUi.getFactory(), audioUi.getFactory());
 		mountedFS.addListener(renderTab);
-		mountedFS.mount(getMountpoint(), false);
+		SrcLogger.commandRegisterMountPoint(mountPoint);
+		mountedFS.mount(mountPoint, false);
 		fsLock.unlock();
 		updateStatus();
 		selectTab(renderTab);

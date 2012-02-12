@@ -8,7 +8,7 @@ import net.srcdemo.SrcLogger;
 
 public abstract class UserFS {
 	private final UserFSBackend backend;
-	private File mountPoint;
+	private File mountPoint = null;
 
 	public UserFS() {
 		backend = UserFSUtils.getNewBackend();
@@ -111,6 +111,10 @@ public abstract class UserFS {
 
 	protected int getMaximumComponentLength() {
 		return 255;
+	}
+
+	public final File getMountpoint() {
+		return mountPoint;
 	}
 
 	protected abstract long getTotalBytes();

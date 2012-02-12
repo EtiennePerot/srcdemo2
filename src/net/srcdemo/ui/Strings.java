@@ -52,7 +52,7 @@ interface Strings {
 	final String lblBuildDate = "Build date:";
 	final String lblDefaultDownloadLink = "http://code.google.com/p/srcdemo2/downloads/list";
 	final String lblEffectiveFps = "Effective recording FPS: ";
-	final String lblEnablePreview = "Enable preview";
+	final String lblEnablePreview = "Enable preview (unstable)";
 	final String lblFramesPerSecond = "Frames processed per second:";
 	final String lblFramesProcessedPerSecond = "Frames per second:";
 	final String lblFramesProcessedPerSecondDefault = "...";

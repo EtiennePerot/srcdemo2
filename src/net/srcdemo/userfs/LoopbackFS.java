@@ -36,14 +36,18 @@ public class LoopbackFS extends UserFS {
 	private final ReentrantLock filesHandleLock = new ReentrantLock();
 	private final Map<File, FileChannel> openedFiles = new HashMap<File, FileChannel>();
 
-	protected LoopbackFS(final String storageFolder) {
-		backingStorage = new File(storageFolder);
+	protected LoopbackFS(final File backingStorage) {
+		this.backingStorage = backingStorage;
 		if (!backingStorage.isDirectory()) {
 			if (!backingStorage.mkdirs()) {
-				System.err.println("Error: Couldn't create directory for storage: " + storageFolder);
+				System.err.println("Error: Couldn't create directory for storage: " + backingStorage);
 				System.exit(1);
 			}
 		}
+	}
+
+	protected LoopbackFS(final String storageFolder) {
+		this(new File(storageFolder));
 	}
 
 	@Override

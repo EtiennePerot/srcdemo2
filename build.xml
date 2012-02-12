@@ -11,6 +11,8 @@
     <property name="fusejna.lib.dir" value="${fusejna.dir}/lib"/>
     <property name="commonsio.dir" value="${submodules.dir}/commons-io"/>
     <property name="commonsio.src.dir" value="${commonsio.dir}/src/main/java"/>
+    <property name="commonscodec.dir" value="${submodules.dir}/commons-codec"/>
+    <property name="commonscodec.src.dir" value="${commonscodec.dir}/src/main/java"/>
     <property name="flac.src.dir" value="${root.dir}/src-flac"/>
     <property name="lib.dir" value="${root.dir}/lib"/>
     <property name="windows.lib.dir" value="${lib.dir}/windows"/>
@@ -100,7 +102,7 @@
 	</target>
     <target name="compile" depends="clean">
         <mkdir dir="${classes.dir}"/>
-    	<javac srcdir="${src.dir};${flac.src.dir};${dokan.src.dir};${fusejna.src.dir};${commonsio.src.dir}" destdir="${classes.dir}" classpathref="classpath"/>
+    	<javac srcdir="${src.dir};${flac.src.dir};${dokan.src.dir};${fusejna.src.dir};${commonsio.src.dir};${commonscodec.src.dir}" destdir="${classes.dir}" classpathref="classpath" optimize="true"/>
     </target>
 	<target name="jar-init" depends="compile">
         <mkdir dir="${jar.dir}"/>
