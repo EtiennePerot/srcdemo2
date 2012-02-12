@@ -22,6 +22,7 @@ import com.trolltech.qt.core.QCoreApplication;
 import com.trolltech.qt.gui.QApplication;
 import com.trolltech.qt.gui.QCloseEvent;
 import com.trolltech.qt.gui.QFileDialog;
+import com.trolltech.qt.gui.QFocusEvent;
 import com.trolltech.qt.gui.QHBoxLayout;
 import com.trolltech.qt.gui.QIcon;
 import com.trolltech.qt.gui.QLabel;
@@ -111,7 +112,7 @@ public class SrcDemoUI extends QWidget {
 			isRunningConcurrently = true;
 		}
 		if (initialized) {
-			final SrcDemoUI ui = new SrcDemoUI();
+			final SrcDemoUI ui = new SrcDemoUI(QApplication.instance());
 			Runtime.getRuntime().addShutdownHook(new Thread("Unmount shtudown hook") {
 				@Override
 				public void run() {
@@ -133,6 +134,7 @@ public class SrcDemoUI extends QWidget {
 	}
 
 	private QTabWidget allTabs;
+	private final QApplication application;
 	private AudioUI audioUi;
 	private QLineEdit backingDirectory;
 	private QPushButton backingDirectoryBrowse;
@@ -148,7 +150,8 @@ public class SrcDemoUI extends QWidget {
 	private final SrcSettings settings;
 	private VideoUI videoUi;
 
-	SrcDemoUI() {
+	SrcDemoUI(final QApplication application) {
+		this.application = application;
 		setWindowTitle(Strings.productName + (getVersion() == null ? "" : Strings.titleBuildPrefix + getVersion()));
 		final QIcon icon;
 		if (debugMode) {
@@ -217,12 +220,28 @@ public class SrcDemoUI extends QWidget {
 		fsLock.unlock();
 	}
 
+	@Override
+	protected void focusInEvent(final QFocusEvent event) {
+		super.focusInEvent(event);
+		System.out.println("In");
+	}
+
+	@Override
+	protected void focusOutEvent(final QFocusEvent event) {
+		super.focusOutEvent(event);
+		System.out.println("Out");
+	}
+
 	private File getBackingDirectory() {
 		return new File(backingDirectory.text());
 	}
 
 	private File getMountpoint() {
 		return new File(mountpoint.text());
+	}
+
+	QApplication getQApplication() {
+		return application;
 	}
 
 	SrcSettings getSettings() {

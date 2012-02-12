@@ -75,7 +75,7 @@ interface Strings {
 	final String lblRenderAudioBufferClosed = "Inactive.";
 	final String lblRenderAudioBufferWriting = "Writing...";
 	final String lblRenderAudioBufferWritten = "Written.";
-	final String lblShutterAngle = "Simulated <a href=\"http://www.facepunch.com/threads/1126220?p=32617404&viewfull=1#post32617404\">shutter angle</a>: ";
+	final String lblShutterAngle = "Simulated <a href=\"http://code.google.com/p/srcdemo2/wiki/ShutterAngle\">shutter angle</a>: ";
 	final String lblStoat0 = "<center><big><strong>Salute the Secret Stoat!</strong></big></center>";
 	final String lblStoat1 = "Praise the <strong>Secret Stoat</strong> and all it stands for: <strong>WIN</strong>.";
 	final String lblStoat2 = "<strong>Definitions of win on the Web:</strong>";

@@ -1,6 +1,7 @@
 package net.srcdemo.ui;
 
 import com.trolltech.qt.core.Qt.AlignmentFlag;
+import com.trolltech.qt.core.Qt.WindowModality;
 import com.trolltech.qt.gui.QIcon;
 import com.trolltech.qt.gui.QLabel;
 import com.trolltech.qt.gui.QPixmap;
@@ -16,6 +17,7 @@ final class SecretStoatWindow extends QWidget {
 		setWindowTitle(Strings.lblStoatTitle);
 		setWindowIcon(new QIcon(stoatPixmap));
 		initUI();
+		setWindowModality(WindowModality.ApplicationModal);
 		show();
 	}
 

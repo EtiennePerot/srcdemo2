@@ -12,10 +12,11 @@ import net.srcdemo.SrcDemoListener;
 import net.srcdemo.audio.BufferedAudioHandler.AudioBufferStatus;
 
 import com.trolltech.qt.core.QCoreApplication;
+import com.trolltech.qt.core.QEvent;
+import com.trolltech.qt.core.QObject;
 import com.trolltech.qt.core.Qt.AlignmentFlag;
 import com.trolltech.qt.core.Qt.Orientation;
 import com.trolltech.qt.gui.QCheckBox;
-import com.trolltech.qt.gui.QFocusEvent;
 import com.trolltech.qt.gui.QGroupBox;
 import com.trolltech.qt.gui.QHBoxLayout;
 import com.trolltech.qt.gui.QLabel;
@@ -67,6 +68,20 @@ class RenderingTab extends QWidget implements SrcDemoListener {
 	private int audioBufferTotal = 1;
 	private final Set<QWidget> audioWidgets = new HashSet<QWidget>();
 	private QPushButton btnFlushAudioBuffer;
+	private final QObject focusEventFilter = new QObject() {
+		@Override
+		public boolean eventFilter(final QObject obj, final QEvent event) {
+			switch (event.type()) {
+				case ApplicationActivate:
+					onFocus();
+					break;
+				case ApplicationDeactivate:
+					onDefocus();
+					break;
+			}
+			return super.eventFilter(obj, event);
+		}
+	};
 	private final AtomicInteger framesProcessed = new AtomicInteger(0);
 	private final RollingRate framesProcessRate = new RollingRate();
 	private final AtomicInteger framesSaved = new AtomicInteger(0);
@@ -84,6 +99,7 @@ class RenderingTab extends QWidget implements SrcDemoListener {
 	RenderingTab(final SrcDemoUI parent) {
 		this.parent = parent;
 		initUI();
+		parent.getQApplication().installEventFilter(focusEventFilter);
 		final Runnable updateUi = new Runnable() {
 			@Override
 			public void run() {
@@ -106,21 +122,6 @@ class RenderingTab extends QWidget implements SrcDemoListener {
 	private void enabledAudioWidgets(final boolean enable) {
 		for (final QWidget w : audioWidgets) {
 			w.setEnabled(enable);
-		}
-	}
-
-	@Override
-	protected void focusInEvent(final QFocusEvent event) {
-		super.focusInEvent(event);
-		hasFocus = true;
-	}
-
-	@Override
-	protected void focusOutEvent(final QFocusEvent event) {
-		super.focusOutEvent(event);
-		hasFocus = false;
-		if (previewEnabled) {
-			previewPicture.reset();
 		}
 	}
 
@@ -218,12 +219,26 @@ class RenderingTab extends QWidget implements SrcDemoListener {
 		audioBufferStatus = status;
 	}
 
+	private void onDefocus() {
+		hasFocus = false;
+		if (previewEnabled) {
+			previewPicture.reset();
+		}
+	}
+
 	@SuppressWarnings("unused")
 	private void onFlushAudioBuffer() {
 		audioBufferStatus = AudioBufferStatus.FLUSHING;
 		enabledAudioWidgets(false);
 		btnFlushAudioBuffer.setText(Strings.btnRenderAudioBufferFlushing);
 		parent.flushAudioBuffer(false);
+	}
+
+	private void onFocus() {
+		hasFocus = true;
+		if (previewEnabled) {
+			previewPicture.restore();
+		}
 	}
 
 	@Override

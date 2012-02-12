@@ -26,7 +26,9 @@ public class UpdatablePicture extends QLabel {
 	private Integer maxHeight = null;
 	private Integer maxWidth = null;
 	private boolean needUpdate = true;
+	private QPixmap newPixmap = null;
 	private QPixmap pixmapOriginal = null;
+	private QPixmap priorResetPixmap = null;
 	private int rawHeight = 0;
 	private int[] rawPixelData;
 	private int rawWidth = 0;
@@ -86,9 +88,10 @@ public class UpdatablePicture extends QLabel {
 	public void push(final File newImage) {
 		final String path = newImage.getAbsolutePath();
 		lock.lock();
-		needUpdate = !path.equals(image);
+		needUpdate = needUpdate || !path.equals(image);
 		image = path;
 		rawPixelData = null;
+		newPixmap = null;
 		lock.unlock();
 	}
 
@@ -101,12 +104,26 @@ public class UpdatablePicture extends QLabel {
 		needUpdate = true; // Comparing each pixel would be expensive; assume it did change
 		image = null;
 		rawPixelData = pixelData;
+		newPixmap = null;
 		rawWidth = width;
 		rawHeight = height;
 		lock.unlock();
 	}
 
+	public void push(final QPixmap pixmap) {
+		if (pixmap == null || pixmap.isNull()) {
+			return;
+		}
+		lock.lock();
+		needUpdate = needUpdate || !pixmap.equals(pixmapOriginal);
+		image = null;
+		rawPixelData = null;
+		newPixmap = pixmap;
+		lock.unlock();
+	}
+
 	public void reset() {
+		priorResetPixmap = pixmapOriginal;
 		if (initialImage != null) {
 			push(initialImage);
 		} else if (initialPixelData != null) {
@@ -125,11 +142,17 @@ public class UpdatablePicture extends QLabel {
 		lock.unlock();
 	}
 
+	public void restore() {
+		push(priorResetPixmap);
+	}
+
 	public void updatePicture() {
 		boolean doGc = false;
 		lock.lock();
 		if (needUpdate) {
-			if (image != null) {
+			if (newPixmap != null) {
+				pixmapOriginal = newPixmap;
+			} else if (image != null) {
 				pixmapOriginal = new QPixmap(image);
 			} else if (rawPixelData != null) {
 				final int length = rawPixelData.length;

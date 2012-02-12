@@ -5,4 +5,4 @@ package/osx/Info.plist
 *.log
 *.dll
 *.so
-
+*.exe

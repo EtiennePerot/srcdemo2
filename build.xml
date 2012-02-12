@@ -8,11 +8,14 @@
     <property name="submodules.dir" value="${root.dir}/submodules"/>
     <property name="fusejna.dir" value="${submodules.dir}/fuse-jna"/>
     <property name="fusejna.src.dir" value="${fusejna.dir}/src"/>
+    <property name="fusejna.license" value="${fusejna.dir}/LICENSE"/>
     <property name="fusejna.lib.dir" value="${fusejna.dir}/lib"/>
     <property name="commonsio.dir" value="${submodules.dir}/commons-io"/>
     <property name="commonsio.src.dir" value="${commonsio.dir}/src/main/java"/>
+    <property name="commonsio.license" value="${commonsio.dir}/LICENSE.txt"/>
     <property name="commonscodec.dir" value="${submodules.dir}/commons-codec"/>
     <property name="commonscodec.src.dir" value="${commonscodec.dir}/src/main/java"/>
+    <property name="commonscodec.license" value="${commonscodec.dir}/LICENSE.txt"/>
     <property name="flac.src.dir" value="${root.dir}/src-flac"/>
     <property name="lib.dir" value="${root.dir}/lib"/>
     <property name="windows.lib.dir" value="${lib.dir}/windows"/>
@@ -41,6 +44,9 @@
     <property name="jar.windows.tools.dir" value="${jar.tools.dir}/windows"/>
     <property name="jar.osx.tools.dir" value="${jar.tools.dir}/osx"/>
     <property name="jar.any.tools.dir" value="${jar.tools.dir}/any"/>
+    <property name="commonsio.license.out" value="${jar.lib.dir}/LICENSE.commons-io.txt"/>
+    <property name="commonscodec.license.out" value="${jar.lib.dir}/LICENSE.commons-codec.txt"/>
+    <property name="fusejna.license.out" value="${jar.lib.dir}/LICENSE.fusejna.txt"/>
 	<property name="main-class" value="net.srcdemo.ui.SrcDemoUI"/>
 	<property name="launcher.builddir" value="${launcher.dir}/build"/>
 	<property name="launcher.distdir" value="${launcher.dir}/dist"/>
@@ -120,6 +126,9 @@
         </copy>
 	</target>
     <target name="jar-finalize">
+        <copy file="${commonsio.license}" tofile="${commonsio.license.out}" />
+        <copy file="${commonscodec.license}" tofile="${commonscodec.license.out}" />
+        <copy file="${fusejna.license}" tofile="${fusejna.license.out}" />
         <path id="jar-classpath">
             <fileset dir="${jar.lib.dir}" includes="**/*.jar"/>
         </path>
