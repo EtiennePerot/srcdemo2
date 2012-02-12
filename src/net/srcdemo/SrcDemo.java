@@ -27,7 +27,9 @@ public class SrcDemo implements Morticianed {
 
 	SrcDemo(final SrcDemoFS backingFS, final String prefix, final VideoHandlerFactory videoHandlerFactory,
 		final AudioHandlerFactory audioHandlerFactory) {
-		SrcLogger.logDemo("Creating new SrcDemo with prefix " + prefix);
+		if (SrcLogger.getLogDemo()) {
+			SrcLogger.logDemo("Creating new SrcDemo with prefix " + prefix);
+		}
 		this.backingFS = backingFS;
 		demoPrefix = prefix;
 		demoPrefixLength = demoPrefix.length();
@@ -55,7 +57,9 @@ public class SrcDemo implements Morticianed {
 				lastClosedFrameTime = System.currentTimeMillis();
 				videoHandler.close(frameNumber);
 				backingFS.notifyFrameProcessed(fileName);
-				SrcLogger.logDemo("Finished processing frame: " + fileName);
+				if (SrcLogger.getLogDemo()) {
+					SrcLogger.logDemo("Finished processing frame: " + fileName);
+				}
 			}
 		}
 	}
@@ -72,14 +76,18 @@ public class SrcDemo implements Morticianed {
 	}
 
 	void destroy() {
-		SrcLogger.logDemo("Destroying SrcDemo object: " + this);
+		if (SrcLogger.getLogDemo()) {
+			SrcLogger.logDemo("Destroying SrcDemo object: " + this);
+		}
 		mortician.stopService();
 		videoHandler.destroy();
 		audioHandler.destroy();
 		// Notify the upper layer that we're dead, Jim
 		backingFS.destroy(this);
 		System.gc();
-		SrcLogger.logDemo("Fully destroyed SrcDemo object: " + this);
+		if (SrcLogger.getLogDemo()) {
+			SrcLogger.logDemo("Fully destroyed SrcDemo object: " + this);
+		}
 	}
 
 	public void flushAudioBuffer() {
