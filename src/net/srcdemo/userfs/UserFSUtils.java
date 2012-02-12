@@ -102,8 +102,10 @@ public final class UserFSUtils {
 		if (os.isWindows()) {
 			try {
 				if (Dokan.getVersion() == 600) {
-					SrcLogger.log("Starting with version = " + Dokan.getVersion() + " / Driver = " + Dokan.getDriverVersion()
-						+ ".");
+					if (SrcLogger.getLogMisc()) {
+						SrcLogger.log("Starting with version = " + Dokan.getVersion() + " / Driver = "
+							+ Dokan.getDriverVersion() + ".");
+					}
 					initStatus = true;
 					return true;
 				}

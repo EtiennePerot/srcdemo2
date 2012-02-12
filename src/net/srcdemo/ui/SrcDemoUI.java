@@ -99,7 +99,9 @@ public class SrcDemoUI extends QWidget {
 		ServerSocket socket = null;
 		try {
 			socket = new ServerSocket(concurrentRunPort, 8, InetAddress.getLocalHost());
-			SrcLogger.log("Bound to port " + concurrentRunPort + "; first instance running.");
+			if (SrcLogger.getLogMisc()) {
+				SrcLogger.log("Bound to port " + concurrentRunPort + "; first instance running.");
+			}
 		}
 		catch (final UnknownHostException e) {
 			// Shouldn't happen, but if it does then we're pretty screwed
@@ -108,7 +110,9 @@ public class SrcDemoUI extends QWidget {
 		}
 		catch (final IOException e) {
 			// Port taken
-			SrcLogger.log("Could not bind to port " + concurrentRunPort + "; assuming another instance is running.");
+			if (SrcLogger.getLogMisc()) {
+				SrcLogger.log("Could not bind to port " + concurrentRunPort + "; assuming another instance is running.");
+			}
 			isRunningConcurrently = true;
 		}
 		if (initialized) {
@@ -346,8 +350,10 @@ public class SrcDemoUI extends QWidget {
 	private void onMount() {
 		final File mountPoint = getMountpoint();
 		final File backingDirectory = getBackingDirectory();
-		SrcLogger.log("Mounting to: " + mountPoint.getAbsolutePath());
-		SrcLogger.log("Backing directory: " + backingDirectory.getAbsolutePath());
+		if (SrcLogger.getLogMisc()) {
+			SrcLogger.log("Mounting to: " + mountPoint.getAbsolutePath());
+			SrcLogger.log("Backing directory: " + backingDirectory.getAbsolutePath());
+		}
 		videoUi.logParams();
 		audioUi.logParams();
 		fsLock.lock();
@@ -367,7 +373,9 @@ public class SrcDemoUI extends QWidget {
 	private void unmount() {
 		fsLock.lock();
 		if (mountedFS != null) {
-			SrcLogger.log("Unmounting.");
+			if (SrcLogger.getLogMisc()) {
+				SrcLogger.log("Unmounting.");
+			}
 			mountedFS.unmount();
 			mountedFS.removeListener(renderTab);
 			mountedFS = null;
