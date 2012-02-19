@@ -9,6 +9,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.locks.ReentrantLock;
 
+import net.srcdemo.GCChecker;
 import net.srcdemo.SrcDemo;
 import net.srcdemo.SrcLogger;
 import net.srcdemo.TimedMap;
@@ -142,8 +143,9 @@ public class FrameBlender implements VideoHandler {
 				SrcLogger.logVideo("This was the last frame of the sequence. Computing final image.");
 			}
 			final int[] finalPixels = new int[numPixels];
+			int rPosition;
 			for (int i = 0; i < numPixels; i++) {
-				final int rPosition = i * 3;
+				rPosition = i * 3;
 				finalPixels[i] = ((currentMergedFrame[rPosition + 2] / framesMerged) << 16)
 					| ((currentMergedFrame[rPosition + 1] / framesMerged) << 8)
 					| (currentMergedFrame[rPosition] / framesMerged);
@@ -153,6 +155,7 @@ public class FrameBlender implements VideoHandler {
 				.add(savingFactory.buildSavingTask(frameNumber / blendRate, finalPixels, tga.getWidth(), tga.getHeight()));
 		}
 		frameLock.unlock();
+		GCChecker.poke();
 	}
 
 	@Override

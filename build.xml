@@ -44,6 +44,12 @@
     <property name="jar.windows.tools.dir" value="${jar.tools.dir}/windows"/>
     <property name="jar.osx.tools.dir" value="${jar.tools.dir}/osx"/>
     <property name="jar.any.tools.dir" value="${jar.tools.dir}/any"/>
+    <property name="jlibs.dir" value="${any.lib.dir}/jlibs"/>
+    <property name="jlibs.src.dir" value="${jlibs.dir}/src"/>
+    <property name="jlibs.license1" value="${jlibs.dir}/LICENSE.txt"/>
+    <property name="jlibs.license1.out" value="${jar.lib.dir}/LICENSE.jlibs.txt"/>
+    <property name="jlibs.license2" value="${jlibs.dir}/readme.txt"/>
+    <property name="jlibs.license2.out" value="${jar.lib.dir}/readme.jlibs.txt"/>
     <property name="commonsio.license.out" value="${jar.lib.dir}/LICENSE.commons-io.txt"/>
     <property name="commonscodec.license.out" value="${jar.lib.dir}/LICENSE.commons-codec.txt"/>
     <property name="fusejna.license.out" value="${jar.lib.dir}/LICENSE.fusejna.txt"/>
@@ -108,7 +114,7 @@
 	</target>
     <target name="compile" depends="clean">
         <mkdir dir="${classes.dir}"/>
-    	<javac srcdir="${src.dir};${flac.src.dir};${dokan.src.dir};${fusejna.src.dir};${commonsio.src.dir};${commonscodec.src.dir}" destdir="${classes.dir}" classpathref="classpath" optimize="true"/>
+    	<javac srcdir="${src.dir};${flac.src.dir};${dokan.src.dir};${fusejna.src.dir};${commonsio.src.dir};${commonscodec.src.dir};${jlibs.src.dir}" destdir="${classes.dir}" classpathref="classpath" optimize="true"/>
     </target>
 	<target name="jar-init" depends="compile">
         <mkdir dir="${jar.dir}"/>
@@ -128,6 +134,8 @@
     <target name="jar-finalize">
         <copy file="${commonsio.license}" tofile="${commonsio.license.out}" />
         <copy file="${commonscodec.license}" tofile="${commonscodec.license.out}" />
+        <copy file="${jlibs.license1}" tofile="${jlibs.license1.out}" />
+        <copy file="${jlibs.license2}" tofile="${jlibs.license2.out}" />
         <copy file="${fusejna.license}" tofile="${fusejna.license.out}" />
         <path id="jar-classpath">
             <fileset dir="${jar.lib.dir}" includes="**/*.jar"/>

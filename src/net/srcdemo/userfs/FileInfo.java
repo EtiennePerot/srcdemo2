@@ -15,12 +15,13 @@ public class FileInfo {
 		return new FileInfo(fileName, false, fileSize);
 	}
 
+	private final ByHandleFileInformation byHandleInfo = new ByHandleFileInformation();
 	private final String fileName;
-	private final long fileSize;
+	private long fileSize;
 	private final int index;
 	private final boolean isDirectory;
 
-	private FileInfo(final String fileName, final boolean isDirectory, final long fileSize) {
+	public FileInfo(final String fileName, final boolean isDirectory, final long fileSize) {
 		this.fileName = fileName;
 		this.isDirectory = isDirectory;
 		this.fileSize = fileSize;
@@ -51,8 +52,21 @@ public class FileInfo {
 		return isDirectory;
 	}
 
+	public FileInfo setSize(final long size) {
+		fileSize = size;
+		return this;
+	}
+
 	public ByHandleFileInformation toByhandleFileInformation(final int volumeSerialNumber) {
-		return new ByHandleFileInformation(getDokanAttributes(), 0, 0, 0, volumeSerialNumber, fileSize, 1, index);
+		byHandleInfo.fileAttributes = getDokanAttributes();
+		byHandleInfo.creationTime = 0;
+		byHandleInfo.lastAccessTime = 0;
+		byHandleInfo.lastWriteTime = 0;
+		byHandleInfo.volumeSerialNumber = volumeSerialNumber;
+		byHandleInfo.fileSize = fileSize;
+		byHandleInfo.numberOfLinks = 1;
+		byHandleInfo.fileIndex = index;
+		return byHandleInfo;
 	}
 
 	public Win32FindData toFindData() {

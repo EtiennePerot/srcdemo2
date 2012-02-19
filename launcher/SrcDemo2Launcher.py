@@ -33,7 +33,7 @@ def parse_command(command):
 		try:
 			allowedCommands[commandName](*arguments)
 		except:
-			print >> sys.stderr, 'Error while running command', commandName, 'with arguments', arguments
+			print 'Error while running command', commandName, 'with arguments', arguments
 
 class StreamRunner(threading.Thread):
 	def __init__(self, process, streamIn, streamsOut, parseCommands=False):
@@ -58,11 +58,8 @@ def is_osx():
 
 def get_java(debugMode):
 	if is_windows():
-		hiPriority = 'javaw.exe'
-		loPriority = 'java.exe'
-		if debugMode:
-			hiPriority = 'java.exe'
-			loPriority = 'javaw.exe'
+		hiPriority = 'java.exe'
+		loPriority = 'javaw.exe'
 		print 'Finding', hiPriority, '/', loPriority
 		def findJre(d):
 			if not os.path.exists(d) or not os.path.isdir(d):
@@ -101,11 +98,17 @@ def add_subprocess_creationflags(kwargs):
 		kwargs['creationflags'] = win32process.CREATE_NO_WINDOW
 	return kwargs
 
+def subprocess_call(command, *args, **kwargs):
+	args = args[:]
+	kwargs = add_subprocess_creationflags(kwargs.copy())
+	kwargs['stdout'] = subprocess.PIPE
+	kwargs['stderr'] = subprocess.PIPE
+	return subprocess.call(command, *args, **kwargs)
+
 def attempt_unmount(mountpoint):
 	global selfDir
 	if is_windows():
-		kwargs = add_subprocess_creationflags({})
-		subprocess.call([selfDir + os.sep + 'tools' + os.sep + 'windows' + os.sep + 'dokanctl' + os.sep + 'dokanctl.exe', '/u', mountpoint.encode(sys.getfilesystemencoding()), '/f'], stdout=subprocess.PIPE, stderr=subprocess.PIPE, **kwargs)
+		subprocess_call([selfDir + os.sep + 'tools' + os.sep + 'windows' + os.sep + 'dokanctl' + os.sep + 'dokanctl.exe', '/u', mountpoint.encode(sys.getfilesystemencoding()), '/f'])
 addCommand('unmount', attempt_unmount)
 
 lastMountPoint = None
@@ -119,6 +122,18 @@ def unmount_registered_mountpoint():
 	if lastMountPoint is not None:
 		print 'Attempting unmount of', lastMountPoint
 		attempt_unmount(lastMountPoint)
+
+def addJvmArgument(jvmArgs, default, prefix=None, xxArg=None):
+	if prefix is not None:
+		for i in jvmArgs:
+			if len(i) > len(prefix) and i[:len(prefix)] == prefix:
+				return
+		jvmArgs.append(prefix + default)
+	elif xxArg is not None:
+		for i in jvmArgs:
+			if len(i) > 4 and i[:4] == '-XX:' and xxArg in i:
+				return
+		jvmArgs.append('-XX:' + default)
 
 def launch(debugMode=False):
 	global selfDir
@@ -138,7 +153,25 @@ def launch(debugMode=False):
 	javaHome = os.path.abspath(os.path.dirname(os.path.dirname(foundJre[0])))
 	javaEnv = os.environ.copy()
 	javaEnv['JAVA_HOME'] = javaHome
-	command = foundJre + ['-jar', 'SrcDemo2.jar']
+	javaVmArgs = []
+	for i in sys.argv[1:]:
+		if len(i) > 11 and i[:11] == '--jvm-args=':
+			javaVmArgs.extend(i[11:].split(' '))
+	addJvmArgument(javaVmArgs, '1024M',                   prefix='-Xmx')
+	addJvmArgument(javaVmArgs, '512k',                    prefix='-Xss')
+	addJvmArgument(javaVmArgs, ':none',                   prefix='-Xverify')
+	addJvmArgument(javaVmArgs, '+UseParallelGC',          xxArg='GC')
+	addJvmArgument(javaVmArgs, '+AggressiveOpts',         xxArg='AggressiveOpts')
+	addJvmArgument(javaVmArgs, '+UseFastAccessorMethods', xxArg='UseFastAccessorMethods')
+	addJvmArgument(javaVmArgs, '+UseStringCache',         xxArg='UseStringCache')
+	addJvmArgument(javaVmArgs, '+UseCompressedStrings',   xxArg='UseCompressedStrings')
+	addJvmArgument(javaVmArgs, '+OptimizeStringConcat',   xxArg='OptimizeStringConcat')
+	addJvmArgument(javaVmArgs, 'CompileThreshold=100',    xxArg='CompileThreshold')
+	if '-server' not in javaVmArgs and '-client' not in javaVmArgs:
+		# Probe for server JVM
+		if subprocess_call([foundJre, '-server', '-version']) == 0:
+			javaVmArgs = ['-server'] + javaVmArgs
+	command = foundJre + javaVmArgs + ['-jar', 'SrcDemo2.jar']
 	outStreams = []
 	errStreams = []
 	if debugMode:

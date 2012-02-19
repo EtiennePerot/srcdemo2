@@ -9,8 +9,7 @@
 package net.decasdev.dokan;
 
 /** BY_HANDLE_FILE_INFORMATION */
-public class ByHandleFileInformation
-{
+public class ByHandleFileInformation {
 	/** FILETIME */
 	public long creationTime;
 	public int fileAttributes;
@@ -23,10 +22,13 @@ public class ByHandleFileInformation
 	public int numberOfLinks;
 	public int volumeSerialNumber;
 
+	public ByHandleFileInformation() {
+		this(0, 0, 0, 0, 0, 0, 0, 0);
+	}
+
 	public ByHandleFileInformation(final int fileAttributes, final long creationTime, final long lastAccessTime,
-			final long lastWriteTime, final int volumeSerialNumber, final long fileSize, final int numberOfLinks,
-			final long fileIndex)
-	{
+		final long lastWriteTime, final int volumeSerialNumber, final long fileSize, final int numberOfLinks,
+		final long fileIndex) {
 		this.fileAttributes = fileAttributes;
 		this.creationTime = creationTime;
 		this.lastAccessTime = lastAccessTime;
@@ -38,11 +40,10 @@ public class ByHandleFileInformation
 	}
 
 	@Override
-	public String toString()
-	{
+	public String toString() {
 		return "ByHandleFileInformation(" + "fileAttributes=" + fileAttributes + "," + "lastAccessTime=" + lastAccessTime + ","
-				+ "lastWriteTime=" + lastWriteTime + "," + "fileSize=" + fileSize + "," + "volumeSerialNumber="
-				+ volumeSerialNumber + "," + "fileSize=" + fileSize + "," + "numberOfLinks=" + numberOfLinks + ","
-				+ "fileIndex=" + fileIndex + ")";
+			+ "lastWriteTime=" + lastWriteTime + "," + "fileSize=" + fileSize + "," + "volumeSerialNumber="
+			+ volumeSerialNumber + "," + "fileSize=" + fileSize + "," + "numberOfLinks=" + numberOfLinks + "," + "fileIndex="
+			+ fileIndex + ")";
 	}
 }

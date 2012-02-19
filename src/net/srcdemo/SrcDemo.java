@@ -21,6 +21,7 @@ public class SrcDemo implements Morticianed {
 	private long lastClosedFrameTime = -1L;
 	private final Mortician mortician;
 	private final File soundFile;
+	private final FileInfo soundFileInfo;
 	private final String soundFileName;
 	private final String soundFileNameLowercase;
 	private final VideoHandler videoHandler;
@@ -38,6 +39,7 @@ public class SrcDemo implements Morticianed {
 		soundFile = getBackedFile(".wav");
 		soundFileName = soundFile.getName();
 		soundFileNameLowercase = soundFileName.toLowerCase();
+		soundFileInfo = new FileInfo(soundFileName, false, 0L);
 		mortician = new Mortician(this, "Checking thread for " + prefix, new Runnable() {
 			@Override
 			public void run() {
@@ -46,6 +48,7 @@ public class SrcDemo implements Morticianed {
 		});
 		videoHandler = videoHandlerFactory.buildHandler(this);
 		audioHandler = audioHandlerFactory.buildHandler(this);
+		GCChecker.poke(); // Make sure it is going
 	}
 
 	void closeFile(final String fileName) {
@@ -100,13 +103,9 @@ public class SrcDemo implements Morticianed {
 
 	FileInfo getFileInfo(final String fileName) {
 		if (isSoundFile(fileName)) {
-			return FileInfo.fromFile(soundFileName, audioHandler.getSize());
+			return soundFileInfo.setSize(audioHandler.getSize());
 		}
-		final Integer frameNumber = getFrameNumber(fileName);
-		if (frameNumber != null) {
-			return FileInfo.fromFile(demoPrefix + frameNumber + ".tga", videoHandler.getFrameSize(frameNumber));
-		}
-		return FileInfo.fromFile(fileName, 0);
+		return null;
 	}
 
 	private Integer getFrameNumber(final String fileName) {

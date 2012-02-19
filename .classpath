@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
 	<classpathentry kind="src" path="src"/>
+	<classpathentry kind="src" path="lib/any/jlibs/src"/>
 	<classpathentry kind="src" path="submodules/commons-codec/src/main/java"/>
 	<classpathentry kind="src" path="submodules/fuse-jna/src"/>
 	<classpathentry kind="src" path="submodules/commons-io/src/main/java"/>
