@@ -18,29 +18,33 @@ import net.srcdemo.video.image.ImageSavingTaskFactory;
 
 public class FrameBlender implements VideoHandler {
 	private static final long frameSizeTimeout = 30000;
+	private final double acceptedFrameGap;
 	private final int blendRate;
 	private final ReentrantLock bufferLock = new ReentrantLock();
 	private int currentAllocatedSize = -1;
 	private int[] currentMergedFrame;
+	private int currentWeight = 0;
 	private final Map<Integer, ByteArrayOutputStream> frameData = new HashMap<Integer, ByteArrayOutputStream>();
 	private final ReentrantLock frameLock = new ReentrantLock();
 	private final Map<Integer, Long> frameSize = new TimedMap<Integer, Long>(frameSizeTimeout);
-	private int framesMerged = -1;
 	private ImageSaver imageSaver;
 	private int maxAcceptedFrame;
 	private int maxEncounteredByteSize = 1048576;
 	private int minAcceptedFrame = 0;
 	private final ImageSavingTaskFactory savingFactory;
+	private final FrameWeighter weighter;
 
 	public FrameBlender(final SrcDemo demo, final ImageSavingTaskFactory savingFactory, final int blendRate,
-		final int shutterAngle) {
+		final int shutterAngle, final FrameWeighter weighter) {
 		this.blendRate = blendRate;
 		maxAcceptedFrame = (int) Math.ceil((shutterAngle * blendRate) / 360.0) - 1;
 		if (maxAcceptedFrame < blendRate - 1) { // Offset by 1
 			maxAcceptedFrame++;
 			minAcceptedFrame = 1;
 		}
+		acceptedFrameGap = maxAcceptedFrame - minAcceptedFrame;
 		this.savingFactory = savingFactory;
+		this.weighter = weighter;
 		imageSaver = new ImageSaver(demo);
 	}
 
@@ -111,6 +115,8 @@ public class FrameBlender implements VideoHandler {
 		final TGAReader tga = new TGAReader(frameData);
 		final int numPixels = tga.getNumPixels();
 		final int totalNeededSize = numPixels * 3;
+		final double frameWeightX = (framePosition - minAcceptedFrame) / acceptedFrameGap;
+		final int frameWeight = weighter.weight(frameWeightX);
 		frameLock.lock();
 		if (framePosition == minAcceptedFrame) { // First frame of the sequence
 			if (SrcLogger.getLogVideo()) {
@@ -125,7 +131,7 @@ public class FrameBlender implements VideoHandler {
 				currentAllocatedSize = totalNeededSize;
 			}
 			Arrays.fill(currentMergedFrame, 0);
-			framesMerged = 0;
+			currentWeight = 0;
 		}
 		if (totalNeededSize != currentAllocatedSize) {
 			SrcLogger.error("Invalid frame size for frame #" + frameNumber + "! Allocated = " + currentAllocatedSize
@@ -136,8 +142,12 @@ public class FrameBlender implements VideoHandler {
 		if (SrcLogger.getLogVideo()) {
 			SrcLogger.logVideo("Merging frame: " + frameNumber + " on thread " + Thread.currentThread().getId());
 		}
-		tga.addToArray(currentMergedFrame);
-		framesMerged++;
+		if (frameWeight == 1) {
+			tga.addToArray(currentMergedFrame);
+		} else if (frameWeight > 1) {
+			tga.addToArrayWeighted(currentMergedFrame, frameWeight);
+		}
+		currentWeight += frameWeight;
 		if (framePosition == maxAcceptedFrame) { // Last frame of the sequence
 			if (SrcLogger.getLogVideo()) {
 				SrcLogger.logVideo("This was the last frame of the sequence. Computing final image.");
@@ -146,9 +156,9 @@ public class FrameBlender implements VideoHandler {
 			int rPosition;
 			for (int i = 0; i < numPixels; i++) {
 				rPosition = i * 3;
-				finalPixels[i] = ((currentMergedFrame[rPosition + 2] / framesMerged) << 16)
-					| ((currentMergedFrame[rPosition + 1] / framesMerged) << 8)
-					| (currentMergedFrame[rPosition] / framesMerged);
+				finalPixels[i] = ((currentMergedFrame[rPosition + 2] / currentWeight) << 16)
+					| ((currentMergedFrame[rPosition + 1] / currentWeight) << 8)
+					| (currentMergedFrame[rPosition] / currentWeight);
 			}
 			// At this point, we made a full copy, no need to keep the rest waiting
 			imageSaver

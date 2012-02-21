@@ -6,8 +6,8 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.math.BigInteger;
-import java.nio.channels.FileChannel;
 import java.security.MessageDigest;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -21,7 +21,10 @@ import net.srcdemo.audio.AudioHandler;
 import net.srcdemo.audio.AudioHandlerFactory;
 import net.srcdemo.audio.BufferedAudioHandler.AudioBufferStatus;
 import net.srcdemo.audio.DiskAudioHandler;
+import net.srcdemo.ui.GaussianFrameWeighter;
+import net.srcdemo.userfs.UserFSUtils;
 import net.srcdemo.video.FrameBlender;
+import net.srcdemo.video.FrameWeighter;
 import net.srcdemo.video.VideoHandler;
 import net.srcdemo.video.VideoHandlerFactory;
 import net.srcdemo.video.image.ImageSavingTask;
@@ -47,39 +50,64 @@ final class BlendFSTest implements SrcDemoListener {
 	 * Fourth image; has RLE compression
 	 */
 	private static final File testImage3 = new File(_testImagesDirectory, "frame3.tga");
-	private static final File testImageReference = new File(_testImagesDirectory, "reference.png");
+	private static final String testImageReferenceSuffix = "reference.png";
 
 	public static final void main(final String[] args) {
 		if (args.length != 2) {
 			System.err.println("Usage: outputdir mountpoint");
 			System.exit(1);
 		}
+		System.out.println("Testing linear blending...");
 		try {
-			new BlendFSTest(args[0], args[1]);
+			new BlendFSTest(args[0], args[1], false);
 		}
 		catch (final Exception e) {
 			System.err.println(e);
 			e.printStackTrace();
+			System.exit(1);
+		}
+		System.out.println("Testing gaussian blending...");
+		try {
+			new BlendFSTest(args[0], args[1], true);
+		}
+		catch (final Exception e) {
+			System.err.println(e);
+			e.printStackTrace();
+			System.exit(1);
 		}
 	}
 
+	private final String filePrefix;
 	private File mountPoint;
 	private final AtomicBoolean receivedFrame = new AtomicBoolean(false);
 	private final AtomicBoolean validFrame = new AtomicBoolean(false);
 
-	private BlendFSTest(final String outputdir, final String mountPoint) throws Exception {
+	private BlendFSTest(final String outputdir, final String mountPoint, final boolean gaussian) throws Exception {
 		SrcLogger.setLogAll(true);
+		UserFSUtils.init();
 		this.mountPoint = new File(mountPoint);
+		filePrefix = gaussian ? "gaussian-" : "regular-";
 		final SrcDemoFS mountedFS = new SrcDemoFS(new File(outputdir), new VideoHandlerFactory() {
 			@Override
 			public VideoHandler buildHandler(final SrcDemo demo) {
+				final FrameWeighter weighter;
+				if (gaussian) {
+					weighter = new GaussianFrameWeighter(0.3d);
+				} else {
+					weighter = new FrameWeighter() {
+						@Override
+						public int weight(final double framePosition) {
+							return 1;
+						}
+					};
+				}
 				return new FrameBlender(demo, new ImageSavingTaskFactory() {
 					@Override
 					public ImageSavingTask buildSavingTask(final int sequenceIndex, final int[] pixelData, final int width,
 						final int height) {
 						return new PNGSavingTask(sequenceIndex, pixelData, width, height);
 					}
-				}, 3, 360);
+				}, 3, 360, weighter);
 			}
 		}, new AudioHandlerFactory() {
 			@Override
@@ -125,7 +153,7 @@ final class BlendFSTest implements SrcDemoListener {
 			System.err.println("Frame not received.");
 		}
 		final String md5ref = md5Hash(testAudio);
-		final String md5out = md5Hash(new File(outputdir, testAudio.getName()));
+		final String md5out = md5Hash(new File(outputdir, filePrefix + testAudio.getName()));
 		if (md5ref.equals(md5out)) {
 			System.out.println("Audio file matched: " + md5ref);
 		} else {
@@ -135,15 +163,16 @@ final class BlendFSTest implements SrcDemoListener {
 
 	private void copy(final File file) throws IOException {
 		System.out.println("Copying " + file.getName());
-		final File target = new File(mountPoint, file.getName());
-		if (!target.exists()) {
-			target.createNewFile();
+		final File target = new File(mountPoint, filePrefix + file.getName());
+		final InputStream in = new FileInputStream(file);
+		final OutputStream out = new FileOutputStream(target);
+		final byte[] buf = new byte[1024];
+		int len;
+		while ((len = in.read(buf)) > 0) {
+			out.write(buf, 0, len);
 		}
-		final FileChannel source = new FileInputStream(file).getChannel();
-		final FileChannel targetChannel = new FileOutputStream(target).getChannel();
-		targetChannel.transferFrom(source, 0, source.size());
-		source.close();
-		targetChannel.close();
+		in.close();
+		out.close();
 	}
 
 	private String md5Hash(final File file) {
@@ -178,7 +207,7 @@ final class BlendFSTest implements SrcDemoListener {
 	public void onFrameSaved(final File savedFrame, final int[] pixels, final int width, final int height) {
 		final BufferedImage reference;
 		try {
-			reference = ImageIO.read(testImageReference);
+			reference = ImageIO.read(new File(_testImagesDirectory, filePrefix + testImageReferenceSuffix));
 		}
 		catch (final IOException e) {
 			System.err.println("Error while reading reference frame: " + e);

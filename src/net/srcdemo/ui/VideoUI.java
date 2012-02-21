@@ -7,6 +7,7 @@ import net.srcdemo.EnumUtils;
 import net.srcdemo.SrcDemo;
 import net.srcdemo.SrcLogger;
 import net.srcdemo.video.FrameBlender;
+import net.srcdemo.video.FrameWeighter;
 import net.srcdemo.video.NullVideoHandler;
 import net.srcdemo.video.VideoHandler;
 import net.srcdemo.video.VideoHandlerFactory;
@@ -18,6 +19,7 @@ import net.srcdemo.video.image.TGASavingTask;
 
 import com.trolltech.qt.core.Qt.Orientation;
 import com.trolltech.qt.gui.QCheckBox;
+import com.trolltech.qt.gui.QDoubleSpinBox;
 import com.trolltech.qt.gui.QHBoxLayout;
 import com.trolltech.qt.gui.QLabel;
 import com.trolltech.qt.gui.QSlider;
@@ -69,6 +71,9 @@ class VideoUI extends QWidget {
 	private QLabel effectiveRecordingFps;
 	private QLabel effectiveRecordingFpsCommand;
 	private QLabel formatExplanation;
+	private QCheckBox gaussianCheckbox;
+	private QGaussianCurve gaussianCurve;
+	private QDoubleSpinBox gaussianVariance;
 	private QVBoxLayout globalVideoOptionsVbox;
 	private QSlider jpegCompressionLevel;
 	private QLabel jpegCompressionLevelLabel;
@@ -87,7 +92,6 @@ class VideoUI extends QWidget {
 	VideoUI(final SrcDemoUI parent) {
 		this.parent = parent;
 		initUI();
-		updateEffectiveRecordingFps();
 	}
 
 	private QWidget disablableVideoWidget(final QWidget widget) {
@@ -106,6 +110,7 @@ class VideoUI extends QWidget {
 		for (final QWidget widget : disablableVideoOptions) {
 			widget.setEnabled(enable);
 		}
+		updateGaussian();
 	}
 
 	Integer getEffectiveRecordingFps() {
@@ -119,7 +124,7 @@ class VideoUI extends QWidget {
 		final int blend = blendRate.value();
 		final int shutter = shutterAngle.value();
 		final VideoType vidType = videoType.getCurrentItem();
-		ImageSavingTaskFactory imgFactory = null;
+		final ImageSavingTaskFactory imgFactory;
 		switch (vidType) {
 			case JPEG:
 				final float quality = jpegCompressionLevel.value() / 100f;
@@ -157,13 +162,25 @@ class VideoUI extends QWidget {
 						return new NullVideoHandler(demo);
 					}
 				};
+			default:
+				// Necessary to satisfy the "final" constraint on imgFactory
+				imgFactory = null;
 		}
-		// Need to make a final version to be able to access it within the inner class
-		final ImageSavingTaskFactory finalImgFactory = imgFactory;
+		final FrameWeighter frameWeighter;
+		if (gaussianCheckbox.isChecked()) {
+			frameWeighter = new GaussianFrameWeighter(gaussianCurve.mean(), gaussianCurve.variance(), gaussianCurve.stdDev());
+		} else {
+			frameWeighter = new FrameWeighter() {
+				@Override
+				public int weight(final double framePosition) {
+					return 1;
+				}
+			};
+		}
 		return new VideoHandlerFactory() {
 			@Override
 			public VideoHandler buildHandler(final SrcDemo demo) {
-				return new FrameBlender(demo, finalImgFactory, blend, shutter);
+				return new FrameBlender(demo, imgFactory, blend, shutter, frameWeighter);
 			}
 		};
 	}
@@ -258,6 +275,28 @@ class VideoUI extends QWidget {
 			}
 			{
 				final QHBoxLayout hbox = new QHBoxLayout();
+				gaussianCheckbox = new QCheckBox(Strings.lblGaussianBlending);
+				gaussianCheckbox.setChecked(getSettings().getLastGaussianBlending());
+				gaussianCheckbox.stateChanged.connect(this, "updateGaussian()");
+				hbox.addWidget(disablableVideoWidget(gaussianCheckbox));
+				{
+					final QHBoxLayout innerHbox = new QHBoxLayout();
+					gaussianVariance = new QDoubleSpinBox();
+					gaussianVariance.setMinimum(0.001d);
+					gaussianVariance.setMaximum(10d);
+					gaussianVariance.setSingleStep(0.01d);
+					gaussianVariance.setDecimals(3);
+					gaussianVariance.setValue(getSettings().getLastGaussianVariance());
+					gaussianVariance.valueChanged.connect(this, "updateGaussian()");
+					innerHbox.addWidget(disablableVideoWidget(gaussianVariance));
+					gaussianCurve = new QGaussianCurve();
+					innerHbox.addWidget(disablableVideoWidget(gaussianCurve));
+					hbox.addLayout(innerHbox);
+				}
+				globalVideoOptionsVbox.addLayout(hbox);
+			}
+			{
+				final QHBoxLayout hbox = new QHBoxLayout();
 				hbox.addWidget(disablableVideoWidget(new QLabel(Strings.lblEffectiveFps)));
 				effectiveRecordingFps = new QLabel();
 				hbox.addWidget(disablableVideoWidget(effectiveRecordingFps));
@@ -269,6 +308,8 @@ class VideoUI extends QWidget {
 		}
 		setLayout(mainVbox);
 		updateVideoType();
+		updateGaussian();
+		updateEffectiveRecordingFps();
 	}
 
 	void logParams() {
@@ -279,11 +320,17 @@ class VideoUI extends QWidget {
 			if (current.equals(VideoType.JPEG)) {
 				SrcLogger.logVideo("JPEG compression: " + jpegCompressionLevel.value());
 			} else if (current.equals(VideoType.TGA)) {
-				SrcLogger.logVideo("TGA RLE compression is " + (tgaCompressionRLE.isChecked() ? "enabled" : "disabled"));
-			} else if (!current.equals(VideoType.DISABLED)) {
+				SrcLogger.logVideo("TGA RLE compression: " + (tgaCompressionRLE.isChecked() ? "Enabled" : "Disabled"));
+			}
+			if (!current.equals(VideoType.DISABLED)) {
 				SrcLogger.logVideo("Target framerate: " + targetFps.value());
 				SrcLogger.logVideo("Blend rate: " + blendRate.value());
 				SrcLogger.logVideo("Shutter angle: " + shutterAngle.value());
+				final boolean gaussian = gaussianCheckbox.isChecked();
+				SrcLogger.logVideo("Gaussian blending: " + (gaussian ? "Enabled" : "Disabled"));
+				if (gaussian) {
+					SrcLogger.logVideo("Gaussian variance: " + gaussianVariance.value());
+				}
 			}
 			SrcLogger.logVideo("~ End of video parameters block ~");
 		}
@@ -308,6 +355,18 @@ class VideoUI extends QWidget {
 		blendRate.setSuffix(blendRate.value() == 1 ? Strings.spnBlendRateSingular : Strings.spnBlendRatePlural);
 		shutterAngle.setSuffix(shutterAngle.value() == 1 ? Strings.spnShutterAngleSingular : Strings.spnShutterAnglePlural);
 		saveVideoSettings();
+	}
+
+	private void updateGaussian() {
+		final boolean enabled = gaussianCheckbox.isChecked();
+		getSettings().setLastGaussianBlending(enabled);
+		gaussianCheckbox.setText(enabled ? Strings.lblGaussianVariance : Strings.lblGaussianBlending);
+		final boolean enabledControls = gaussianCheckbox.isEnabled() && enabled;
+		gaussianVariance.setEnabled(enabledControls);
+		gaussianCurve.setEnabled(enabledControls);
+		final double variance = gaussianVariance.value();
+		gaussianCurve.variance(variance);
+		getSettings().setLastGaussianVariance(variance);
 	}
 
 	@SuppressWarnings("unused")

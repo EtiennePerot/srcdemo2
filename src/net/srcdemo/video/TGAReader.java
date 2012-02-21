@@ -53,6 +53,47 @@ class TGAReader {
 		}
 	}
 
+	public void addToArrayWeighted(final int[] pixels, final int weight) {
+		decodeHeader();
+		int i = 0;
+		final int maxValues = numPixels * 3;
+		if (data[2] == 0x02 && data[16] == 0x20) {
+			while (i < maxValues) {
+				pixels[i++] += read(data) * weight;
+				pixels[i++] += read(data) * weight;
+				pixels[i++] += read(data) * weight;
+				skip(1); // Ignore alpha
+			}
+		} else if (data[2] == 0x02 && data[16] == 0x18) {
+			while (i < maxValues) {
+				pixels[i++] += read(data) * weight;
+				pixels[i++] += read(data) * weight;
+				pixels[i++] += read(data) * weight;
+			}
+		} else {
+			while (i < maxValues) {
+				int nb = read(data);
+				if ((nb & 0x80) == 0) {
+					for (int j = 0; j <= nb; j++) {
+						pixels[i++] += read(data) * weight;
+						pixels[i++] += read(data) * weight;
+						pixels[i++] += read(data) * weight;
+					}
+				} else {
+					nb &= 0x7f;
+					final int b = read(data) * weight;
+					final int g = read(data) * weight;
+					final int r = read(data) * weight;
+					for (int j = 0; j <= nb; j++) {
+						pixels[i++] += b;
+						pixels[i++] += g;
+						pixels[i++] += r;
+					}
+				}
+			}
+		}
+	}
+
 	void decodeHeader() {
 		if (headerDecoded) {
 			return;

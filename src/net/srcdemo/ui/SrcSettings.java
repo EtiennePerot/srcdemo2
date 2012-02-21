@@ -41,6 +41,14 @@ class SrcSettings extends QSettings {
 		return (Integer) value("blendRate", 32);
 	}
 
+	boolean getLastGaussianBlending() {
+		return Boolean.parseBoolean((String) value("gaussianBlending", "false"));
+	}
+
+	double getLastGaussianVariance() {
+		return Double.valueOf((String) value("gaussianVariance", "0.15"));
+	}
+
 	int getLastJPEGCompressionLevel() {
 		return (Integer) value("jpegCompressionLevel", 95);
 	}
@@ -108,6 +116,14 @@ class SrcSettings extends QSettings {
 
 	void setLastBlendRate(final int blendRate) {
 		setValue("blendRate", blendRate);
+	}
+
+	void setLastGaussianBlending(final boolean blending) {
+		setValue("gaussianBlending", blending ? "true" : "false");
+	}
+
+	void setLastGaussianVariance(final double variance) {
+		setValue("gaussianVariance", Double.toString(variance));
 	}
 
 	void setLastJPEGCompressionLevel(final int compressionLevel) {

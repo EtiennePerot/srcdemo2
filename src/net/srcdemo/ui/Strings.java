@@ -1,5 +1,6 @@
 package net.srcdemo.ui;
 
+
 interface Strings {
 	final String aboutUnknownVersion = "Unknown";
 	final String audioOptBuffered = "WAV (Buffered)";
@@ -57,6 +58,8 @@ interface Strings {
 	final String lblFramesProcessedPerSecond = "Frames per second:";
 	final String lblFramesProcessedPerSecondDefault = "...";
 	final String lblFramesProcessedPerSecondFormat = "#.00";
+	final String lblGaussianBlending = "Use Gaussian blending";
+	final String lblGaussianVariance = "Gaussian variance:";
 	final String lblInvalidSettings = "Invalid settings: ";
 	final String lblJpegQuality = "JPEG quality";
 	final String lblLastFrameProcessed = "Last frame processed: ";
