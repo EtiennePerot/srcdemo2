@@ -30,6 +30,8 @@ interface Strings {
 	final String cmdFlagDebugMisc = "--srcdemo-debug-misc";
 	final String cmdFlagDebugMode = "--srcdemo-debug";
 	final String cmdFlagDebugVideo = "--srcdemo-debug-video";
+	final String cmdFlagJvmClient = "--srcdemo-jvm-client";
+	final String cmdFlagJvmServer = "--srcdemo-jvm-server";
 	final String cmdHostFramerate = "host_framerate ";
 	final String dateSeparator = "-";
 	final String errDirectoriesEqual = "Directories must not be equal";
@@ -51,6 +53,7 @@ interface Strings {
 	final String lblBlendRate = "Motion blur blend rate: ";
 	final String lblBufferWarning = "When using a buffer, remember to press \"Deactivate\" at the end of the recording, after having entered \"endmovie\".\nOtherwise, the audio file may be corrupt.";
 	final String lblBuildDate = "Build date:";
+	final String lblClientJvmWarning = "<strong>Note</strong>: For better performance, <a href=\"http://code.google.com/p/srcdemo2/wiki/ServerJVM\">use a server JVM</a>.";
 	final String lblDefaultDownloadLink = "http://code.google.com/p/srcdemo2/downloads/list";
 	final String lblEffectiveFps = "Effective recording FPS: ";
 	final String lblEnablePreview = "Enable preview (unstable)";

@@ -218,6 +218,7 @@ def launch(debugMode=False):
 					print 'Please make sure the file is writable.'
 			else:
 				break
+	command.append('--srcdemo-jvm' + jvmType)
 	command.extend(sys.argv[1:])
 	returnCode = 0
 	kwargs = add_subprocess_creationflags({

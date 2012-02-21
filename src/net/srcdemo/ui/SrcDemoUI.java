@@ -37,6 +37,7 @@ public class SrcDemoUI extends QWidget {
 	private static final int concurrentRunPort = 63281;
 	private static boolean debugMode = false;
 	private static boolean isRunningConcurrently = false;
+	private static boolean isServerJvm = true;
 	private static final int relaunchStatusCode = 1337;
 	private static int returnCode = 0;
 	private static String version = null;
@@ -70,6 +71,9 @@ public class SrcDemoUI extends QWidget {
 			if (arg.equals(Strings.cmdFlagDebugFS)) {
 				debugMode = true;
 				SrcLogger.setLogFS(true);
+			}
+			if (arg.equals(Strings.cmdFlagJvmClient)) {
+				isServerJvm = false;
 			}
 		}
 		if (Files.versionFile.exists()) {
@@ -300,6 +304,11 @@ public class SrcDemoUI extends QWidget {
 		{
 			lblStatus = new QLabel();
 			vbox.addWidget(lblStatus);
+			if (!isServerJvm) {
+				final QLabel jvmWarning = new QLabel(Strings.lblClientJvmWarning);
+				jvmWarning.setOpenExternalLinks(true);
+				vbox.addWidget(jvmWarning);
+			}
 			final QHBoxLayout hbox = new QHBoxLayout();
 			btnMount = new QPushButton(Strings.btnActivate);
 			btnMount.clicked.connect(this, "onMount()");

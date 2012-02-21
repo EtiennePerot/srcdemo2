@@ -124,7 +124,7 @@ public class FrameBlender implements VideoHandler {
 			}
 			if (totalNeededSize != currentAllocatedSize) {
 				if (SrcLogger.getLogVideo()) {
-					SrcLogger.logVideo("Memmory allocation size is different. Needed: " + totalNeededSize + " / Current: "
+					SrcLogger.logVideo("Memory allocation size is different. Needed: " + totalNeededSize + " / Current: "
 						+ currentAllocatedSize);
 				}
 				currentMergedFrame = new int[totalNeededSize];
