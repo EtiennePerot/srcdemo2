@@ -105,6 +105,12 @@ def subprocess_call(command, *args, **kwargs):
 	kwargs['stderr'] = subprocess.PIPE
 	return subprocess.call(command, *args, **kwargs)
 
+def subprocess_getoutput(command, *args, **kwargs):
+	args = args[:]
+	kwargs = add_subprocess_creationflags(kwargs.copy())
+	kwargs['stderr'] = subprocess.PIPE
+	return subprocess.check_output(command, *args, **kwargs)
+
 def attempt_unmount(mountpoint):
 	global selfDir
 	if is_windows():
@@ -123,13 +129,13 @@ def unmount_registered_mountpoint():
 		print 'Attempting unmount of', lastMountPoint
 		attempt_unmount(lastMountPoint)
 
-def addJvmArgument(jvmArgs, default, prefix=None, xxArg=None):
+def addJvmArgument(printFlags, jvmArgs, default, prefix=None, xxArg=None):
 	if prefix is not None:
 		for i in jvmArgs:
 			if len(i) > len(prefix) and i[:len(prefix)] == prefix:
 				return
 		jvmArgs.append(prefix + default)
-	elif xxArg is not None:
+	elif xxArg is not None and printFlags is not None and xxArg in printFlags:
 		for i in jvmArgs:
 			if len(i) > 4 and i[:4] == '-XX:' and xxArg in i:
 				return
@@ -157,20 +163,29 @@ def launch(debugMode=False):
 	for i in sys.argv[1:]:
 		if len(i) > 11 and i[:11] == '--jvm-args=':
 			javaVmArgs.extend(i[11:].split(' '))
-	addJvmArgument(javaVmArgs, '1024M',                   prefix='-Xmx')
-	addJvmArgument(javaVmArgs, '512k',                    prefix='-Xss')
-	addJvmArgument(javaVmArgs, ':none',                   prefix='-Xverify')
-	addJvmArgument(javaVmArgs, '+UseParallelGC',          xxArg='GC')
-	addJvmArgument(javaVmArgs, '+AggressiveOpts',         xxArg='AggressiveOpts')
-	addJvmArgument(javaVmArgs, '+UseFastAccessorMethods', xxArg='UseFastAccessorMethods')
-	addJvmArgument(javaVmArgs, '+UseStringCache',         xxArg='UseStringCache')
-	addJvmArgument(javaVmArgs, '+UseCompressedStrings',   xxArg='UseCompressedStrings')
-	addJvmArgument(javaVmArgs, '+OptimizeStringConcat',   xxArg='OptimizeStringConcat')
-	addJvmArgument(javaVmArgs, 'CompileThreshold=100',    xxArg='CompileThreshold')
+	jvmType = '-client'
 	if '-server' not in javaVmArgs and '-client' not in javaVmArgs:
 		# Probe for server JVM
 		if subprocess_call([foundJre, '-server', '-version']) == 0:
+			jvmType = '-server'
 			javaVmArgs = ['-server'] + javaVmArgs
+	# Get available flags
+	printFlags = None
+	try:
+		printFlags = subprocess_getoutput([foundJre, jvmType, '-XX:+PrintFlagsFinal'])
+	except:
+		pass
+	addJvmArgument(printFlags, javaVmArgs, '1024M',                   prefix='-Xmx')
+	addJvmArgument(printFlags, javaVmArgs, '512k',                    prefix='-Xss')
+	addJvmArgument(printFlags, javaVmArgs, ':none',                   prefix='-Xverify')
+	addJvmArgument(printFlags, javaVmArgs, '+UseParallelGC',          xxArg='GC')
+	addJvmArgument(printFlags, javaVmArgs, '+AggressiveOpts',         xxArg='AggressiveOpts')
+	addJvmArgument(printFlags, javaVmArgs, '+UseFastAccessorMethods', xxArg='UseFastAccessorMethods')
+	addJvmArgument(printFlags, javaVmArgs, '+UseStringCache',         xxArg='UseStringCache')
+	addJvmArgument(printFlags, javaVmArgs, '+UseCompressedStrings',   xxArg='UseCompressedStrings')
+	addJvmArgument(printFlags, javaVmArgs, '+OptimizeStringConcat',   xxArg='OptimizeStringConcat')
+	addJvmArgument(printFlags, javaVmArgs, 'CompileThreshold=100',    xxArg='CompileThreshold')
+	del printFlags
 	command = foundJre + javaVmArgs + ['-jar', 'SrcDemo2.jar']
 	outStreams = []
 	errStreams = []

@@ -117,7 +117,7 @@ public class SrcDemoUI extends QWidget {
 		}
 		if (initialized) {
 			final SrcDemoUI ui = new SrcDemoUI(QApplication.instance());
-			Runtime.getRuntime().addShutdownHook(new Thread("Unmount shtudown hook") {
+			Runtime.getRuntime().addShutdownHook(new Thread("Unmount shutdown hook") {
 				@Override
 				public void run() {
 					ui.flushAudioBuffer(true);
