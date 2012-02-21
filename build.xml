@@ -185,12 +185,12 @@
 		<delete dir="${launcher.builddir}"/>
 		<delete dir="${launcher.distdir}"/>
 	</target>
-	<target name="launcher-windows">
+	<target name="launcher-windows" depends="jar-windows">
         <copy todir="${jar.dir}">
             <fileset dir="${launcher.precompileddir}" excludes="${svn.excludes}"/>
         </copy>
 	</target>
-    <target name="package-windows" depends="jar-windows,launcher-windows">
+    <target name="package-windows" depends="launcher-windows">
     	<!-- Assumes makensis.exe is in the path. Note: Use Unicode NSIS, not regular NSIS! -->
         <delete file="${windows.package.file}"/>
         <taskdef name="nsis" classname="com.danielreese.nsisant.Task" classpath="${windows.package.nsiant}"/>
