@@ -1,5 +1,8 @@
 package net.srcdemo.ui;
 
+import net.srcdemo.Main;
+import net.srcdemo.Strings;
+
 import com.trolltech.qt.core.QCoreApplication;
 import com.trolltech.qt.core.QEvent;
 import com.trolltech.qt.core.QUrl;
@@ -26,7 +29,7 @@ public class AboutTab extends QWidget {
 	AboutTab(final SrcDemoUI parent) {
 		this.parent = parent;
 		initUI();
-		if (getSettings().getAutoCheckUpdates() && SrcDemoUI.getVersion() != null) {
+		if (getSettings().getAutoCheckUpdates() && Main.version() != null) {
 			QCoreApplication.invokeLater(new Runnable() {
 				@Override
 				public void run() {
@@ -70,18 +73,18 @@ public class AboutTab extends QWidget {
 		{
 			final QHBoxLayout hbox = new QHBoxLayout();
 			hbox.addWidget(new QLabel(Strings.lblBuildDate), 0, AlignmentFlag.AlignRight);
-			hbox.addWidget(new QLabel(SrcDemoUI.getVersion() == null ? Strings.aboutUnknownVersion : SrcDemoUI.getVersion()),
-				0, AlignmentFlag.AlignLeft);
+			hbox.addWidget(new QLabel(Main.version() == null ? Strings.aboutUnknownVersion : Main.version()), 0,
+				AlignmentFlag.AlignLeft);
 			vbox.addLayout(hbox);
 		}
 		{
 			updateButton = new QPushButton(Strings.btnUpdateCheck);
 			updateButton.clicked.connect(this, "onCheckUpdates()");
-			updateButton.setEnabled(SrcDemoUI.getVersion() != null);
+			updateButton.setEnabled(Main.version() != null);
 			vbox.addWidget(updateButton, 0, AlignmentFlag.AlignCenter);
 		}
 		{
-			updateStatus = new QLabel(SrcDemoUI.getVersion() == null ? Strings.errUpdateInvalidVersion : "");
+			updateStatus = new QLabel(Main.version() == null ? Strings.errUpdateInvalidVersion : "");
 			updateStatus.setOpenExternalLinks(true);
 			vbox.addWidget(updateStatus, 0, AlignmentFlag.AlignCenter);
 		}

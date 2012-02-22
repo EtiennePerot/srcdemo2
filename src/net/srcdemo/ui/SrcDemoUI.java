@@ -1,21 +1,16 @@
 package net.srcdemo.ui;
 
 import java.io.File;
-import java.io.IOException;
-import java.net.InetAddress;
-import java.net.ServerSocket;
-import java.net.UnknownHostException;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.locks.ReentrantLock;
 
+import net.srcdemo.Main;
 import net.srcdemo.SrcDemoFS;
 import net.srcdemo.SrcLogger;
-import net.srcdemo.userfs.UserFSUtils;
+import net.srcdemo.Strings;
 import net.srcdemo.userfs.UserFSUtils.DokanNotInstalledException;
 import net.srcdemo.userfs.UserFSUtils.DokanVersionException;
-
-import org.apache.commons.io.FileUtils;
 
 import com.trolltech.qt.core.QByteArray;
 import com.trolltech.qt.core.QCoreApplication;
@@ -34,111 +29,29 @@ import com.trolltech.qt.gui.QVBoxLayout;
 import com.trolltech.qt.gui.QWidget;
 
 public class SrcDemoUI extends QWidget {
-	private static final int concurrentRunPort = 63281;
-	private static boolean debugMode = false;
-	private static boolean isRunningConcurrently = false;
-	private static boolean isServerJvm = true;
-	private static final int relaunchStatusCode = 1337;
-	private static int returnCode = 0;
-	private static String version = null;
-
-	public static String getVersion() {
-		return version;
+	public static void initError(final Throwable e) {
+		if (e instanceof DokanNotInstalledException) {
+			new UserFSMessage(Strings.errDokanNotInstalled).show();
+		} else if (e instanceof DokanVersionException) {
+			new UserFSMessage(Strings.errInvalidDokan).show();
+		}
 	}
 
 	public static void main(final String[] args) {
-		for (final String arg : args) {
-			if (arg.equals(Strings.cmdFlagDebugMode)) {
-				debugMode = true;
-				SrcLogger.setLogAll(true);
-			}
-			if (arg.equals(Strings.cmdFlagDebugAudio)) {
-				debugMode = true;
-				SrcLogger.setLogAudio(true);
-			}
-			if (arg.equals(Strings.cmdFlagDebugVideo)) {
-				debugMode = true;
-				SrcLogger.setLogVideo(true);
-			}
-			if (arg.equals(Strings.cmdFlagDebugDemo)) {
-				debugMode = true;
-				SrcLogger.setLogDemo(true);
-			}
-			if (arg.equals(Strings.cmdFlagDebugMisc)) {
-				debugMode = true;
-				SrcLogger.setLogMisc(true);
-			}
-			if (arg.equals(Strings.cmdFlagDebugFS)) {
-				debugMode = true;
-				SrcLogger.setLogFS(true);
-			}
-			if (arg.equals(Strings.cmdFlagJvmClient)) {
-				isServerJvm = false;
-			}
-		}
-		if (Files.versionFile.exists()) {
-			try {
-				version = FileUtils.readFileToString(Files.versionFile);
-			}
-			catch (final Exception e) {
-				// Consider the version number to be unknown
-				version = null;
-			}
-		}
 		QApplication.initialize(args);
 		QCoreApplication.setApplicationName(Strings.productName);
-		if (version != null) {
-			QCoreApplication.setApplicationVersion(version);
+		if (Main.version() != null) {
+			QCoreApplication.setApplicationVersion(Main.version());
 		}
-		boolean initialized = false;
-		try {
-			initialized = UserFSUtils.init();
-		}
-		catch (final DokanNotInstalledException e) {
-			new UserFSMessage(Strings.errDokanNotInstalled).show();
-		}
-		catch (final DokanVersionException e) {
-			new UserFSMessage(Strings.errInvalidDokan).show();
-		}
-		ServerSocket socket = null;
-		try {
-			socket = new ServerSocket(concurrentRunPort, 8, InetAddress.getLocalHost());
-			if (SrcLogger.getLogMisc()) {
-				SrcLogger.log("Bound to port " + concurrentRunPort + "; first instance running.");
+		final SrcDemoUI ui = new SrcDemoUI(QApplication.instance());
+		Runtime.getRuntime().addShutdownHook(new Thread("Unmount shutdown hook") {
+			@Override
+			public void run() {
+				ui.flushAudioBuffer(true);
+				ui.unmount();
 			}
-		}
-		catch (final UnknownHostException e) {
-			// Shouldn't happen, but if it does then we're pretty screwed
-			SrcLogger.error("Couldn't get localhost address", e);
-			System.exit(1);
-		}
-		catch (final IOException e) {
-			// Port taken
-			if (SrcLogger.getLogMisc()) {
-				SrcLogger.log("Could not bind to port " + concurrentRunPort + "; assuming another instance is running.");
-			}
-			isRunningConcurrently = true;
-		}
-		if (initialized) {
-			final SrcDemoUI ui = new SrcDemoUI(QApplication.instance());
-			Runtime.getRuntime().addShutdownHook(new Thread("Unmount shutdown hook") {
-				@Override
-				public void run() {
-					ui.flushAudioBuffer(true);
-					ui.unmount();
-				}
-			});
-			QApplication.exec();
-		}
-		if (socket != null) {
-			try {
-				socket.close();
-			}
-			catch (final IOException e) {
-				// We don't really care at this point
-			}
-		}
-		System.exit(returnCode);
+		});
+		QApplication.exec();
 	}
 
 	private QTabWidget allTabs;
@@ -160,9 +73,9 @@ public class SrcDemoUI extends QWidget {
 
 	SrcDemoUI(final QApplication application) {
 		this.application = application;
-		setWindowTitle(Strings.productName + (getVersion() == null ? "" : Strings.titleBuildPrefix + getVersion()));
+		setWindowTitle(Strings.productName + (Main.version() == null ? "" : Strings.titleBuildPrefix + Main.version()));
 		final QIcon icon;
-		if (debugMode) {
+		if (Main.isDebugMode()) {
 			icon = new QIcon(Files.iconWindowDebug.getAbsolutePath());
 		} else {
 			icon = new QIcon(Files.iconWindowMain.getAbsolutePath());
@@ -173,7 +86,7 @@ public class SrcDemoUI extends QWidget {
 		settings = new SrcSettings();
 		// Attempt unmount in case something went bad last time
 		final String lastMountPoint = settings.getLastMountpoint();
-		if (!isRunningConcurrently && lastMountPoint != null && !lastMountPoint.isEmpty()) {
+		if (!Main.isRunningConcurrently() && lastMountPoint != null && !lastMountPoint.isEmpty()) {
 			SrcLogger.commandUnmount(new File(lastMountPoint));
 		}
 		// Build a dummy QMenuBar to make the OS X guys happy
@@ -215,7 +128,7 @@ public class SrcDemoUI extends QWidget {
 	}
 
 	void exit(final int returnCode) {
-		SrcDemoUI.returnCode = returnCode;
+		Main.returnCode(returnCode);
 		unmount();
 		close();
 	}
@@ -304,7 +217,7 @@ public class SrcDemoUI extends QWidget {
 		{
 			lblStatus = new QLabel();
 			vbox.addWidget(lblStatus);
-			if (!isServerJvm) {
+			if (!Main.isServerJvm()) {
 				final QLabel jvmWarning = new QLabel(Strings.lblClientJvmWarning);
 				jvmWarning.setOpenExternalLinks(true);
 				vbox.addWidget(jvmWarning);
@@ -352,7 +265,7 @@ public class SrcDemoUI extends QWidget {
 
 	@SuppressWarnings("unused")
 	private void onDeactivate() {
-		exit(relaunchStatusCode);
+		exit(Main.relaunchStatusCode);
 	}
 
 	@SuppressWarnings("unused")

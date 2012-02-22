@@ -7,3 +7,6 @@
 [submodule "submodules/commons-codec"]
 	path = submodules/commons-codec
 	url = git://git.apache.org/commons-codec.git
+[submodule "submodules/commons-lang"]
+	path = submodules/commons-lang
+	url = git://git.apache.org/commons-lang.git

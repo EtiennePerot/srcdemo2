@@ -6,6 +6,7 @@ import com.trolltech.qt.gui.QColor;
 import com.trolltech.qt.gui.QLinearGradient;
 import com.trolltech.qt.gui.QPaintEvent;
 import com.trolltech.qt.gui.QPainter;
+import com.trolltech.qt.gui.QPainter.RenderHint;
 import com.trolltech.qt.gui.QPalette;
 import com.trolltech.qt.gui.QPolygon;
 import com.trolltech.qt.gui.QWidget;
@@ -51,6 +52,7 @@ public class QGaussianCurve extends QWidget {
 	@Override
 	protected void paintEvent(final QPaintEvent event) {
 		final QPainter painter = new QPainter(this);
+		painter.setRenderHint(RenderHint.Antialiasing);
 		final QPolygon polygon = new QPolygon();
 		final int width = width();
 		final int height = height();

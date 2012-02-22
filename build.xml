@@ -53,7 +53,7 @@
     <property name="commonsio.license.out" value="${jar.lib.dir}/LICENSE.commons-io.txt"/>
     <property name="commonscodec.license.out" value="${jar.lib.dir}/LICENSE.commons-codec.txt"/>
     <property name="fusejna.license.out" value="${jar.lib.dir}/LICENSE.fusejna.txt"/>
-	<property name="main-class" value="net.srcdemo.ui.SrcDemoUI"/>
+	<property name="main-class" value="net.srcdemo.Main"/>
 	<property name="launcher.builddir" value="${launcher.dir}/build"/>
 	<property name="launcher.distdir" value="${launcher.dir}/dist"/>
     <property name="launcher.precompileddir" value="${launcher.dir}/precompiled"/>

@@ -7,6 +7,9 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import net.srcdemo.Main;
+import net.srcdemo.Strings;
+
 import org.horrabin.horrorss.RssItemBean;
 import org.horrabin.horrorss.RssParser;
 
@@ -91,11 +94,11 @@ class UpdateCheckThread extends Thread {
 		if (invalidated.get()) {
 			return;
 		}
-		if (SrcDemoUI.getVersion() == null) {
+		if (Main.version() == null) {
 			setStatus(Strings.errUpdateInvalidVersion, false);
 			return;
 		}
-		final Version selfVersion = new Version(SrcDemoUI.getVersion());
+		final Version selfVersion = new Version(Main.version());
 		try {
 			parser.parse();
 		}

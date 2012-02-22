@@ -1,5 +1,7 @@
 package net.srcdemo.ui;
 
+import net.srcdemo.Strings;
+
 import com.trolltech.qt.core.Qt.AlignmentFlag;
 import com.trolltech.qt.core.Qt.WindowModality;
 import com.trolltech.qt.gui.QIcon;

@@ -6,6 +6,7 @@ import java.util.Set;
 import net.srcdemo.EnumUtils;
 import net.srcdemo.SrcDemo;
 import net.srcdemo.SrcLogger;
+import net.srcdemo.Strings;
 import net.srcdemo.video.FrameBlender;
 import net.srcdemo.video.FrameWeighter;
 import net.srcdemo.video.NullVideoHandler;

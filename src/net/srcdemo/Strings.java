@@ -1,7 +1,6 @@
-package net.srcdemo.ui;
+package net.srcdemo;
 
-
-interface Strings {
+public interface Strings {
 	final String aboutUnknownVersion = "Unknown";
 	final String audioOptBuffered = "WAV (Buffered)";
 	final String audioOptBufferedExplanation = "The .wav audio file will be written to disk in chunks.\nGood to get a .wav file without overusing the disk.";
@@ -24,15 +23,9 @@ interface Strings {
 	final String btnUpdateChecking = "Checking...";
 	final String btnUpdateRecheck = "Re-check for updates";
 	final String chkUpdateAutoCheck = "Check for updates when starting";
-	final String cmdFlagDebugAudio = "--srcdemo-debug-audio";
-	final String cmdFlagDebugDemo = "--srcdemo-debug-demo";
-	final String cmdFlagDebugFS = "--srcdemo-debug-fs";
-	final String cmdFlagDebugMisc = "--srcdemo-debug-misc";
-	final String cmdFlagDebugMode = "--srcdemo-debug";
-	final String cmdFlagDebugVideo = "--srcdemo-debug-video";
-	final String cmdFlagJvmClient = "--srcdemo-jvm-client";
-	final String cmdFlagJvmServer = "--srcdemo-jvm-server";
 	final String cmdHostFramerate = "host_framerate ";
+	final String cmdMustIncludeRenderOptions = "Must specify at least -m and -o.";
+	final String cmdVersionPrefix = "Version: ";
 	final String dateSeparator = "-";
 	final String errDirectoriesEqual = "Directories must not be equal";
 	final String errDokanNotInstalled = "Dokan is not installed.\n\nMore information will be available if you start in debug mode.";

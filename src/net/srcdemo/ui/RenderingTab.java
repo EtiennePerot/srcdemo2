@@ -9,6 +9,7 @@ import java.util.TimerTask;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import net.srcdemo.SrcDemoListener;
+import net.srcdemo.Strings;
 import net.srcdemo.audio.BufferedAudioHandler.AudioBufferStatus;
 
 import com.trolltech.qt.core.QCoreApplication;
