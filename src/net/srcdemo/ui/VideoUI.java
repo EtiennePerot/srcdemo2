@@ -3,20 +3,20 @@ package net.srcdemo.ui;
 import java.util.HashSet;
 import java.util.Set;
 
-import net.srcdemo.EnumUtils;
-import net.srcdemo.SrcDemo;
+import net.srcdemo.Params;
 import net.srcdemo.SrcLogger;
 import net.srcdemo.Strings;
-import net.srcdemo.video.FrameBlender;
 import net.srcdemo.video.FrameWeighter;
-import net.srcdemo.video.NullVideoHandler;
-import net.srcdemo.video.VideoHandler;
 import net.srcdemo.video.VideoHandlerFactory;
-import net.srcdemo.video.image.ImageSavingTask;
+import net.srcdemo.video.VideoType;
+import net.srcdemo.video.factories.FrameBlenderVideoHandlerFactory;
+import net.srcdemo.video.factories.GaussianFrameWeighter;
+import net.srcdemo.video.factories.JPEGSavingFactory;
+import net.srcdemo.video.factories.LinearFrameWeighter;
+import net.srcdemo.video.factories.NullVideoHandlerFactory;
+import net.srcdemo.video.factories.PNGSavingFactory;
+import net.srcdemo.video.factories.TGASavingFactory;
 import net.srcdemo.video.image.ImageSavingTaskFactory;
-import net.srcdemo.video.image.JPEGSavingTask;
-import net.srcdemo.video.image.PNGSavingTask;
-import net.srcdemo.video.image.TGASavingTask;
 
 import com.trolltech.qt.core.Qt.Orientation;
 import com.trolltech.qt.gui.QCheckBox;
@@ -30,43 +30,6 @@ import com.trolltech.qt.gui.QVBoxLayout;
 import com.trolltech.qt.gui.QWidget;
 
 class VideoUI extends QWidget {
-	static enum VideoType {
-		DISABLED, JPEG, PNG, TGA;
-		static {
-			final VideoType[] order = { PNG, TGA, JPEG, DISABLED };
-			EnumUtils.registerOrder(VideoType.class, order);
-		}
-
-		private String getDescription() {
-			switch (this) {
-				case PNG:
-					return Strings.videoOptPngExplanation;
-				case TGA:
-					return Strings.videoOptTgaExplanation;
-				case JPEG:
-					return Strings.videoOptJpgExplanation;
-				case DISABLED:
-					return Strings.videoOptDisabledExplanation;
-			}
-			return null;
-		}
-
-		@Override
-		public String toString() {
-			switch (this) {
-				case PNG:
-					return Strings.videoOptPng;
-				case TGA:
-					return Strings.videoOptTga;
-				case JPEG:
-					return Strings.videoOptJpg;
-				case DISABLED:
-					return Strings.videoOptDisabled;
-			}
-			return null;
-		}
-	}
-
 	private QSpinBox blendRate;
 	private final Set<QWidget> disablableVideoOptions = new HashSet<QWidget>();
 	private QLabel effectiveRecordingFps;
@@ -128,41 +91,16 @@ class VideoUI extends QWidget {
 		final ImageSavingTaskFactory imgFactory;
 		switch (vidType) {
 			case JPEG:
-				final float quality = jpegCompressionLevel.value() / 100f;
-				imgFactory = new ImageSavingTaskFactory() {
-					@Override
-					public ImageSavingTask buildSavingTask(final int sequenceIndex, final int[] pixelData, final int width,
-						final int height) {
-						return new JPEGSavingTask(sequenceIndex, pixelData, width, height, quality);
-					}
-				};
+				imgFactory = new JPEGSavingFactory(jpegCompressionLevel.value() / 100f);
 				break;
 			case PNG:
-				imgFactory = new ImageSavingTaskFactory() {
-					@Override
-					public ImageSavingTask buildSavingTask(final int sequenceIndex, final int[] pixelData, final int width,
-						final int height) {
-						return new PNGSavingTask(sequenceIndex, pixelData, width, height);
-					}
-				};
+				imgFactory = new PNGSavingFactory();
 				break;
 			case TGA:
-				final boolean rleCompression = tgaCompressionRLE.isChecked();
-				imgFactory = new ImageSavingTaskFactory() {
-					@Override
-					public ImageSavingTask buildSavingTask(final int sequenceIndex, final int[] pixelData, final int width,
-						final int height) {
-						return new TGASavingTask(sequenceIndex, pixelData, width, height, rleCompression);
-					}
-				};
+				imgFactory = new TGASavingFactory(tgaCompressionRLE.isChecked());
 				break;
 			case DISABLED:
-				return new VideoHandlerFactory() {
-					@Override
-					public VideoHandler buildHandler(final SrcDemo demo) {
-						return new NullVideoHandler(demo);
-					}
-				};
+				return new NullVideoHandlerFactory();
 			default:
 				// Necessary to satisfy the "final" constraint on imgFactory
 				imgFactory = null;
@@ -171,19 +109,9 @@ class VideoUI extends QWidget {
 		if (gaussianCheckbox.isChecked()) {
 			frameWeighter = new GaussianFrameWeighter(gaussianCurve.mean(), gaussianCurve.variance(), gaussianCurve.stdDev());
 		} else {
-			frameWeighter = new FrameWeighter() {
-				@Override
-				public int weight(final double framePosition) {
-					return 1;
-				}
-			};
+			frameWeighter = new LinearFrameWeighter();
 		}
-		return new VideoHandlerFactory() {
-			@Override
-			public VideoHandler buildHandler(final SrcDemo demo) {
-				return new FrameBlender(demo, imgFactory, blend, shutter, frameWeighter);
-			}
-		};
+		return new FrameBlenderVideoHandlerFactory(imgFactory, blend, shutter, frameWeighter);
 	}
 
 	private SrcSettings getSettings() {
@@ -211,7 +139,7 @@ class VideoUI extends QWidget {
 				jpegOptionsBox.addWidget(jpegCompressionLevelLabel, 1);
 				jpegCompressionLevel = new QSlider();
 				jpegCompressionLevel.setOrientation(Orientation.Horizontal);
-				jpegCompressionLevel.setRange(1, 100);
+				jpegCompressionLevel.setRange(Params.jpegQualityMin, Params.jpegQualityMax);
 				jpegCompressionLevel.setSingleStep(1);
 				jpegCompressionLevel.setPageStep(10);
 				jpegCompressionLevel.setTickPosition(TickPosition.TicksBelow);
@@ -245,7 +173,7 @@ class VideoUI extends QWidget {
 				final QHBoxLayout hbox = new QHBoxLayout();
 				hbox.addWidget(disablableVideoWidget(new QLabel(Strings.lblTargetFps)));
 				targetFps = new QSpinBox();
-				targetFps.setRange(1, 600);
+				targetFps.setRange(Params.frameRateMin, Params.frameRateMax);
 				targetFps.setValue(getSettings().getLastTargetFps());
 				targetFps.valueChanged.connect(this, "updateEffectiveRecordingFps()");
 				disablableVideoOptions.add(targetFps);
@@ -256,7 +184,7 @@ class VideoUI extends QWidget {
 				final QHBoxLayout hbox = new QHBoxLayout();
 				hbox.addWidget(disablableVideoWidget(new QLabel(Strings.lblBlendRate)));
 				blendRate = new QSpinBox();
-				blendRate.setRange(1, 1000);
+				blendRate.setRange(Params.blendRateMin, Params.blendRateMax);
 				blendRate.setValue(getSettings().getLastBlendRate());
 				blendRate.valueChanged.connect(this, "updateEffectiveRecordingFps()");
 				hbox.addWidget(disablableVideoWidget(blendRate));
@@ -268,7 +196,7 @@ class VideoUI extends QWidget {
 				shutterAngleUI.setOpenExternalLinks(true);
 				hbox.addWidget(disablableVideoWidget(shutterAngleUI));
 				shutterAngle = new QSpinBox();
-				shutterAngle.setRange(1, 360);
+				shutterAngle.setRange(Params.shutterAngleMin, Params.shutterAngleMax);
 				shutterAngle.setValue(getSettings().getLastShutterAngle());
 				shutterAngle.valueChanged.connect(this, "updateEffectiveRecordingFps()");
 				hbox.addWidget(disablableVideoWidget(shutterAngle));
@@ -283,8 +211,8 @@ class VideoUI extends QWidget {
 				{
 					final QHBoxLayout innerHbox = new QHBoxLayout();
 					gaussianVariance = new QDoubleSpinBox();
-					gaussianVariance.setMinimum(0.001d);
-					gaussianVariance.setMaximum(10d);
+					gaussianVariance.setMinimum(Params.gaussianVarianceMin);
+					gaussianVariance.setMaximum(Params.gaussianVarianceMax);
 					gaussianVariance.setSingleStep(0.01d);
 					gaussianVariance.setDecimals(3);
 					gaussianVariance.setValue(getSettings().getLastGaussianVariance());

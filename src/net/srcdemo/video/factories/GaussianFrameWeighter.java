@@ -1,4 +1,4 @@
-package net.srcdemo.ui;
+package net.srcdemo.video.factories;
 
 import net.srcdemo.video.FrameWeighter;
 

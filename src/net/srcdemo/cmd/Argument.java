@@ -1,14 +1,22 @@
 package net.srcdemo.cmd;
 
+import java.text.DecimalFormat;
+import java.util.ArrayList;
+import java.util.Collection;
+
+import net.srcdemo.EnumUtils;
+import net.srcdemo.Strings;
 import net.srcdemo.cmd.Arguments.Category;
 
 public class Argument {
 	static enum Type {
-		BOOLEAN, DOUBLE, INT, STRING;
+		BOOLEAN, DOUBLE, ENUM, INT, STRING;
 		public String representative() {
 			switch (this) {
 				case BOOLEAN:
 					return "true|false";
+				case ENUM:
+					return "val";
 				case DOUBLE:
 				case INT:
 					return "num";
@@ -25,6 +33,8 @@ public class Argument {
 					return "boolean";
 				case DOUBLE:
 					return "float";
+				case ENUM:
+					return "enum";
 				case INT:
 					return "integer";
 				case STRING:
@@ -34,20 +44,57 @@ public class Argument {
 		}
 	}
 
+	private static final DecimalFormat doubleFormat = new DecimalFormat("#.###");
+
+	static Argument create(final Category category, final String shortForm, final String longForm, final Type type,
+		final Object defaultValue, final String help) {
+		return new Argument(category, shortForm, longForm, type, null, defaultValue, Integer.MIN_VALUE, Integer.MAX_VALUE,
+			Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY, help);
+	}
+
+	static <T extends Enum<T>> Argument createEnum(final Category category, final String shortForm, final String longForm,
+		final T defaultValue, final String help, final Class<T> enumClass) {
+		final int n = enumClass.getEnumConstants().length;
+		final Collection<String> list = new ArrayList<String>(n);
+		for (final T t : EnumUtils.iterate(enumClass)) {
+			list.add(t.toString());
+		}
+		return new Argument(category, shortForm, longForm, Type.ENUM, enumClass, defaultValue, Integer.MIN_VALUE,
+			Integer.MAX_VALUE, Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY, help);
+	}
+
 	static Argument present(final Category category, final String shortForm, final String longForm, final String help) {
-		return new Argument(category, shortForm, longForm, Type.BOOLEAN, null, help);
+		return create(category, shortForm, longForm, Type.BOOLEAN, null, help);
+	}
+
+	static Argument rangedDouble(final Category category, final String shortForm, final String longForm,
+		final Object defaultValue, final double minValue, final double maxValue, final String help) {
+		return new Argument(category, shortForm, longForm, Type.DOUBLE, null, defaultValue, Integer.MIN_VALUE,
+			Integer.MAX_VALUE, minValue, maxValue, help);
+	}
+
+	static Argument rangedInt(final Category category, final String shortForm, final String longForm,
+		final Object defaultValue, final int minValue, final int maxValue, final String help) {
+		return new Argument(category, shortForm, longForm, Type.INT, null, defaultValue, minValue, maxValue,
+			Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY, help);
 	}
 
 	private final Category category;
 	private final String defaultValue;
+	private final Class<? extends Enum<?>> enumClass;
 	private final String help;
 	private final String longForm;
 	private final String longForm2;
+	private final double maxDoubleValue;
+	private final int maxIntValue;
+	private final double minDoubleValue;
+	private final int minIntValue;
 	private final String shortForm;
 	private final Type type;
 
-	Argument(final Category category, final String shortForm, final String longForm, final Type type,
-		final Object defaultValue, final String help) {
+	private Argument(final Category category, final String shortForm, final String longForm, final Type type,
+		final Class<? extends Enum<?>> enumClass, final Object defaultValue, final int minIntValue, final int maxIntValue,
+		final double minDoubleValue, final double maxDoubleValue, final String help) {
 		if (shortForm == null && longForm == null) {
 			throw new IllegalArgumentException("At least one argument form must exist.");
 		}
@@ -56,8 +103,21 @@ public class Argument {
 		longForm2 = longForm == null ? null : (this.longForm.toLowerCase() + "=");
 		this.type = type;
 		this.category = category;
+		this.enumClass = enumClass;
 		this.defaultValue = defaultValue == null ? null : defaultValue.toString();
+		this.minIntValue = minIntValue;
+		this.maxIntValue = maxIntValue;
+		this.minDoubleValue = minDoubleValue;
+		this.maxDoubleValue = maxDoubleValue;
 		this.help = help;
+	}
+
+	private double _getDouble(final String s) throws NumberFormatException {
+		return Math.max(minDoubleValue, Math.min(maxDoubleValue, Double.parseDouble(s)));
+	}
+
+	private int _getInt(final String s) throws NumberFormatException {
+		return Math.max(minIntValue, Math.min(maxIntValue, Integer.parseInt(s)));
 	}
 
 	Category category() {
@@ -68,13 +128,43 @@ public class Argument {
 		return defaultValue;
 	}
 
-	public String friendlyForm() {
-		final String argLess = (shortForm == null ? "" : shortForm) + (shortForm == null || longForm == null ? "" : ", ")
-			+ (longForm == null ? "" : longForm);
-		if (type.equals(Type.BOOLEAN) && defaultValue == null) {
-			return argLess;
+	public String enumHelp() {
+		if (!type.equals(Type.ENUM)) {
+			return "";
 		}
-		return argLess + " " + type.representative();
+		final StringBuilder h = new StringBuilder();
+		for (final Object o : EnumUtils.iterateUnsafe(enumClass)) {
+			final String desc = EnumUtils.getDescription(o);
+			if (desc != null) {
+				h.append("* " + o.toString().toLowerCase() + ": " + desc.replaceAll("[\\r\\n]+", " ")
+					+ System.getProperty("line.separator"));
+			}
+		}
+		return h.toString().trim();
+	}
+
+	public String forms() {
+		return (shortForm == null ? "" : shortForm) + (shortForm == null || longForm == null ? "" : "|")
+			+ (longForm == null ? "" : longForm);
+	}
+
+	public String friendlyDefault() {
+		return defaultValue == null ? null : Strings.cmdDefaultPrefix
+			+ (type.equals(Type.ENUM) ? defaultValue.toLowerCase() : defaultValue);
+	}
+
+	public String friendlyForm() {
+		if (type.equals(Type.BOOLEAN) && defaultValue == null) {
+			return forms();
+		}
+		if (type.equals(Type.INT) && minIntValue != Integer.MIN_VALUE) {
+			return forms() + " (" + minIntValue + (maxIntValue == Integer.MAX_VALUE ? " and up" : " to " + maxIntValue) + ")";
+		}
+		if (type.equals(Type.DOUBLE) && minDoubleValue != Double.NEGATIVE_INFINITY) {
+			return forms() + " (" + doubleFormat.format(minDoubleValue)
+				+ (maxDoubleValue == Double.POSITIVE_INFINITY ? " and up" : " to " + doubleFormat.format(maxDoubleValue)) + ")";
+		}
+		return forms() + " " + type.representative();
 	}
 
 	public String friendlyType() {
@@ -92,35 +182,50 @@ public class Argument {
 		return Boolean.getBoolean(s == null ? defaultValue : s);
 	}
 
-	public double getDouble(final String... args) {
+	public double getDouble(final String... args) throws InvalidFormatArgumentException {
 		if (!type.equals(Type.DOUBLE)) {
 			throw new IllegalStateException("This argument is not of type Double.");
 		}
 		final String s = scan(args);
 		if (s == null) {
-			return Double.parseDouble(defaultValue);
+			return _getDouble(defaultValue);
 		}
 		try {
-			return Double.parseDouble(s);
+			return _getDouble(s);
 		}
 		catch (final NumberFormatException e) {
-			return Double.parseDouble(defaultValue);
+			throw new InvalidFormatArgumentException(this, s);
 		}
 	}
 
-	public int getInt(final String... args) {
+	public <T extends Enum<T>> T getEnum(final Class<T> enumClass, final String... args) throws InvalidFormatArgumentException {
+		if (!type.equals(Type.ENUM)) {
+			throw new IllegalStateException("This argument is not of type Enum.");
+		}
+		final String s = scan(args);
+		if (s == null) {
+			return EnumUtils.fromName(enumClass, defaultValue, true);
+		}
+		final T t = EnumUtils.fromName(enumClass, s, true);
+		if (t == null) {
+			throw new InvalidFormatArgumentException(this, s);
+		}
+		return t;
+	}
+
+	public int getInt(final String... args) throws InvalidFormatArgumentException {
 		if (!type.equals(Type.INT)) {
 			throw new IllegalStateException("This argument is not of type Integer.");
 		}
 		final String s = scan(args);
 		if (s == null) {
-			return Integer.parseInt(defaultValue);
+			return _getInt(defaultValue);
 		}
 		try {
-			return Integer.parseInt(s);
+			return _getInt(s);
 		}
 		catch (final NumberFormatException e) {
-			return Integer.parseInt(defaultValue);
+			throw new InvalidFormatArgumentException(this, s);
 		}
 	}
 

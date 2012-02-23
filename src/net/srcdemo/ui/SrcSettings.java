@@ -1,93 +1,96 @@
 package net.srcdemo.ui;
 
 import net.srcdemo.EnumUtils;
-import net.srcdemo.ui.AudioUI.AudioType;
-import net.srcdemo.ui.VideoUI.VideoType;
+import net.srcdemo.Params;
+import net.srcdemo.audio.AudioType;
+import net.srcdemo.video.VideoType;
 
 import com.trolltech.qt.core.QByteArray;
 import com.trolltech.qt.core.QSettings;
 
 class SrcSettings extends QSettings {
 	SrcSettings() {
-		super("SrcDemo");
+		super(Params.qSettingsName);
 	}
 
 	boolean getAutoCheckUpdates() {
-		return Boolean.parseBoolean((String) value("autoCheckUpdates", "false"));
+		return Boolean.parseBoolean((String) value("autoCheckUpdates", Boolean.toString(Params.autoCheckUpdatesDef)));
 	}
 
 	int getLastAudioBufferSize() {
-		return (Integer) value("audioBufferSize", 1024);
+		return (Integer) value("audioBufferSize", Params.audioBufferSizeDef);
 	}
 
 	int getLastAudioBufferTimeout() {
-		return (Integer) value("audioBufferTimeout", 6);
+		return (Integer) value("audioBufferTimeout", Params.audioBufferTimeoutDef);
 	}
 
 	AudioType getLastAudioType() {
 		try {
-			return EnumUtils.fromIndex(AudioType.class, ((Integer) value("audioType", EnumUtils.getIndex(AudioType.BUFFERED))));
+			return EnumUtils
+				.fromIndex(AudioType.class, ((Integer) value("audioType", EnumUtils.getIndex(Params.audioTypeDef))));
 		}
 		catch (final Exception e) {
-			return AudioType.BUFFERED;
+			return Params.audioTypeDef;
 		}
 	}
 
 	String getLastBackingDirectory() {
-		return (String) value("backingDirectory", "");
+		return (String) value("backingDirectory", Params.backingDirectoryDef);
 	}
 
 	int getLastBlendRate() {
-		return (Integer) value("blendRate", 32);
+		return (Integer) value("blendRate", Params.blendRateDef);
 	}
 
 	boolean getLastGaussianBlending() {
-		return Boolean.parseBoolean((String) value("gaussianBlending", "false"));
+		return Boolean.parseBoolean((String) value("gaussianBlending", Boolean.toString(Params.gaussianBlendingDef)));
 	}
 
 	double getLastGaussianVariance() {
-		return Double.valueOf((String) value("gaussianVariance", "0.15"));
+		return Double.valueOf((String) value("gaussianVariance", Double.toString(Params.gaussianVarianceDef)));
 	}
 
 	int getLastJPEGCompressionLevel() {
-		return (Integer) value("jpegCompressionLevel", 95);
+		return (Integer) value("jpegCompressionLevel", Params.jpegQualityDef);
 	}
 
 	String getLastMountpoint() {
-		return (String) value("mountpoint", "");
+		return (String) value("mountpoint", Params.mountpointDef);
 	}
 
 	int getLastShutterAngle() {
-		return (Integer) value("shutterAngle", 180);
+		return (Integer) value("shutterAngle", Params.shutterAngleDef);
 	}
 
 	int getLastTargetFps() {
-		return (Integer) value("targetFps", 30);
+		return (Integer) value("targetFps", Params.frameRateDef);
 	}
 
 	boolean getLastTGACompressionRLE() {
-		return Boolean.parseBoolean((String) value("tgaCompressionRLE", "false"));
+		return Boolean.parseBoolean((String) value("tgaCompressionRLE", Boolean.toString(Params.tgaRleCompressionDef)));
 	}
 
 	VideoType getLastVideoType() {
 		try {
-			return EnumUtils.fromIndex(VideoType.class, ((Integer) value("videoType", EnumUtils.getIndex(VideoType.PNG))));
+			return EnumUtils
+				.fromIndex(VideoType.class, ((Integer) value("videoType", EnumUtils.getIndex(Params.videoTypeDef))));
 		}
 		catch (final Exception e) {
-			return VideoType.PNG;
+			return Params.videoTypeDef;
 		}
 	}
 
 	int getLastVorbisQuality() {
-		return (Integer) value("vorbisQuality", 8);
+		return (Integer) value("vorbisQuality", Params.vorbisQualityDef);
 	}
 
 	boolean getPreviewEnabled() {
-		return Boolean.parseBoolean((String) value("previewPicture", "true"));
+		return Boolean.parseBoolean((String) value("previewPicture", Boolean.toString(Params.previewEnabledDef)));
 	}
 
 	QByteArray getUIGeometry() {
-		final Object geometry = value("uiGeometry", null);
+		final Object geometry = value("uiGeometry", Params.uiGeometry);
 		if (geometry == null) {
 			return null;
 		}
