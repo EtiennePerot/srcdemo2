@@ -29,26 +29,31 @@ def parse_command(command):
 	commandName = allStrings[0]
 	arguments = allStrings[1:]
 	if commandName in allowedCommands:
-		print '[C] Executing command', commandName, 'with arguments', arguments
+		debugPrint('[C] Executing command', commandName, 'with arguments', arguments)
 		try:
 			allowedCommands[commandName](*arguments)
 		except:
-			print 'Error while running command', commandName, 'with arguments', arguments
+			debugPrint('Error while running command', commandName, 'with arguments', arguments)
 
 class StreamRunner(threading.Thread):
-	def __init__(self, process, streamIn, streamsOut, parseCommands=False):
+	def __init__(self, process, streamIn, streamsOut, parseCommands=False, showCommands=False):
 		self.process = process
 		self.streamIn = streamIn
 		self.streamsOut = streamsOut
 		self.parseCommands = parseCommands
+		self.showCommands = showCommands
 		threading.Thread.__init__(self)
 	def run(self):
 		while self.process.poll() is None:
 			l = self.streamIn.readline()
-			for s in self.streamsOut:
-				s.write(l)
 			if self.parseCommands and len(l) > 4 and l[:3] == '[C]':
+				if self.showCommands:
+					for s in self.streamsOut:
+						s.write(l)
 				parse_command(l[4:])
+			else:
+				for s in self.streamsOut:
+					s.write(l)
 
 def is_windows():
 	return sys.platform[:3].lower() == 'win'
@@ -60,7 +65,7 @@ def get_java(debugMode):
 	if is_windows():
 		hiPriority = 'java.exe'
 		loPriority = 'javaw.exe'
-		print 'Finding', hiPriority, '/', loPriority
+		debugPrint('Finding', hiPriority, '/', loPriority)
 		def findJre(d):
 			if not os.path.exists(d) or not os.path.isdir(d):
 				return None
@@ -101,6 +106,7 @@ def add_subprocess_creationflags(kwargs):
 def subprocess_call(command, *args, **kwargs):
 	args = args[:]
 	kwargs = add_subprocess_creationflags(kwargs.copy())
+	kwargs['stdin'] = subprocess.PIPE
 	kwargs['stdout'] = subprocess.PIPE
 	kwargs['stderr'] = subprocess.PIPE
 	return subprocess.call(command, *args, **kwargs)
@@ -108,6 +114,7 @@ def subprocess_call(command, *args, **kwargs):
 def subprocess_getoutput(command, *args, **kwargs):
 	args = args[:]
 	kwargs = add_subprocess_creationflags(kwargs.copy())
+	kwargs['stdin'] = subprocess.PIPE
 	kwargs['stderr'] = subprocess.PIPE
 	return subprocess.check_output(command, *args, **kwargs)
 
@@ -126,7 +133,7 @@ addCommand('register_mountpoint', register_mountpoint)
 def unmount_registered_mountpoint():
 	global lastMountPoint
 	if lastMountPoint is not None:
-		print 'Attempting unmount of', lastMountPoint
+		debugPrint('Attempting unmount of', lastMountPoint)
 		attempt_unmount(lastMountPoint)
 
 def addJvmArgument(printFlags, jvmArgs, default, prefix=None, xxArg=None):
@@ -141,19 +148,35 @@ def addJvmArgument(printFlags, jvmArgs, default, prefix=None, xxArg=None):
 				return
 		jvmArgs.append('-XX:' + default)
 
-def launch(debugMode=False):
-	global selfDir
-	debugMode = debugMode or '--srcdemo-debug' in sys.argv[1:]
-	print 'Debug mode:', debugMode
+debugMode = False
+def debugPrint(*args):
+	global debugMode
+	if debugMode:
+		try:
+			print ' '.join(map(str, args))
+		except:
+			try:
+				print args
+			except:
+				try:
+					print 'Could not print line! Something is very bad.'
+				except:
+					pass # Now it's really really bad
+
+def launch(inDebugMode=False):
+	global selfDir, debugMode
+	debugMode = inDebugMode or '--srcdemo-debug' in sys.argv[1:]
+	debugPrint('Debug mode enabled.')
 	foundJre = get_java(debugMode)
 	if foundJre is None:
-		print 'JRE not found.'
+		debugPrint('JRE not found.')
 		if is_windows():
 			import win32api
 			win32api.MessageBox(0, 'A 32-bit Java runtime environment (JRE) was not found.\nPlease download it from http://java.com/.\nEven if you are on 64-bit Windows, this program needs a 32-bit Java runtime to run.\n\nIf you are sure you have installed it already, please copy the jre folder next to SrcDemo2.exe.', 'Java not found.')
 			return
 		else:
 			print 'The Java runtime environment was not found.'
+			sys.exit(1)
 	if type(foundJre) is not type([]):
 		foundJre = [foundJre]
 	javaHome = os.path.abspath(os.path.dirname(os.path.dirname(foundJre[0])))
@@ -187,10 +210,9 @@ def launch(debugMode=False):
 	addJvmArgument(printFlags, javaVmArgs, 'CompileThreshold=100',    xxArg='CompileThreshold')
 	del printFlags
 	command = foundJre + javaVmArgs + ['-jar', 'SrcDemo2.jar']
-	outStreams = []
+	outStreams = [sys.stdout]
 	errStreams = []
 	if debugMode:
-		outStreams.append(sys.stdout)
 		errStreams.append(sys.stderr)
 		command.append('--srcdemo-debug')
 		print 'Debug mode allows the console output to be logged to a file.'
@@ -218,6 +240,8 @@ def launch(debugMode=False):
 					print 'Please make sure the file is writable.'
 			else:
 				break
+	else:
+		errStreams.append(sys.stdout)
 	command.append('--srcdemo-jvm' + jvmType)
 	command.extend(sys.argv[1:])
 	returnCode = 0
@@ -229,16 +253,22 @@ def launch(debugMode=False):
 		'stderr': subprocess.PIPE
 	})
 	while True:
-		print 'Running', command
+		debugPrint('Running', command)
 		p = subprocess.Popen(command, **kwargs)
 		p.stdin.close()
-		StreamRunner(p, p.stdout, outStreams, parseCommands=True).start()
+		StreamRunner(p, p.stdout, outStreams, parseCommands=True, showCommands=inDebugMode).start()
 		StreamRunner(p, p.stderr, errStreams).start()
-		returnCode = p.wait()
-		print 'Process finished with return code:', returnCode
+		try:
+			returnCode = p.wait()
+		except KeyboardInterrupt:
+			debugPrint('Got keyboard interrupt.')
+			returnCode = 0
+			unmount_registered_mountpoint()
+			break
+		debugPrint('Process finished with return code:', returnCode)
 		unmount_registered_mountpoint()
 		if returnCode != 1337:
 			break
-	print 'Done.'
+	debugPrint('Done.')
 	if returnCode:
 		sys.exit(returnCode)

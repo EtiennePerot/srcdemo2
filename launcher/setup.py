@@ -6,7 +6,8 @@ oldPath = os.getcwd()
 os.chdir(os.path.abspath(os.path.dirname(__file__)))
 
 import sys
-sys.argv.append('py2exe')
+if 'py2exe' not in sys.argv:
+	sys.argv.append('py2exe')
 
 setupName = 'SrcDemo2'
 setupVersion= '1.0'
@@ -28,6 +29,12 @@ mainOptionsDebug = [
 		]
 	}
 ]
+mainOptionsCli = [
+	{
+		'script': 'SrcDemo2-cli.py',
+		'icon_resources': []
+	}
+]
 setupOptions = {
 	'py2exe': {
 		'compressed': 1,
@@ -38,20 +45,13 @@ setupOptions = {
 	}
 }
 
-setup(
-	name = setupName,
-	version = setupVersion,
-	description = setupDescription,
-	author = setupAuthor,
-	windows = mainOptionsRelease,
-	options = setupOptions
-)
-setup(
-	name = setupName,
-	version = setupVersion,
-	description = setupDescription,
-	author = setupAuthor,
-	console = mainOptionsDebug,
-	options = setupOptions
-)
+for s in ({'windows': mainOptionsRelease}, {'console': mainOptionsDebug}, {'console': mainOptionsCli}):
+	setup(
+		name = setupName,
+		version = setupVersion,
+		description = setupDescription,
+		author = setupAuthor,
+		options = setupOptions,
+		**s
+	)
 os.chdir(oldPath)

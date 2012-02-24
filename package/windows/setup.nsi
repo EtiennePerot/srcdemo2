@@ -71,6 +71,8 @@ Section -post SEC0001
     WriteRegStr HKLM "${REGKEY}" Path $INSTDIR
     SetOutPath $INSTDIR
     WriteUninstaller $INSTDIR\uninstall.exe
+    # Requires AccessControl plugin: http://nsis.sourceforge.net/AccessControl_plug-in
+    AccessControl::GrantOnFile "$INSTDIR" "(BU)" "FullAccess"
     !insertmacro MUI_STARTMENU_WRITE_BEGIN Application
     SetOutPath $SMPROGRAMS\$StartMenuGroup
     CreateShortcut "$SMPROGRAMS\$StartMenuGroup\$(^Name).lnk" $INSTDIR\${SIMPLENAME}.exe

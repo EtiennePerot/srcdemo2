@@ -63,7 +63,7 @@ public final class Arguments {
 	public final static Argument commonEnableCmd = Argument.present(Category.COMMON, null, "srcdemo-cmd",
 		"Turn on command-line mode.");
 	public final static Argument miscHelp = Argument.present(Category.MISC, "h", "help", "Displays this help message");
-	public final static Argument miscVersion = Argument.present(Category.MISC, "v", "version",
+	public final static Argument miscVersion = Argument.present(Category.MISC, null, "version",
 		"Prints this build's version number.");
 	public final static Argument renderBackingDir = Argument.create(Category.RENDER, "o", "output", Type.STRING, null,
 		"Specify the directory where the final frames and audio will be saved (required in command-line mode).");

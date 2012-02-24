@@ -5,12 +5,10 @@ import java.io.File;
 import net.srcdemo.EnumUtils;
 import net.srcdemo.Main;
 import net.srcdemo.SrcDemoFS;
-import net.srcdemo.SrcDemoListener;
 import net.srcdemo.SrcLogger;
 import net.srcdemo.Strings;
 import net.srcdemo.audio.AudioHandlerFactory;
 import net.srcdemo.audio.AudioType;
-import net.srcdemo.audio.BufferedAudioHandler.AudioBufferStatus;
 import net.srcdemo.audio.factories.BufferedAudioHandlerFactory;
 import net.srcdemo.audio.factories.DiskAudioHandlerFactory;
 import net.srcdemo.audio.factories.FlacAudioHandlerFactory;
@@ -33,11 +31,13 @@ import net.srcdemo.video.image.ImageSavingTaskFactory;
 
 import org.apache.commons.lang3.text.WordUtils;
 
-public class SrcDemoCmd implements SrcDemoListener {
+public class SrcDemoCmd {
+	private static final int helpEnumArgExtraIndent = 2;
 	private static final int helpTableArgumentIndent = 2;
-	private static final int helpTableColumnSeparation = 4;
+	private static final int helpTableColumnSeparation = 2;
 	private static final String linebreakRegex = "[\\r\\n]+";
-	private static final int targetTerminalWidth = 80;
+	public static final int targetTerminalHeight = 54;
+	public static final int targetTerminalWidth = 79;
 
 	public static void initError(final Throwable e) {
 		if (e instanceof DokanNotInstalledException) {
@@ -68,14 +68,14 @@ public class SrcDemoCmd implements SrcDemoListener {
 		}
 		maxFormLength += helpTableColumnSeparation;
 		maxDefaultLength += helpTableColumnSeparation;
-		final int helpDescriptionLength = targetTerminalWidth - maxFormLength - maxDefaultLength;
+		final int helpDescriptionLength = targetTerminalWidth - maxFormLength - maxDefaultLength - helpTableArgumentIndent;
 		final String formatString = new String(new char[helpTableArgumentIndent]).replace('\0', ' ') + "%1$-" + maxFormLength
 			+ "s%2$-" + maxDefaultLength + "s";
 		final String wrapString = linebreak
 			+ new String(new char[helpTableArgumentIndent + maxFormLength + maxDefaultLength]).replace('\0', ' ');
 		final String enumIndentString = new String(new char[helpTableArgumentIndent * 3]).replace('\0', ' ');
 		final String wrapEnumString = System.getProperty("line.separator") + enumIndentString;
-		final int totalLineLength = helpTableArgumentIndent + maxFormLength + maxDefaultLength + helpDescriptionLength;
+		final String enumExtraIndent = new String(new char[helpEnumArgExtraIndent]).replace('\0', ' ');
 		for (final Category category : EnumUtils.iterate(Category.class)) {
 			System.out.println(category + ":");
 			for (final Argument arg : Arguments._arguments) {
@@ -88,8 +88,8 @@ public class SrcDemoCmd implements SrcDemoListener {
 					if (enumHelp != null && enumHelp.length() != 0) {
 						System.out.println(enumIndentString + Strings.cmdEnumPossibleValues);
 						System.out.println(enumIndentString
-							+ wrap(enumHelp, totalLineLength - enumIndentString.length(), linebreak + "  ").replaceAll(
-								linebreakRegex, wrapEnumString));
+							+ wrap(enumHelp, targetTerminalWidth - enumIndentString.length() - helpEnumArgExtraIndent,
+								linebreak + enumExtraIndent).replaceAll(linebreakRegex, wrapEnumString));
 					}
 				}
 			}
@@ -110,6 +110,7 @@ public class SrcDemoCmd implements SrcDemoListener {
 	}
 
 	private final String[] args;
+	private StatusDisplay display = null;
 	private SrcDemoFS mountedFS = null;
 
 	private SrcDemoCmd(final String[] args) {
@@ -123,20 +124,6 @@ public class SrcDemoCmd implements SrcDemoListener {
 
 	private boolean isPresent(final Argument arg) {
 		return arg.isPresent(args);
-	}
-
-	@Override
-	public void onAudioBuffer(final AudioBufferStatus status, final int occupied, final int total) {
-	}
-
-	@Override
-	public void onFrameProcessed(final String frameName) {
-		System.out.println("Frame processed: " + frameName);
-	}
-
-	@Override
-	public void onFrameSaved(final File savedFrame, final int[] pixels, final int width, final int height) {
-		// TODO Do cool stuff
 	}
 
 	private int run() {
@@ -170,19 +157,23 @@ public class SrcDemoCmd implements SrcDemoListener {
 			if (backingDirectory.equals(mountPoint)) {
 				return error(Strings.errDirectoriesEqual);
 			}
+			boolean videoEnabled = true;
+			boolean audioEnabled = true;
+			int blendRate = -1;
 			VideoHandlerFactory videoFactory = null;
 			{
 				final VideoType type = Arguments.video.getEnum(VideoType.class, args);
 				if (type == null) {
 					return error(Strings.errCmdInvalidVideoArgument);
 				}
-				final int blendRate = Arguments.videoBlendRate.getInt(args);
+				blendRate = Arguments.videoBlendRate.getInt(args);
 				final int shutterAngle = Arguments.videoShutterAngle.getInt(args);
 				final ImageSavingTaskFactory imageFactory;
 				switch (type) {
 					case DISABLED:
 						videoFactory = new NullVideoHandlerFactory();
 						imageFactory = null;
+						videoEnabled = false;
 						break;
 					case PNG:
 						imageFactory = new PNGSavingFactory();
@@ -212,6 +203,7 @@ public class SrcDemoCmd implements SrcDemoListener {
 				if (type == null) {
 					return error(Strings.errCmdInvalidAudioArgument);
 				}
+				audioEnabled = type.requiresBuffer();
 				final int bufferSize = Arguments.audioBufferSize.getInt(args);
 				final int bufferTimeout = Arguments.audioBufferTimeout.getInt(args);
 				switch (type) {
@@ -233,10 +225,21 @@ public class SrcDemoCmd implements SrcDemoListener {
 						break;
 				}
 			}
+			System.out.println(Strings.cmdGoingToMount);
+			System.out.println(mountPoint);
+			if (videoEnabled && blendRate != -1) {
+				System.out.println(Strings.cmdBlendRate1 + blendRate);
+				System.out.println(Strings.cmdBlendRate2);
+			}
+			System.out.println(Strings.cmdToExit);
+			System.out.println(); // Empty line
 			final SrcDemoFS mountedFS = new SrcDemoFS(backingDirectory, videoFactory, audioFactory);
-			mountedFS.addListener(this);
 			SrcLogger.commandRegisterMountPoint(mountPoint);
+			display = new StatusDisplay(videoEnabled, audioEnabled);
+			mountedFS.addListener(display);
+			display.start();
 			mountedFS.mount(mountPoint, true);
+			display.interrupt();
 			return 0;
 		}
 		catch (final InvalidFormatArgumentException e) {
@@ -250,7 +253,9 @@ public class SrcDemoCmd implements SrcDemoListener {
 				SrcLogger.log("Unmounting.");
 			}
 			mountedFS.unmount();
-			mountedFS.removeListener(this);
+			if (display != null) {
+				mountedFS.removeListener(display);
+			}
 			mountedFS = null;
 		}
 	}

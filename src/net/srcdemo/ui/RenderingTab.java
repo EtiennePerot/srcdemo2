@@ -1,13 +1,13 @@
 package net.srcdemo.ui;
 
 import java.io.File;
-import java.text.DecimalFormat;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import net.srcdemo.RollingRate;
 import net.srcdemo.SrcDemoListener;
 import net.srcdemo.Strings;
 import net.srcdemo.audio.BufferedAudioHandler.AudioBufferStatus;
@@ -28,8 +28,6 @@ import com.trolltech.qt.gui.QVBoxLayout;
 import com.trolltech.qt.gui.QWidget;
 
 class RenderingTab extends QWidget implements SrcDemoListener {
-	private static final DecimalFormat framesProcessedPerSecondFormat = new DecimalFormat(
-		Strings.lblFramesProcessedPerSecondFormat);
 	private static final int maximumPreviewHeight = 480;
 	private static final int maximumPreviewWidth = 640;
 	/**
@@ -264,9 +262,7 @@ class RenderingTab extends QWidget implements SrcDemoListener {
 
 	private void updateUI() {
 		lblLastFrameProcessed.setText(Integer.toString(framesProcessed.get()));
-		final Double framerate = framesProcessRate.getRatePerSecond();
-		lblFramesProcessedPerSecond.setText(framerate == null ? Strings.lblFramesProcessedPerSecondDefault
-			: framesProcessedPerSecondFormat.format(framerate));
+		lblFramesProcessedPerSecond.setText(framesProcessRate.getFormattedRate());
 		lblLastFrameSaved.setText(Integer.toString(framesSaved.get()));
 		if (previewEnabled) {
 			previewPicture.updatePicture();

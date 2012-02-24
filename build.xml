@@ -16,6 +16,9 @@
     <property name="commonscodec.dir" value="${submodules.dir}/commons-codec"/>
     <property name="commonscodec.src.dir" value="${commonscodec.dir}/src/main/java"/>
     <property name="commonscodec.license" value="${commonscodec.dir}/LICENSE.txt"/>
+    <property name="commonslang.dir" value="${submodules.dir}/commons-lang"/>
+    <property name="commonslang.src.dir" value="${commonslang.dir}/src/main/java"/>
+    <property name="commonslang.license" value="${commonslang.dir}/LICENSE.txt"/>
     <property name="flac.src.dir" value="${root.dir}/src-flac"/>
     <property name="lib.dir" value="${root.dir}/lib"/>
     <property name="windows.lib.dir" value="${lib.dir}/windows"/>
@@ -50,8 +53,13 @@
     <property name="jlibs.license1.out" value="${jar.lib.dir}/LICENSE.jlibs.txt"/>
     <property name="jlibs.license2" value="${jlibs.dir}/readme.txt"/>
     <property name="jlibs.license2.out" value="${jar.lib.dir}/readme.jlibs.txt"/>
+    <property name="imagetoascii.dir" value="${any.lib.dir}/image-to-ascii"/>
+    <property name="imagetoascii.src.dir" value="${imagetoascii.dir}"/>
+    <property name="imagetoascii.license" value="${imagetoascii.dir}/com/blogspot/homebrewcode/ASCII.java"/>
+    <property name="imagetoascii.license.out" value="${jar.lib.dir}/LICENSE.homebrewcode-blogspot-com.ASCII.txt"/>
     <property name="commonsio.license.out" value="${jar.lib.dir}/LICENSE.commons-io.txt"/>
     <property name="commonscodec.license.out" value="${jar.lib.dir}/LICENSE.commons-codec.txt"/>
+    <property name="commonslang.license.out" value="${jar.lib.dir}/LICENSE.commons-lang.txt"/>
     <property name="fusejna.license.out" value="${jar.lib.dir}/LICENSE.fusejna.txt"/>
 	<property name="main-class" value="net.srcdemo.Main"/>
 	<property name="launcher.builddir" value="${launcher.dir}/build"/>
@@ -114,7 +122,7 @@
 	</target>
     <target name="compile" depends="clean">
         <mkdir dir="${classes.dir}"/>
-    	<javac srcdir="${src.dir};${flac.src.dir};${dokan.src.dir};${fusejna.src.dir};${commonsio.src.dir};${commonscodec.src.dir};${jlibs.src.dir}" destdir="${classes.dir}" classpathref="classpath" optimize="true"/>
+    	<javac srcdir="${src.dir};${flac.src.dir};${dokan.src.dir};${fusejna.src.dir};${commonsio.src.dir};${commonscodec.src.dir};${commonslang.src.dir};${jlibs.src.dir};${imagetoascii.src.dir}" destdir="${classes.dir}" classpathref="classpath" optimize="true"/>
     </target>
 	<target name="jar-init" depends="compile">
         <mkdir dir="${jar.dir}"/>
@@ -134,9 +142,11 @@
     <target name="jar-finalize">
         <copy file="${commonsio.license}" tofile="${commonsio.license.out}" />
         <copy file="${commonscodec.license}" tofile="${commonscodec.license.out}" />
+        <copy file="${commonslang.license}" tofile="${commonslang.license.out}" />
         <copy file="${jlibs.license1}" tofile="${jlibs.license1.out}" />
         <copy file="${jlibs.license2}" tofile="${jlibs.license2.out}" />
         <copy file="${fusejna.license}" tofile="${fusejna.license.out}" />
+        <copy file="${imagetoascii.license}" tofile="${imagetoascii.license.out}" />
         <path id="jar-classpath">
             <fileset dir="${jar.lib.dir}" includes="**/*.jar"/>
         </path>

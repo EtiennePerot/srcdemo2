@@ -1,9 +1,12 @@
-package net.srcdemo.ui;
+package net.srcdemo;
 
+import java.text.DecimalFormat;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
-class RollingRate {
+public final class RollingRate {
+	private static final DecimalFormat framesProcessedPerSecondFormat = new DecimalFormat(
+		Strings.lblFramesProcessedPerSecondFormat);
 	private static final int numberOfSamples = 20;
 	private static final double rateClampMax = 9001;
 	private static final double rateClampMin = 0;
@@ -12,11 +15,16 @@ class RollingRate {
 	private final Lock lock = new ReentrantLock();
 	private final long[] times = new long[numberOfSamples];
 
-	RollingRate() {
+	public RollingRate() {
 		// Nothing
 	}
 
-	Double getRatePerSecond() {
+	public String getFormattedRate() {
+		final Double rate = getRatePerSecond();
+		return rate == null ? Strings.lblFramesProcessedPerSecondDefault : framesProcessedPerSecondFormat.format(rate);
+	}
+
+	public Double getRatePerSecond() {
 		lock.lock();
 		if (!full) {
 			lock.unlock();
@@ -30,7 +38,7 @@ class RollingRate {
 		return Math.max(rateClampMin, Math.min(rateClampMax, 1000.0 * numberOfSamples / timeElapsed));
 	}
 
-	void mark() {
+	public void mark() {
 		lock.lock();
 		times[index] = System.currentTimeMillis();
 		index++;
