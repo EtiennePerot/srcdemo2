@@ -36,7 +36,7 @@ public class SrcDemoCmd {
 	private static final int helpTableArgumentIndent = 2;
 	private static final int helpTableColumnSeparation = 2;
 	private static final String linebreakRegex = "[\\r\\n]+";
-	public static final int targetTerminalHeight = 54;
+	public static final int targetTerminalHeight = 30;
 	public static final int targetTerminalWidth = 79;
 
 	public static void initError(final Throwable e) {

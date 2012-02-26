@@ -205,7 +205,8 @@ def launch(inDebugMode=False):
 	addJvmArgument(printFlags, javaVmArgs, '+AggressiveOpts',         xxArg='AggressiveOpts')
 	addJvmArgument(printFlags, javaVmArgs, '+UseFastAccessorMethods', xxArg='UseFastAccessorMethods')
 	addJvmArgument(printFlags, javaVmArgs, '+UseStringCache',         xxArg='UseStringCache')
-	addJvmArgument(printFlags, javaVmArgs, '+UseCompressedStrings',   xxArg='UseCompressedStrings')
+	if jvmType == '-server':
+		addJvmArgument(printFlags, javaVmArgs, '+UseCompressedStrings',   xxArg='UseCompressedStrings')
 	addJvmArgument(printFlags, javaVmArgs, '+OptimizeStringConcat',   xxArg='OptimizeStringConcat')
 	addJvmArgument(printFlags, javaVmArgs, 'CompileThreshold=100',    xxArg='CompileThreshold')
 	del printFlags
