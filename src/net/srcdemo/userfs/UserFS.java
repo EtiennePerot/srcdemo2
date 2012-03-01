@@ -182,6 +182,9 @@ public abstract class UserFS {
 			return true;
 		}
 		this.mountPoint = SymlinkResolver.resolveSymlinks(mountPoint);
+		if (UnconsequentialFiles.clearUnconsequentialFiles(this.mountPoint)) {
+			log("Mount", "Some unconsequential files were automatically deleted from mountpoint: " + this.mountPoint);
+		}
 		if (shouldLog()) {
 			log("Mount", "Mounting to: " + this.mountPoint);
 		}
