@@ -26,11 +26,6 @@ public class NullVideoHandler implements VideoHandler {
 	}
 
 	@Override
-	public long getFrameSize(final int frameNumber) {
-		return 0;
-	}
-
-	@Override
 	public boolean isLocked() {
 		return false;
 	}

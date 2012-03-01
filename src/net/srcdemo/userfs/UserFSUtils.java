@@ -16,7 +16,7 @@ public final class UserFSUtils {
 		private static final long serialVersionUID = -3397141069355824035L;
 	}
 
-	enum OperatingSystem {
+	public enum OperatingSystem {
 		LINUX32, LINUX64, OSX32, WIN32;
 		private File getLibraryPath() {
 			switch (this) {
@@ -33,7 +33,7 @@ public final class UserFSUtils {
 			}
 		}
 
-		boolean isWindows() {
+		public boolean isWindows() {
 			return equals(WIN32);
 		}
 	}
@@ -68,7 +68,7 @@ public final class UserFSUtils {
 		}
 	}
 
-	static OperatingSystem getOperatingSystem() {
+	public static OperatingSystem getOperatingSystem() {
 		if (operatingSystem != null) {
 			return operatingSystem;
 		}

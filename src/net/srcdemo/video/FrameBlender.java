@@ -12,12 +12,10 @@ import java.util.concurrent.locks.ReentrantLock;
 import net.srcdemo.GCChecker;
 import net.srcdemo.SrcDemo;
 import net.srcdemo.SrcLogger;
-import net.srcdemo.TimedMap;
 import net.srcdemo.video.image.ImageSaver;
 import net.srcdemo.video.image.ImageSavingTaskFactory;
 
 public class FrameBlender implements VideoHandler {
-	private static final long frameSizeTimeout = 30000;
 	private final double acceptedFrameGap;
 	private final int blendRate;
 	private final ReentrantLock bufferLock = new ReentrantLock();
@@ -26,7 +24,6 @@ public class FrameBlender implements VideoHandler {
 	private int currentWeight = 0;
 	private final Map<Integer, ByteArrayOutputStream> frameData = new HashMap<Integer, ByteArrayOutputStream>();
 	private final ReentrantLock frameLock = new ReentrantLock();
-	private final Map<Integer, Long> frameSize = new TimedMap<Integer, Long>(frameSizeTimeout);
 	private ImageSaver imageSaver;
 	private int maxAcceptedFrame;
 	private int maxEncounteredByteSize = 1048576;
@@ -95,19 +92,12 @@ public class FrameBlender implements VideoHandler {
 		if (!frameData.containsKey(frameNumber)) {
 			final ByteArrayOutputStream buffer = new ByteArrayOutputStream(maxEncounteredByteSize);
 			frameData.put(frameNumber, buffer);
-			frameSize.put(frameNumber, 0L);
 			bufferLock.unlock();
 			return buffer;
 		}
 		final ByteArrayOutputStream buffer = frameData.get(frameNumber);
 		bufferLock.unlock();
 		return buffer;
-	}
-
-	@Override
-	public long getFrameSize(final int frameNumber) {
-		final Long size = frameSize.get(frameNumber);
-		return size == null ? 0L : size;
 	}
 
 	private void handleFrame(final int frameNumber, final byte[] frameData) {
@@ -185,7 +175,7 @@ public class FrameBlender implements VideoHandler {
 
 	@Override
 	public void truncate(final int frameNumber, final long length) {
-		frameSize.put(frameNumber, length);
+		// Nothing
 	}
 
 	@Override
@@ -203,7 +193,6 @@ public class FrameBlender implements VideoHandler {
 		catch (final IOException e) {
 			SrcLogger.error("Error while copying data to frame: " + frameNumber, e);
 		}
-		frameSize.put(frameNumber, frameSize.get(frameNumber) + toWrite);
 		return toWrite;
 	}
 }

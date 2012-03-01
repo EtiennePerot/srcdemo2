@@ -9,8 +9,8 @@ import threading
 
 def module_path():
 	if hasattr(sys, "frozen"):
-		return os.path.dirname(unicode(sys.executable, sys.getfilesystemencoding()))
-	return os.path.dirname(unicode(__file__, sys.getfilesystemencoding()))
+		return os.path.dirname(sys.executable)
+	return os.path.dirname(__file__)
 selfDir = os.path.abspath(module_path())
 
 allowedCommands = {}
@@ -94,7 +94,7 @@ def get_java(debugMode):
 			if foundJre is not None:
 				return foundJre
 	elif is_osx():
-		return ['jre-1.7.0/bin/java', '-d32', '-XstartOnFirstThread']
+		return selfDir + '/jre-1.7.0/bin/java'
 	return None
 
 def add_subprocess_creationflags(kwargs):
@@ -120,8 +120,18 @@ def subprocess_getoutput(command, *args, **kwargs):
 
 def attempt_unmount(mountpoint):
 	global selfDir
+	mountpoint = mountpoint.encode(sys.getfilesystemencoding())
 	if is_windows():
-		subprocess_call([selfDir + os.sep + 'tools' + os.sep + 'windows' + os.sep + 'dokanctl' + os.sep + 'dokanctl.exe', '/u', mountpoint.encode(sys.getfilesystemencoding()), '/f'])
+		subprocess_call([selfDir + os.sep + 'tools' + os.sep + 'windows' + os.sep + 'dokanctl' + os.sep + 'dokanctl.exe', '/u', mountpoint, '/f'])
+	else:
+		try:
+			subprocess_call(['fusermount', '-u', mountpoint])
+		except:
+			pass
+		try:
+			subprocess_call(['umount', mountpoint])
+		except:
+			pass
 addCommand('unmount', attempt_unmount)
 
 lastMountPoint = None
@@ -183,19 +193,22 @@ def launch(inDebugMode=False):
 	javaEnv = os.environ.copy()
 	javaEnv['JAVA_HOME'] = javaHome
 	javaVmArgs = []
+	if is_osx():
+		foundJre.append('-d64')
+		javaVmArgs.append('-XstartOnFirstThread')
 	for i in sys.argv[1:]:
 		if len(i) > 11 and i[:11] == '--jvm-args=':
 			javaVmArgs.extend(i[11:].split(' '))
 	jvmType = '-client'
 	if '-server' not in javaVmArgs and '-client' not in javaVmArgs:
 		# Probe for server JVM
-		if subprocess_call([foundJre, '-server', '-version']) == 0:
+		if subprocess_call(foundJre + ['-server', '-version']) == 0:
 			jvmType = '-server'
 			javaVmArgs = ['-server'] + javaVmArgs
 	# Get available flags
 	printFlags = None
 	try:
-		printFlags = subprocess_getoutput([foundJre, jvmType, '-XX:+PrintFlagsFinal'])
+		printFlags = subprocess_getoutput(foundJre + [jvmType, '-XX:+PrintFlagsFinal'])
 	except:
 		pass
 	addJvmArgument(printFlags, javaVmArgs, '1024M',                   prefix='-Xmx')

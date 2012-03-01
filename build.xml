@@ -115,14 +115,30 @@
 		<condition property="isUnix">
 			<os family="unix"/>
 		</condition>
+		<condition property="isMac">
+			<os family="mac"/>
+		</condition>
+		<condition property="isNotMac">
+			<not>
+				<os family="mac"/>
+			</not>
+		</condition>
 		<antcall target="cleanbuild-unix"/>
 		<antcall target="cleanbuild-windows"/>
 		<delete file="${program.versionfile}"/>
 		<delete file="${osx.package.app.info.output}"/>
 	</target>
+	<target name="compile-osx" if="isMac">
+		<javac srcdir="${commonslang.src.dir}" destdir="${classes.dir}" classpathref="classpath" optimize="true" encoding="MacRoman"/>
+		<javac srcdir="${src.dir};${flac.src.dir};${dokan.src.dir};${fusejna.src.dir};${commonsio.src.dir};${commonscodec.src.dir};${jlibs.src.dir};${imagetoascii.src.dir}" destdir="${classes.dir}" classpathref="classpath" optimize="true" encoding="UTF-8"/>
+	</target>
+	<target name="compile-notosx" if="isNotMac">
+		<javac srcdir="${src.dir};${flac.src.dir};${dokan.src.dir};${fusejna.src.dir};${commonsio.src.dir};${commonslang.src.dir};${commonscodec.src.dir};${jlibs.src.dir};${imagetoascii.src.dir}" destdir="${classes.dir}" classpathref="classpath" optimize="true" encoding="UTF-8"/>
+	</target>
     <target name="compile" depends="clean">
         <mkdir dir="${classes.dir}"/>
-    	<javac srcdir="${src.dir};${flac.src.dir};${dokan.src.dir};${fusejna.src.dir};${commonsio.src.dir};${commonscodec.src.dir};${commonslang.src.dir};${jlibs.src.dir};${imagetoascii.src.dir}" destdir="${classes.dir}" classpathref="classpath" optimize="true"/>
+    	<antcall target="compile-notosx"/>
+    	<antcall target="compile-osx"/>
     </target>
 	<target name="jar-init" depends="compile">
         <mkdir dir="${jar.dir}"/>

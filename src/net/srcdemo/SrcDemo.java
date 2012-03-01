@@ -9,15 +9,19 @@ import net.srcdemo.audio.AudioHandler;
 import net.srcdemo.audio.AudioHandlerFactory;
 import net.srcdemo.audio.BufferedAudioHandler.AudioBufferStatus;
 import net.srcdemo.userfs.FileInfo;
+import net.srcdemo.userfs.UserFSUtils;
 import net.srcdemo.video.VideoHandler;
 import net.srcdemo.video.VideoHandlerFactory;
 
 public class SrcDemo implements Morticianed {
+	private static final long frameSizeTimeout = 30000;
 	private final AudioHandler audioHandler;
 	private final SrcDemoFS backingFS;
 	private final String demoDirectory;
 	private final String demoPrefix;
 	private final int demoPrefixLength;
+	private final boolean enableFrameFileInfo = !UserFSUtils.getOperatingSystem().isWindows();
+	private final TimedMap<Integer, Long> frameSize = new TimedMap<Integer, Long>(frameSizeTimeout);
 	private long lastClosedFrameTime = -1L;
 	private final Mortician mortician;
 	private final File soundFile;
@@ -105,6 +109,12 @@ public class SrcDemo implements Morticianed {
 		if (isSoundFile(fileName)) {
 			return soundFileInfo.setSize(audioHandler.getSize());
 		}
+		if (enableFrameFileInfo) {
+			final Integer frameNumer = getFrameNumber(fileName);
+			if (frameNumer != null) {
+				return new FileInfo(fileName, false, frameSize.getDefault(frameNumer, 0L));
+			}
+		}
 		return null;
 	}
 
@@ -172,6 +182,7 @@ public class SrcDemo implements Morticianed {
 			final Integer frameNumber = getFrameNumber(fileName);
 			if (frameNumber != null) {
 				videoHandler.truncate(frameNumber, length);
+				frameSize.put(frameNumber, length);
 			}
 		}
 	}
@@ -183,6 +194,7 @@ public class SrcDemo implements Morticianed {
 		final Integer frameNumber = getFrameNumber(fileName);
 		if (frameNumber != null) {
 			final int w = videoHandler.write(frameNumber, buffer, offset);
+			frameSize.put(frameNumber, frameSize.getDefault(frameNumber, 0L) + w);
 			return w;
 		}
 		return buffer.remaining();

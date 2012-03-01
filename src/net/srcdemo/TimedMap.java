@@ -16,6 +16,14 @@ public class TimedMap<K, V> extends HashMap<K, V> {
 		this.timeout = timeout;
 	}
 
+	public V getDefault(final K key, final V defaultValue) {
+		if (!containsKey(key)) {
+			put(key, defaultValue);
+			return defaultValue;
+		}
+		return get(key);
+	}
+
 	@Override
 	public V put(final K key, final V value) {
 		removeDead();

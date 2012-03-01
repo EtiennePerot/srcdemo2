@@ -10,8 +10,6 @@ public interface VideoHandler {
 
 	public void destroy();
 
-	public long getFrameSize(final int frameNumber);
-
 	public boolean isLocked();
 
 	public void modifyFindResults(String pathName, Collection<String> existingFiles);
