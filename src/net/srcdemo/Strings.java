@@ -58,7 +58,8 @@ public interface Strings {
 	static final String errUpdateReading = "Error while reading update information.";
 	static final String grpRenderingAudioBuffer = "Audio buffer";
 	static final String grpRenderingVideoFrames = "Video frames";
-	static final String lblAboutIcon = "SrcDemo² - By <a href=\"http://perot.me/\">Etienne Perot</a>";
+	static final String lblAboutArt = "Artwork (logo, icon) by Mythee.";
+	static final String lblAboutMain = "SrcDemo² - By <a href=\"http://perot.me/\">Etienne Perot</a>";
 	static final String lblAudioBufferSize = "Buffer size:";
 	static final String lblAudioBufferTimeout = "Buffer timeout:";
 	static final String lblAudioType = "Audio output:";

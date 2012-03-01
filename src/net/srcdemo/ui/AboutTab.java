@@ -66,9 +66,10 @@ public class AboutTab extends QWidget {
 			vbox.addWidget(iconLabel, 0, AlignmentFlag.AlignHCenter);
 		}
 		{
-			final QLabel label = new QLabel(Strings.lblAboutIcon);
+			final QLabel label = new QLabel(Strings.lblAboutMain);
 			label.setOpenExternalLinks(true);
 			vbox.addWidget(label, 0, AlignmentFlag.AlignHCenter);
+			vbox.addWidget(new QLabel(Strings.lblAboutArt), 0, AlignmentFlag.AlignHCenter);
 		}
 		{
 			final QHBoxLayout hbox = new QHBoxLayout();
