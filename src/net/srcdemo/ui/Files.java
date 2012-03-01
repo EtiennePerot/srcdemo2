@@ -8,8 +8,8 @@ public interface Files {
 	static final File _toolsDirectory = new File("tools");
 	static final File _toolsDirectoryOSX = new File(_toolsDirectory, "osx");
 	static final File _toolsDirectoryWindows = new File(_toolsDirectory, "windows");
-	static final File iconAbout = new File(_imgDirectory, "icon-92.png");
-	static final File iconRenderingDefault = new File(_imgDirectory, "icon-92.png");
+	static final File iconAbout = new File(_imgDirectory, "logo-92.png");
+	static final File iconRenderingDefault = new File(_imgDirectory, "logo-92.png");
 	static final File iconWindowDebug = new File(_imgDirectory, "debug-256.png");
 	static final File iconWindowMain = new File(_imgDirectory, "icon-512.png");
 	static final File libDirectoryLinux32 = new File(_libDirectory, "linux32");
