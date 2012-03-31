@@ -32,7 +32,9 @@ mainOptionsDebug = [
 mainOptionsCli = [
 	{
 		'script': 'SrcDemo2-cli.py',
-		'icon_resources': []
+		'icon_resources': [
+			(1, '..' + os.sep + 'img' + os.sep + 'cli.ico')
+		]
 	}
 ]
 setupOptions = {
