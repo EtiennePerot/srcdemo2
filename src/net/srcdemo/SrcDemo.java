@@ -3,6 +3,7 @@ package net.srcdemo;
 import java.io.File;
 import java.nio.ByteBuffer;
 import java.util.Collection;
+import java.util.regex.Pattern;
 
 import net.srcdemo.Mortician.Morticianed;
 import net.srcdemo.audio.AudioHandler;
@@ -15,15 +16,17 @@ import net.srcdemo.video.VideoHandlerFactory;
 
 public class SrcDemo implements Morticianed {
 	private static final long frameSizeTimeout = 30000;
+	private static final Pattern trailingDigitsPattern = Pattern.compile("\\d+$", Pattern.CASE_INSENSITIVE);
 	private final AudioHandler audioHandler;
 	private final SrcDemoFS backingFS;
+	private final int demoActualPrefixLength;
 	private final String demoDirectory;
 	private final String demoPrefix;
-	private final int demoPrefixLength;
 	private final boolean enableFrameFileInfo = !UserFSUtils.getOperatingSystem().isWindows();
 	private final TimedMap<Integer, Long> frameSize = new TimedMap<Integer, Long>(frameSizeTimeout);
 	private long lastClosedFrameTime = -1L;
 	private final Mortician mortician;
+	private String prefixSuffix = "";
 	private final File soundFile;
 	private final FileInfo soundFileInfo;
 	private final String soundFileName;
@@ -37,7 +40,10 @@ public class SrcDemo implements Morticianed {
 		}
 		this.backingFS = backingFS;
 		demoPrefix = prefix;
-		demoPrefixLength = demoPrefix.length();
+		demoActualPrefixLength = prefix.length();
+		if (trailingDigitsPattern.matcher(demoPrefix).find()) {
+			prefixSuffix = "_";
+		}
 		// Will be empty string if there is no File.separator in the string, which is perfect:
 		demoDirectory = demoPrefix.substring(0, demoPrefix.indexOf(File.separator) + 1);
 		soundFile = getBackedFile(".wav");
@@ -102,7 +108,7 @@ public class SrcDemo implements Morticianed {
 	}
 
 	public File getBackedFile(final String fileSuffix) {
-		return backingFS.getBackedFile(demoPrefix + fileSuffix);
+		return backingFS.getBackedFile(demoPrefix + prefixSuffix + fileSuffix);
 	}
 
 	FileInfo getFileInfo(final String fileName) {
@@ -122,7 +128,7 @@ public class SrcDemo implements Morticianed {
 		if (!fileName.startsWith(demoPrefix)) {
 			return null;
 		}
-		final String numberString = fileName.substring(demoPrefixLength, fileName.lastIndexOf('.'));
+		final String numberString = fileName.substring(demoActualPrefixLength, fileName.lastIndexOf('.'));
 		try {
 			return Integer.parseInt(numberString);
 		}

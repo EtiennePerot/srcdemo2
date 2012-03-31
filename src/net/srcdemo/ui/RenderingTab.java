@@ -258,6 +258,10 @@ class RenderingTab extends QWidget implements SrcDemoListener {
 	private void updatePreviewEnabled() {
 		previewEnabled = previewEnabledCheckbox.isChecked();
 		getSettings().setPreviewEnabled(previewEnabled);
+		if (!previewEnabled) {
+			previewPicture.reset();
+		}
+		previewPicture.updatePicture();
 	}
 
 	private void updateUI() {

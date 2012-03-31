@@ -151,8 +151,8 @@ public class FrameBlender implements VideoHandler {
 					| (currentMergedFrame[rPosition] / currentWeight);
 			}
 			// At this point, we made a full copy, no need to keep the rest waiting
-			imageSaver
-				.add(savingFactory.buildSavingTask(frameNumber / blendRate, finalPixels, tga.getWidth(), tga.getHeight()));
+			imageSaver.add(savingFactory.buildSavingTask(1 + frameNumber / blendRate, finalPixels, tga.getWidth(),
+				tga.getHeight()));
 		}
 		frameLock.unlock();
 		GCChecker.poke();
