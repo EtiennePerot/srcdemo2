@@ -44,7 +44,7 @@ class AudioUI extends QWidget {
 	}
 
 	private BufferedAudioHandlerFactory bufferedFactory(final AudioHandlerFactory subFactory) {
-		return new BufferedAudioHandlerFactory(new FlacAudioHandlerFactory(), bufferSize.value(), bufferTimeout.value());
+		return new BufferedAudioHandlerFactory(subFactory, bufferSize.value(), bufferTimeout.value());
 	}
 
 	private QWidget disablableAudioWidget(final QWidget widget) {
