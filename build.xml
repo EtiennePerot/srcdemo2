@@ -96,6 +96,8 @@
 	<property name="osx.package.dmg.compression" value="9"/>
 	<property name="linux.package.bin.dir" value="${jar.dir}/bin"/>
 	<property name="linux.package.bin.scripts" value="${linux.package.dir}/bin"/>
+	<property name="linux.package.desktopfiles.dir" value="${jar.dir}/desktopfiles"/>
+	<property name="linux.package.desktopfiles.scripts" value="${linux.package.dir}/desktopfiles"/>
 	<property name="program.versionscript" value="${any.package.dir}/buildversion.py"/>
 	<property name="program.versionfile" value="${root.dir}/version.txt"/>
 	<property name="jar.includes" value="**/*.jar"/>
@@ -317,8 +319,13 @@
 		<copy todir="${linux.package.bin.dir}">
 			<fileset dir="${linux.package.bin.scripts}" includes="*"/>
 		</copy>
+		<mkdir dir="${linux.package.desktopfiles.dir}"/>
+		<copy todir="${linux.package.desktopfiles.dir}">
+			<fileset dir="${linux.package.desktopfiles.scripts}" includes="*"/>
+		</copy>
 		<chmod perm="ugo+rx" maxparallel="100">
 			<fileset dir="${linux.package.bin.dir}" includes="*"/>
+			<fileset dir="${linux.package.desktopfiles.dir}" includes="*"/>
 		</chmod>
 	</target>
 	<target name="package-finalize">

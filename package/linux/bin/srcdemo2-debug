@@ -1,0 +1,9 @@
+#!/usr/bin/env bash
+
+srcDemoDir="$(dirname "$(cd "$(dirname "$(readlink -f "$BASH_SOURCE")")" && pwd)")"
+
+if which python2 &> /dev/null; then
+	exec python2 "$srcDemoDir/SrcDemo2-debug.py"
+else
+	exec python "$srcDemoDir/SrcDemo2-debug.py"
+fi

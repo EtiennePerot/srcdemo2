@@ -1,0 +1,11 @@
+#!/usr/bin/env xdg-open
+
+[Desktop Entry]
+Version=1.0
+Type=Application
+Terminal=true
+Exec=srcdemo2-debug
+Categories=AudioVideo;Audio;Video;Recorder;ImageProcessing;Game;Qt;Java
+Name=SrcDemo² (debug mode)
+Comment=Render Source Engine demos (debug mode)
+Icon=/opt/srcdemo2/img/debug-256.png
