@@ -3,7 +3,7 @@
 srcDemoDir="$(dirname "$(cd "$(dirname "$(readlink -f "$BASH_SOURCE")")" && pwd)")"
 
 if which python2 &> /dev/null; then
-	exec python2 "$srcDemoDir/SrcDemo2-cli.py"
+	exec python2 "$srcDemoDir/SrcDemo2-cli.py" "$@"
 else
-	exec python "$srcDemoDir/SrcDemo2-cli.py"
+	exec python "$srcDemoDir/SrcDemo2-cli.py" "$@"
 fi
