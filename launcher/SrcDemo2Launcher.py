@@ -55,6 +55,21 @@ class StreamRunner(threading.Thread):
 				for s in self.streamsOut:
 					s.write(l)
 
+def which(program):
+	import os
+	def is_executable(fpath):
+		return os.path.isfile(fpath) and os.access(fpath, os.X_OK)
+	fpath, fname = os.path.split(program)
+	if fpath and is_executable(program):
+		return program
+	elif 'PATH' in os.environ:
+		for path in os.environ['PATH'].split(os.pathsep):
+			path = path.strip('"')
+			executable_file = os.path.join(path, program)
+			if is_executable(executable_file):
+				return executable_file
+	return None
+
 def is_windows():
 	return sys.platform[:3].lower() == 'win'
 
@@ -95,6 +110,8 @@ def get_java(debugMode):
 				return foundJre
 	elif is_osx():
 		return selfDir + '/jre-1.7.0/bin/java'
+	else:
+		return which('java')
 	return None
 
 def add_subprocess_creationflags(kwargs):
@@ -281,7 +298,7 @@ def launch(inDebugMode=False):
 			break
 		debugPrint('Process finished with return code:', returnCode)
 		unmount_registered_mountpoint()
-		if returnCode != 1337:
+		if returnCode != 57:
 			break
 	debugPrint('Done.')
 	if returnCode:

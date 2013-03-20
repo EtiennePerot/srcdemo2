@@ -157,6 +157,15 @@ public class SrcDemoFS extends LoopbackFS {
 		return true;
 	}
 
+	@Override
+	protected int readFile(final String fileName, final ByteBuffer buffer, final long offset) {
+		final SrcDemo demo = getDemo(fileName);
+		if (demo == null) {
+			return super.readFile(fileName, buffer, offset);
+		}
+		return demo.readFile(fileName, buffer, offset);
+	}
+
 	public void removeListener(final SrcDemoListener listener) {
 		demoListeners.remove(listener);
 	}

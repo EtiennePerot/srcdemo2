@@ -1,248 +1,284 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project name="SrcDemo2">
-    <property name="displayname" value="SrcDemo²"/>
-    <property name="displayname.shell" value="SrcDemo\xc2\xb2"/>
-    <property name="root.dir" value="."/>
-    <property name="src.dir" value="${root.dir}/src"/>
-    <property name="dokan.src.dir" value="${root.dir}/src-dokan"/>
-    <property name="submodules.dir" value="${root.dir}/submodules"/>
-    <property name="fusejna.dir" value="${submodules.dir}/fuse-jna"/>
-    <property name="fusejna.src.dir" value="${fusejna.dir}/src"/>
-    <property name="fusejna.license" value="${fusejna.dir}/LICENSE"/>
-    <property name="fusejna.lib.dir" value="${fusejna.dir}/lib"/>
-    <property name="commonsio.dir" value="${submodules.dir}/commons-io"/>
-    <property name="commonsio.src.dir" value="${commonsio.dir}/src/main/java"/>
-    <property name="commonsio.license" value="${commonsio.dir}/LICENSE.txt"/>
-    <property name="commonscodec.dir" value="${submodules.dir}/commons-codec"/>
-    <property name="commonscodec.src.dir" value="${commonscodec.dir}/src/main/java"/>
-    <property name="commonscodec.license" value="${commonscodec.dir}/LICENSE.txt"/>
-    <property name="commonslang.dir" value="${submodules.dir}/commons-lang"/>
-    <property name="commonslang.src.dir" value="${commonslang.dir}/src/main/java"/>
-    <property name="commonslang.license" value="${commonslang.dir}/LICENSE.txt"/>
-    <property name="flac.src.dir" value="${root.dir}/src-flac"/>
-    <property name="lib.dir" value="${root.dir}/lib"/>
-    <property name="windows.lib.dir" value="${lib.dir}/windows"/>
-    <property name="osx.lib.dir" value="${lib.dir}/osx"/>
-    <property name="any.lib.dir" value="${lib.dir}/any"/>
-    <property name="img.dir" value="${root.dir}/img"/>
-    <property name="tools.dir" value="${root.dir}/tools"/>
-    <property name="windows.tools.dir" value="${tools.dir}/windows"/>
-    <property name="osx.tools.dir" value="${tools.dir}/osx"/>
-    <property name="any.tools.dir" value="${tools.dir}/any"/>
+	<property name="displayname" value="SrcDemo²"/>
+	<property name="displayname.shell" value="SrcDemo\xc2\xb2"/>
+	<property name="root.dir" value="."/>
+	<property name="src.dir" value="${root.dir}/src"/>
+	<property name="dokan.src.dir" value="${root.dir}/src-dokan"/>
+	<property name="submodules.dir" value="${root.dir}/submodules"/>
+	<property name="fusejna.dir" value="${submodules.dir}/fuse-jna"/>
+	<property name="fusejna.src.dir" value="${fusejna.dir}/src"/>
+	<property name="fusejna.license" value="${fusejna.dir}/LICENSE"/>
+	<property name="fusejna.lib.dir" value="${fusejna.dir}/lib"/>
+	<property name="commonsio.dir" value="${submodules.dir}/commons-io"/>
+	<property name="commonsio.src.dir" value="${commonsio.dir}/src/main/java"/>
+	<property name="commonsio.license" value="${commonsio.dir}/LICENSE.txt"/>
+	<property name="commonscodec.dir" value="${submodules.dir}/commons-codec"/>
+	<property name="commonscodec.src.dir" value="${commonscodec.dir}/src/main/java"/>
+	<property name="commonscodec.license" value="${commonscodec.dir}/LICENSE.txt"/>
+	<property name="commonslang.dir" value="${submodules.dir}/commons-lang"/>
+	<property name="commonslang.src.dir" value="${commonslang.dir}/src/main/java"/>
+	<property name="commonslang.license" value="${commonslang.dir}/LICENSE.txt"/>
+	<property name="flac.src.dir" value="${root.dir}/src-flac"/>
+	<property name="lib.dir" value="${root.dir}/lib"/>
+	<property name="windows.lib.dir" value="${lib.dir}/windows"/>
+	<property name="osx.lib.dir" value="${lib.dir}/osx"/>
+	<property name="linux.lib.dir" value="${lib.dir}/linux"/>
+	<property name="any.lib.dir" value="${lib.dir}/any"/>
+	<property name="img.dir" value="${root.dir}/img"/>
+	<property name="tools.dir" value="${root.dir}/tools"/>
+	<property name="windows.tools.dir" value="${tools.dir}/windows"/>
+	<property name="osx.tools.dir" value="${tools.dir}/osx"/>
+	<property name="any.tools.dir" value="${tools.dir}/any"/>
 	<property name="build.dir" value="${root.dir}/build"/>
-    <property name="launcher.dir" value="${root.dir}/launcher"/>
-    <property name="package.dir" value="${root.dir}/package"/>
-    <property name="windows.package.dir" value="${package.dir}/windows"/>
-    <property name="osx.package.dir" value="${package.dir}/osx"/>
-    <property name="any.package.dir" value="${package.dir}/any"/>
+	<property name="launcher.dir" value="${root.dir}/launcher"/>
+	<property name="package.dir" value="${root.dir}/package"/>
+	<property name="windows.package.dir" value="${package.dir}/windows"/>
+	<property name="osx.package.dir" value="${package.dir}/osx"/>
+	<property name="linux.package.dir" value="${package.dir}/linux"/>
+	<property name="any.package.dir" value="${package.dir}/any"/>
 	<property name="classes.dir" value="${build.dir}/classes"/>
 	<property name="jar.dir" value="${build.dir}/jar"/>
 	<property name="jar.file" value="${jar.dir}/${ant.project.name}.jar"/>
-    <property name="jar.lib.dir" value="${jar.dir}/lib"/>
-    <property name="jar.windows.lib.dir" value="${jar.lib.dir}/windows"/>
-    <property name="jar.osx.lib.dir" value="${jar.lib.dir}/osx"/>
-    <property name="jar.any.lib.dir" value="${jar.lib.dir}/any"/>
-    <property name="jar.img.dir" value="${jar.dir}/img"/>
-    <property name="jar.tools.dir" value="${jar.dir}/tools"/>
-    <property name="jar.windows.tools.dir" value="${jar.tools.dir}/windows"/>
-    <property name="jar.osx.tools.dir" value="${jar.tools.dir}/osx"/>
-    <property name="jar.any.tools.dir" value="${jar.tools.dir}/any"/>
-    <property name="jlibs.dir" value="${any.lib.dir}/jlibs"/>
-    <property name="jlibs.src.dir" value="${jlibs.dir}/src"/>
-    <property name="jlibs.license1" value="${jlibs.dir}/LICENSE.txt"/>
-    <property name="jlibs.license1.out" value="${jar.lib.dir}/LICENSE.jlibs.txt"/>
-    <property name="jlibs.license2" value="${jlibs.dir}/readme.txt"/>
-    <property name="jlibs.license2.out" value="${jar.lib.dir}/readme.jlibs.txt"/>
-    <property name="imagetoascii.dir" value="${any.lib.dir}/image-to-ascii"/>
-    <property name="imagetoascii.src.dir" value="${imagetoascii.dir}"/>
-    <property name="imagetoascii.license" value="${imagetoascii.dir}/com/blogspot/homebrewcode/ASCII.java"/>
-    <property name="imagetoascii.license.out" value="${jar.lib.dir}/LICENSE.homebrewcode-blogspot-com.ASCII.txt"/>
-    <property name="commonsio.license.out" value="${jar.lib.dir}/LICENSE.commons-io.txt"/>
-    <property name="commonscodec.license.out" value="${jar.lib.dir}/LICENSE.commons-codec.txt"/>
-    <property name="commonslang.license.out" value="${jar.lib.dir}/LICENSE.commons-lang.txt"/>
-    <property name="fusejna.license.out" value="${jar.lib.dir}/LICENSE.fusejna.txt"/>
+	<property name="jar.lib.dir" value="${jar.dir}/lib"/>
+	<property name="jar.windows.lib.dir" value="${jar.lib.dir}/windows"/>
+	<property name="jar.osx.lib.dir" value="${jar.lib.dir}/osx"/>
+	<property name="jar.linux.lib.dir" value="${jar.lib.dir}/linux"/>
+	<property name="jar.any.lib.dir" value="${jar.lib.dir}/any"/>
+	<property name="jar.img.dir" value="${jar.dir}/img"/>
+	<property name="jar.tools.dir" value="${jar.dir}/tools"/>
+	<property name="jar.windows.tools.dir" value="${jar.tools.dir}/windows"/>
+	<property name="jar.osx.tools.dir" value="${jar.tools.dir}/osx"/>
+	<property name="jar.any.tools.dir" value="${jar.tools.dir}/any"/>
+	<property name="jlibs.dir" value="${any.lib.dir}/jlibs"/>
+	<property name="jlibs.src.dir" value="${jlibs.dir}/src"/>
+	<property name="jlibs.license1" value="${jlibs.dir}/LICENSE.txt"/>
+	<property name="jlibs.license1.out" value="${jar.lib.dir}/LICENSE.jlibs.txt"/>
+	<property name="jlibs.license2" value="${jlibs.dir}/readme.txt"/>
+	<property name="jlibs.license2.out" value="${jar.lib.dir}/readme.jlibs.txt"/>
+	<property name="imagetoascii.dir" value="${any.lib.dir}/image-to-ascii"/>
+	<property name="imagetoascii.src.dir" value="${imagetoascii.dir}"/>
+	<property name="imagetoascii.license" value="${imagetoascii.dir}/com/blogspot/homebrewcode/ASCII.java"/>
+	<property name="imagetoascii.license.out" value="${jar.lib.dir}/LICENSE.homebrewcode-blogspot-com.ASCII.txt"/>
+	<property name="commonsio.license.out" value="${jar.lib.dir}/LICENSE.commons-io.txt"/>
+	<property name="commonscodec.license.out" value="${jar.lib.dir}/LICENSE.commons-codec.txt"/>
+	<property name="commonslang.license.out" value="${jar.lib.dir}/LICENSE.commons-lang.txt"/>
+	<property name="fusejna.license.out" value="${jar.lib.dir}/LICENSE.fusejna.txt"/>
 	<property name="main-class" value="net.srcdemo.Main"/>
 	<property name="launcher.builddir" value="${launcher.dir}/build"/>
 	<property name="launcher.distdir" value="${launcher.dir}/dist"/>
-    <property name="launcher.precompileddir" value="${launcher.dir}/precompiled"/>
-    <property name="launcher.script" value="${launcher.dir}/setup.py"/>
-    <property name="launcher.source" value="SrcDemo2*.py"/>
-    <property name="windows.package.nsiant" value="${windows.package.dir}/nsisant.jar"/>
-    <property name="windows.package.script" value="${windows.package.dir}/setup.nsi"/>
-    <property name="windows.package.file" value="${ant.project.name}-setup.exe"/>
-    <property name="osx.package.app.dir" value="${build.dir}/${ant.project.name}.app"/>
-    <property name="osx.package.app.shell.dir" value="${build.dir}/`echo -en '${displayname.shell}'`.app"/>
-    <property name="osx.package.app.contents.dir" value="${osx.package.app.dir}/Contents"/>
-    <property name="osx.package.app.info.script" value="${osx.package.dir}/make-plist.py"/>
-    <property name="osx.package.app.info.output" value="${osx.package.dir}/Info.plist"/>
-    <property name="osx.package.app.pkginfo" value="${osx.package.dir}/PkgInfo"/>
-    <property name="osx.package.app.macos.dir" value="${osx.package.app.contents.dir}/MacOS"/>
-    <property name="osx.package.app.macos.launcher.source" value="${osx.package.dir}/srcdemo2"/>
-    <property name="osx.package.app.macos.launcher.dest" value="${osx.package.app.macos.dir}/srcdemo2"/>
-    <property name="osx.package.app.resources.dir" value="${osx.package.app.contents.dir}/Resources"/>
-    <property name="osx.package.app.resources.python.dir" value="${osx.package.app.resources.dir}/static-python"/>
-    <property name="osx.package.app.resources.jre.dir" value="${osx.package.app.resources.dir}/jre-1.7.0"/>
-    <property name="osx.package.app.resources.icon.target" value="img/icon.icns"/>
-    <property name="osx.package.app.resources.icon.file" value="${osx.package.app.resources.dir}/icon.icns"/>
-    <property name="osx.package.app.python" value="${osx.package.dir}/static-python"/>
-    <property name="osx.package.app.jre" value="${osx.package.dir}/jre-1.7.0"/>
-    <property name="osx.package.dmg.name" value="${ant.project.name}"/>
-    <property name="osx.package.dmg.volume" value="${ant.project.name}"/>
-    <property name="osx.package.dmg.dir" value="/Volumes/${osx.package.dmg.volume}"/>
-    <property name="osx.package.dmg.script" value="${osx.package.dir}/build-dmg.pl"/>
-    <property name="osx.package.dmg.compression" value="9"/>
-    <property name="program.versionscript" value="${any.package.dir}/buildversion.py"/>
-    <property name="program.versionfile" value="${root.dir}/version.txt"/>
-    <property name="jar.includes" value="**/*.jar"/>
-    <property name="dll.includes" value="**/*.dll"/>
-    <property name="LICENSE.excludes" value="**/LICENSE*"/>
-    <property name="svn.excludes" value="**/*.svn"/>
-    <property name="img.excludes" value="**/*.psd"/>
+	<property name="launcher.precompileddir" value="${launcher.dir}/precompiled"/>
+	<property name="launcher.script" value="${launcher.dir}/setup.py"/>
+	<property name="launcher.source" value="SrcDemo2*.py"/>
+	<property name="windows.package.nsiant" value="${windows.package.dir}/nsisant.jar"/>
+	<property name="windows.package.script" value="${windows.package.dir}/setup.nsi"/>
+	<property name="windows.package.file" value="${ant.project.name}-setup.exe"/>
+	<property name="osx.package.app.dir" value="${build.dir}/${ant.project.name}.app"/>
+	<property name="osx.package.app.shell.dir" value="${build.dir}/`echo -en '${displayname.shell}'`.app"/>
+	<property name="osx.package.app.contents.dir" value="${osx.package.app.dir}/Contents"/>
+	<property name="osx.package.app.info.script" value="${osx.package.dir}/make-plist.py"/>
+	<property name="osx.package.app.info.output" value="${osx.package.dir}/Info.plist"/>
+	<property name="osx.package.app.pkginfo" value="${osx.package.dir}/PkgInfo"/>
+	<property name="osx.package.app.macos.dir" value="${osx.package.app.contents.dir}/MacOS"/>
+	<property name="osx.package.app.macos.launcher.source" value="${osx.package.dir}/srcdemo2"/>
+	<property name="osx.package.app.macos.launcher.dest" value="${osx.package.app.macos.dir}/srcdemo2"/>
+	<property name="osx.package.app.resources.dir" value="${osx.package.app.contents.dir}/Resources"/>
+	<property name="osx.package.app.resources.python.dir" value="${osx.package.app.resources.dir}/static-python"/>
+	<property name="osx.package.app.resources.jre.dir" value="${osx.package.app.resources.dir}/jre-1.7.0"/>
+	<property name="osx.package.app.resources.icon.target" value="img/icon.icns"/>
+	<property name="osx.package.app.resources.icon.file" value="${osx.package.app.resources.dir}/icon.icns"/>
+	<property name="osx.package.app.python" value="${osx.package.dir}/static-python"/>
+	<property name="osx.package.app.jre" value="${osx.package.dir}/jre-1.7.0"/>
+	<property name="osx.package.dmg.name" value="${ant.project.name}"/>
+	<property name="osx.package.dmg.volume" value="${ant.project.name}"/>
+	<property name="osx.package.dmg.dir" value="/Volumes/${osx.package.dmg.volume}"/>
+	<property name="osx.package.dmg.script" value="${osx.package.dir}/build-dmg.pl"/>
+	<property name="osx.package.dmg.compression" value="9"/>
+	<property name="linux.package.bin.dir" value="${jar.dir}/bin"/>
+	<property name="linux.package.bin.scripts" value="${linux.package.dir}/bin"/>
+	<property name="program.versionscript" value="${any.package.dir}/buildversion.py"/>
+	<property name="program.versionfile" value="${root.dir}/version.txt"/>
+	<property name="jar.includes" value="**/*.jar"/>
+	<property name="dll.includes" value="**/*.dll"/>
+	<property name="LICENSE.excludes" value="**/LICENSE*"/>
+	<property name="img.excludes" value="**/*.psd"/>
+	<presetdef name="compile">
+		<javac optimize="true" debug="false" includeantruntime="false"/>
+	</presetdef>
+	<condition property="isUnix">
+		<os family="unix"/>
+	</condition>
+	<condition property="isMac">
+		<os family="mac"/>
+	</condition>
+	<condition property="isLinux"> <!-- or more accurately, is non-OSX unix -->
+		<and>
+			<os family="unix"/>
+			<not>
+				<os family="mac"/>
+			</not>
+		</and>
+	</condition>
+	<condition property="isWindows">
+		<os family="windows"/>
+	</condition>
+	<condition property="isNotMac">
+		<not>
+			<os family="mac"/>
+		</not>
+	</condition>
 	<path id="classpath">
 		<fileset dir="${lib.dir}" includes="${jar.includes}"/>
 		<fileset dir="${fusejna.lib.dir}" includes="${jar.includes}"/>
 	</path>
 	<target name="cleanbuild-unix" if="isUnix">
 		<exec executable="rm">
-			<arg value="-r"/>
+			<arg value="-rf"/>
 			<arg value="${build.dir}"/>
 		</exec>
 	</target>
-	<target name="cleanbuild-windows" unless="isUnix">
-		<delete dir="${build.dir}"/>
+	<target name="cleanbuild-windows" if="isWindows">
+		<delete dir="${build.dir}" quiet="true"/>
 	</target>
 	<target name="clean">
-		<condition property="isUnix">
-			<os family="unix"/>
-		</condition>
-		<condition property="isMac">
-			<os family="mac"/>
-		</condition>
-		<condition property="isNotMac">
-			<not>
-				<os family="mac"/>
-			</not>
-		</condition>
 		<antcall target="cleanbuild-unix"/>
 		<antcall target="cleanbuild-windows"/>
 		<delete file="${program.versionfile}"/>
 		<delete file="${osx.package.app.info.output}"/>
 	</target>
 	<target name="compile-osx" if="isMac">
-		<javac srcdir="${commonslang.src.dir}" destdir="${classes.dir}" classpathref="classpath" optimize="true" encoding="MacRoman"/>
-		<javac srcdir="${src.dir};${flac.src.dir};${dokan.src.dir};${fusejna.src.dir};${commonsio.src.dir};${commonscodec.src.dir};${jlibs.src.dir};${imagetoascii.src.dir}" destdir="${classes.dir}" classpathref="classpath" optimize="true" encoding="UTF-8"/>
+		<compile srcdir="${commonslang.src.dir}" destdir="${classes.dir}" classpathref="classpath" optimize="true" encoding="MacRoman"/>
+		<compile srcdir="${src.dir};${flac.src.dir};${dokan.src.dir};${fusejna.src.dir};${commonsio.src.dir};${commonscodec.src.dir};${jlibs.src.dir};${imagetoascii.src.dir}" destdir="${classes.dir}" classpathref="classpath" optimize="true" encoding="UTF-8"/>
 	</target>
 	<target name="compile-notosx" if="isNotMac">
-		<javac srcdir="${src.dir};${flac.src.dir};${dokan.src.dir};${fusejna.src.dir};${commonsio.src.dir};${commonslang.src.dir};${commonscodec.src.dir};${jlibs.src.dir};${imagetoascii.src.dir}" destdir="${classes.dir}" classpathref="classpath" optimize="true" encoding="UTF-8"/>
+		<compile srcdir="${commonslang.src.dir}" destdir="${classes.dir}" classpathref="classpath" optimize="true" encoding="ISO-8859-1"/>
+		<compile srcdir="${src.dir};${flac.src.dir};${dokan.src.dir};${fusejna.src.dir};${commonsio.src.dir};${commonscodec.src.dir};${jlibs.src.dir};${imagetoascii.src.dir}" destdir="${classes.dir}" classpathref="classpath" optimize="true" encoding="UTF-8"/>
 	</target>
-    <target name="compile" depends="clean">
-        <mkdir dir="${classes.dir}"/>
-    	<antcall target="compile-notosx"/>
-    	<antcall target="compile-osx"/>
-    </target>
-	<target name="jar-init" depends="compile">
-        <mkdir dir="${jar.dir}"/>
-        <copy todir="${jar.dir}" file="LICENSE"/>
-        <exec executable="python">
-            <arg value="${program.versionscript}"/>
-        </exec>
-        <copy todir="${jar.dir}" file="${program.versionfile}"/>
-        <copy todir="${jar.img.dir}">
-            <fileset dir="${img.dir}" excludes="${svn.excludes},${img.excludes}"/>
-        </copy>
-        <copy todir="${jar.any.lib.dir}">
-            <fileset dir="${any.lib.dir}" excludes="${svn.excludes}"/>
-            <fileset dir="${fusejna.lib.dir}" includes="${jar.includes}" excludes="${svn.excludes}"/>
-        </copy>
+	<target name="compile" depends="clean">
+		<mkdir dir="${classes.dir}"/>
+		<antcall target="compile-notosx"/>
+		<antcall target="compile-osx"/>
 	</target>
-    <target name="jar-finalize">
-        <copy file="${commonsio.license}" tofile="${commonsio.license.out}" />
-        <copy file="${commonscodec.license}" tofile="${commonscodec.license.out}" />
-        <copy file="${commonslang.license}" tofile="${commonslang.license.out}" />
-        <copy file="${jlibs.license1}" tofile="${jlibs.license1.out}" />
-        <copy file="${jlibs.license2}" tofile="${jlibs.license2.out}" />
-        <copy file="${fusejna.license}" tofile="${fusejna.license.out}" />
-        <copy file="${imagetoascii.license}" tofile="${imagetoascii.license.out}" />
-        <path id="jar-classpath">
-            <fileset dir="${jar.lib.dir}" includes="**/*.jar"/>
-        </path>
-        <manifestclasspath property="lib.list" jarfile="${jar.file}">
-            <classpath refid="jar-classpath"/>
-        </manifestclasspath>
-        <jar destfile="${jar.file}" basedir="${classes.dir}">
-            <manifest>
-                <attribute name="Main-Class" value="${main-class}"/>
-                <attribute name="Class-Path" value="${lib.list}"/>
-            </manifest>
-        </jar>
-    </target>
-	<target name="jar-windows" depends="compile,jar-init">
-        <copy todir="${jar.windows.lib.dir}">
-            <fileset dir="${windows.lib.dir}" excludes="${svn.excludes}"/>
-        </copy>
-        <copy todir="${jar.windows.tools.dir}">
-            <fileset dir="${windows.tools.dir}" excludes="${svn.excludes}"/>
-        </copy>
+	<target name="jar-init">
+		<antcall target="compile"/>
+		<mkdir dir="${jar.dir}"/>
+		<copy todir="${jar.dir}" file="LICENSE"/>
+		<exec executable="python">
+			<arg value="${program.versionscript}"/>
+		</exec>
+		<copy todir="${jar.dir}" file="${program.versionfile}"/>
+		<copy todir="${jar.img.dir}">
+			<fileset dir="${img.dir}" excludes="${img.excludes}"/>
+		</copy>
+		<copy todir="${jar.any.lib.dir}">
+			<fileset dir="${any.lib.dir}"/>
+			<fileset dir="${fusejna.lib.dir}" includes="${jar.includes}"/>
+		</copy>
+	</target>
+	<target name="jar-finalize">
+		<copy file="${commonsio.license}" tofile="${commonsio.license.out}" />
+		<copy file="${commonscodec.license}" tofile="${commonscodec.license.out}" />
+		<copy file="${commonslang.license}" tofile="${commonslang.license.out}" />
+		<copy file="${jlibs.license1}" tofile="${jlibs.license1.out}" />
+		<copy file="${jlibs.license2}" tofile="${jlibs.license2.out}" />
+		<copy file="${fusejna.license}" tofile="${fusejna.license.out}" />
+		<copy file="${imagetoascii.license}" tofile="${imagetoascii.license.out}" />
+		<path id="jar-classpath">
+			<fileset dir="${jar.lib.dir}" includes="**/*.jar"/>
+		</path>
+		<manifestclasspath property="lib.list" jarfile="${jar.file}">
+			<classpath refid="jar-classpath"/>
+		</manifestclasspath>
+		<jar destfile="${jar.file}" basedir="${classes.dir}">
+			<manifest>
+				<attribute name="Main-Class" value="${main-class}"/>
+				<attribute name="Class-Path" value="${lib.list}"/>
+			</manifest>
+		</jar>
+	</target>
+	<target name="jar-windows" if="isWindows">
+		<antcall target="jar-init"/>
+		<copy todir="${jar.windows.lib.dir}">
+			<fileset dir="${windows.lib.dir}"/>
+		</copy>
+		<copy todir="${jar.windows.tools.dir}">
+			<fileset dir="${windows.tools.dir}"/>
+		</copy>
 		<move todir="${jar.dir}">
 			<fileset dir="${jar.windows.lib.dir}" includes="${dll.includes}"/>
 		</move>
 		<antcall target="jar-finalize"/>
 	</target>
-	<target name="jar-osx" depends="compile,jar-init">
-        <copy todir="${jar.osx.lib.dir}">
-            <fileset dir="${osx.lib.dir}" excludes="${svn.excludes}"/>
-        </copy>
-        <copy todir="${jar.osx.tools.dir}">
-            <fileset dir="${osx.tools.dir}" excludes="${svn.excludes}"/>
-        </copy>
+	<target name="jar-osx" if="isMac">
+		<antcall target="jar-init"/>
+		<copy todir="${jar.osx.lib.dir}">
+			<fileset dir="${osx.lib.dir}"/>
+		</copy>
+		<copy todir="${jar.osx.tools.dir}">
+			<fileset dir="${osx.tools.dir}"/>
+		</copy>
 		<antcall target="jar-finalize"/>
 	</target>
-	<target name="mklauncher-windows">
+	<target name="jar-linux" if="isLinux">
+		<antcall target="jar-init"/>
+		<copy todir="${jar.linux.lib.dir}">
+			<fileset dir="${linux.lib.dir}"/>
+		</copy>
+		<antcall target="jar-finalize"/>
+	</target>
+	<target name="jar">
+		<antcall target="jar-windows"/>
+		<antcall target="jar-osx"/>
+		<antcall target="jar-linux"/>
+	</target>
+	<target name="mklauncher-windows" if="isWindows">
 		<!-- Assumes python is in the path and has modules py2exe and win32all -->
 		<delete dir="${launcher.builddir}"/>
-        <delete dir="${launcher.distdir}"/>
-        <delete dir="${launcher.precompileddir}"/>
+		<delete dir="${launcher.distdir}"/>
+		<delete dir="${launcher.precompileddir}"/>
 		<exec executable="python">
 			<arg value="${launcher.script}"/>
 		</exec>
 		<copy todir="${launcher.precompileddir}">
-			<fileset dir="${launcher.distdir}" excludes="${svn.excludes}"/>
+			<fileset dir="${launcher.distdir}"/>
 		</copy>
 		<delete dir="${launcher.builddir}"/>
 		<delete dir="${launcher.distdir}"/>
 	</target>
-	<target name="launcher-windows" depends="jar-windows">
-        <copy todir="${jar.dir}">
-            <fileset dir="${launcher.precompileddir}" excludes="${svn.excludes}"/>
-        </copy>
+	<target name="launcher-windows" if="isWindows">
+		<antcall target="jar"/>
+		<copy todir="${jar.dir}">
+			<fileset dir="${launcher.precompileddir}"/>
+		</copy>
 	</target>
-    <target name="package-windows" depends="launcher-windows">
-    	<!-- Assumes makensis.exe is in the path. Note: Use Unicode NSIS, not regular NSIS! -->
-        <delete file="${windows.package.file}"/>
-        <taskdef name="nsis" classname="com.danielreese.nsisant.Task" classpath="${windows.package.nsiant}"/>
-    	<nsis script="${windows.package.script}"/>
-    	<antcall target="package-finalize"/>
-    </target>
-	<target name="buildapp-osx" depends="jar-osx">
+	<target name="package-windows" depends="launcher-windows" if="isWindows">
+		<!-- Assumes makensis.exe is in the path. Note: Use Unicode NSIS, not regular NSIS! -->
+		<delete file="${windows.package.file}"/>
+		<taskdef name="nsis" classname="com.danielreese.nsisant.Task" classpath="${windows.package.nsiant}"/>
+		<nsis script="${windows.package.script}"/>
+		<antcall target="package-finalize"/>
+	</target>
+	<target name="buildapp-osx" if="isMac">
+		<antcall target="jar"/>
 		<mkdir dir="${osx.package.app.dir}"/>
-        <exec executable="python">
-            <arg value="${osx.package.app.info.script}"/>
-        </exec>
+		<exec executable="python">
+			<arg value="${osx.package.app.info.script}"/>
+		</exec>
 		<copy file="${osx.package.app.info.output}" todir="${osx.package.app.contents.dir}"/>
 		<copy file="${osx.package.app.pkginfo}" todir="${osx.package.app.contents.dir}"/>
 		<mkdir dir="${osx.package.app.macos.dir}"/>
 		<copy file="${osx.package.app.macos.launcher.source}" tofile="${osx.package.app.macos.launcher.dest}"/>
 		<chmod file="${osx.package.app.macos.launcher.dest}" perm="ugo+rx"/>
 		<mkdir dir="${osx.package.app.resources.dir}"/>
-        <copy todir="${osx.package.app.resources.python.dir}">
-            <fileset dir="${osx.package.app.python}" excludes="${svn.excludes}"/>
-        </copy>
+		<copy todir="${osx.package.app.resources.python.dir}">
+			<fileset dir="${osx.package.app.python}"/>
+		</copy>
 		<chmod perm="ugo+rx" maxparallel="100">
 			<fileset dir="${osx.package.app.resources.python.dir}" includes="**/*" excludes="${LICENSE.excludes}"/>
 		</chmod>
-        <copy todir="${osx.package.app.resources.jre.dir}">
-            <fileset dir="${osx.package.app.jre}" excludes="${svn.excludes}"/>
-        </copy>
+		<copy todir="${osx.package.app.resources.jre.dir}">
+			<fileset dir="${osx.package.app.jre}"/>
+		</copy>
 		<chmod perm="ugo+rx" maxparallel="100">
 			<fileset dir="${osx.package.app.resources.jre.dir}" includes="**/*"/>
 		</chmod>
@@ -258,7 +294,7 @@
 			<arg value="mv &quot;${osx.package.app.dir}&quot; &quot;${osx.package.app.shell.dir}&quot;"/>
 		</exec>
 	</target>
-	<target name="package-osx" depends="buildapp-osx">
+	<target name="package-osx" depends="buildapp-osx" if="isMac">
 		<exec executable="hdiutil" error="/dev/null">
 			<arg value="detach"/>
 			<arg value="${osx.package.dmg.dir}"/>
@@ -269,7 +305,28 @@
 		</exec>
 		<antcall target="package-finalize"/>
 	</target>
+	<target name="package-linux">
+		<antcall target="jar"/>
+		<copy todir="${jar.dir}">
+			<fileset dir="${launcher.dir}" includes="${launcher.source}"/>
+		</copy>
+		<chmod perm="ugo+rx" maxparallel="100">
+			<fileset dir="${jar.dir}" includes="${launcher.source}"/>
+		</chmod>
+		<mkdir dir="${linux.package.bin.dir}"/>
+		<copy todir="${linux.package.bin.dir}">
+			<fileset dir="${linux.package.bin.scripts}" includes="*"/>
+		</copy>
+		<chmod perm="ugo+rx" maxparallel="100">
+			<fileset dir="${linux.package.bin.dir}" includes="*"/>
+		</chmod>
+	</target>
 	<target name="package-finalize">
 		<antcall target="clean"/>
+	</target>
+	<target name="package">
+		<antcall target="package-windows"/>
+		<antcall target="package-osx"/>
+		<antcall target="package-linux"/>
 	</target>
 </project>

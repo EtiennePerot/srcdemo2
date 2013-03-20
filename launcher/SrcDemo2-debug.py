@@ -5,4 +5,10 @@ try:
 	SrcDemo2Launcher.launch(True)
 except:
 	traceback.print_exc()
-raw_input('Press Enter to close this window...')
+try:
+	from SrcDemo2Launcher import is_windows
+	if is_windows():
+		raw_input('Press Enter to close this window...')
+except:
+	raw_input('Press Enter to continue.')
+

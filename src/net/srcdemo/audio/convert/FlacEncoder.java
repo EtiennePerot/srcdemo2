@@ -33,7 +33,12 @@ public class FlacEncoder implements AudioEncoder {
 
 	@Override
 	public void close() throws IOException {
-		encoder.encodeSamples(encoder.samplesAvailableToEncode(), true);
+		while (encoder.fullBlockSamplesAvailableToEncode() > 0) {
+			encoder.encodeSamples(encoder.fullBlockSamplesAvailableToEncode(), false);
+		}
+		int samples = encoder.samplesAvailableToEncode();
+		samples -= samples % channels;
+		encoder.encodeSamples(samples, true);
 	}
 
 	@Override

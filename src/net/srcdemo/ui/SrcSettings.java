@@ -17,18 +17,27 @@ class SrcSettings extends QSettings {
 		return Boolean.parseBoolean((String) value("autoCheckUpdates", Boolean.toString(Params.autoCheckUpdatesDef)));
 	}
 
+	private int getInteger(final String key, final int defaultValue) {
+		final Object preference = value(key);
+		if (preference instanceof String) {
+			return Integer.parseInt((String) preference);
+		} else if (preference instanceof Integer) {
+			return (Integer) preference;
+		}
+		return defaultValue;
+	}
+
 	int getLastAudioBufferSize() {
-		return (Integer) value("audioBufferSize", Params.audioBufferSizeDef);
+		return getInteger("audioBufferSize", Params.audioBufferSizeDef);
 	}
 
 	int getLastAudioBufferTimeout() {
-		return (Integer) value("audioBufferTimeout", Params.audioBufferTimeoutDef);
+		return getInteger("audioBufferTimeout", Params.audioBufferTimeoutDef);
 	}
 
 	AudioType getLastAudioType() {
 		try {
-			return EnumUtils
-				.fromIndex(AudioType.class, ((Integer) value("audioType", EnumUtils.getIndex(Params.audioTypeDef))));
+			return EnumUtils.fromIndex(AudioType.class, getInteger("audioType", EnumUtils.getIndex(Params.audioTypeDef)));
 		}
 		catch (final Exception e) {
 			return Params.audioTypeDef;
@@ -40,7 +49,7 @@ class SrcSettings extends QSettings {
 	}
 
 	int getLastBlendRate() {
-		return (Integer) value("blendRate", Params.blendRateDef);
+		return getInteger("blendRate", Params.blendRateDef);
 	}
 
 	boolean getLastGaussianBlending() {
@@ -52,7 +61,7 @@ class SrcSettings extends QSettings {
 	}
 
 	int getLastJPEGCompressionLevel() {
-		return (Integer) value("jpegCompressionLevel", Params.jpegQualityDef);
+		return getInteger("jpegCompressionLevel", Params.jpegQualityDef);
 	}
 
 	String getLastMountpoint() {
@@ -60,11 +69,11 @@ class SrcSettings extends QSettings {
 	}
 
 	int getLastShutterAngle() {
-		return (Integer) value("shutterAngle", Params.shutterAngleDef);
+		return getInteger("shutterAngle", Params.shutterAngleDef);
 	}
 
 	int getLastTargetFps() {
-		return (Integer) value("targetFps", Params.frameRateDef);
+		return getInteger("targetFps", Params.frameRateDef);
 	}
 
 	boolean getLastTGACompressionRLE() {
@@ -82,7 +91,7 @@ class SrcSettings extends QSettings {
 	}
 
 	int getLastVorbisQuality() {
-		return (Integer) value("vorbisQuality", Params.vorbisQualityDef);
+		return getInteger("vorbisQuality", Params.vorbisQualityDef);
 	}
 
 	boolean getPreviewEnabled() {

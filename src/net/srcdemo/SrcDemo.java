@@ -176,6 +176,13 @@ public class SrcDemo implements Morticianed {
 		backingFS.notifyFrameSaved(frame, pixelData, width, height);
 	}
 
+	int readFile(final String fileName, final ByteBuffer buffer, final long offset) {
+		if (isSoundFile(fileName)) {
+			return buffer.limit();
+		}
+		return 0;
+	}
+
 	@Override
 	public String toString() {
 		return "SrcDemo(Prefix = " + demoPrefix + ")";

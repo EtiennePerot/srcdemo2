@@ -21,7 +21,7 @@ public final class Main {
 	private static boolean isCommandLine = false;
 	private static boolean isRunningConcurrently = false;
 	private static boolean isServerJvm = true;
-	public static final int relaunchStatusCode = 1337;
+	public static final int relaunchStatusCode = 57;
 	private static int returnCode = 0;
 	private static ServerSocket socket = null;
 	private static String version = null;
