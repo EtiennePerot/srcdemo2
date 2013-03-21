@@ -1,0 +1,11 @@
+Package: srcdemo2
+Version: %VERSION%
+Installed-Size: %INSTALLEDSIZE%
+Depends: fuse, default-jre | java6-runtime
+Architecture: all
+Maintainer: Etienne Perot <etienne at perot dot me>
+Section: video
+Priority: Optional
+Homepage: https://srcdemo2.googlecode.com/
+Description: Render smoother Source Engine demos (HL2/TF2/etc.) without sacrificing terabytes of disk space.
+  Utility to render high-quality, smooth Source Engine movies using a customized userspace filesystem that catches the frames before they are written to disk. Can render your movie at a framerate as high as you want it to be, yet keep disk usage flat. Adds a nice motion blur effect to the video. Also includes shutter angle simulation.
