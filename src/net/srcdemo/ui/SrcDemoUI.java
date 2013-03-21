@@ -1,6 +1,7 @@
 package net.srcdemo.ui;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.locks.ReentrantLock;
@@ -9,6 +10,7 @@ import net.srcdemo.Main;
 import net.srcdemo.SrcDemoFS;
 import net.srcdemo.SrcLogger;
 import net.srcdemo.Strings;
+import net.srcdemo.userfs.UserFSUtils;
 import net.srcdemo.userfs.UserFSUtils.DokanNotInstalledException;
 import net.srcdemo.userfs.UserFSUtils.DokanVersionException;
 
@@ -69,20 +71,26 @@ public class SrcDemoUI extends QWidget {
 	private QPushButton mountpointBrowse;
 	private RenderingTab renderTab;
 	private final SrcSettings settings;
+	private QWidget tabBeforeRender = null;
 	private VideoUI videoUi;
 
 	SrcDemoUI(final QApplication application) {
 		this.application = application;
 		setWindowTitle(Strings.productName + (Main.version() == null ? "" : Strings.titleBuildPrefix + Main.version()));
 		final QIcon icon;
-		if (Main.isDebugMode()) {
-			icon = new QIcon(Files.iconWindowDebug.getAbsolutePath());
-		} else {
-			icon = new QIcon(Files.iconWindowMain.getAbsolutePath());
+		try {
+			if (Main.isDebugMode()) {
+				icon = PNGPixmap.makeIcon(Files.iconWindowDebug.getAbsolutePath());
+			} else {
+				icon = PNGPixmap.makeIcon(Files.iconWindowMain.getAbsolutePath());
+			}
+			// Need to do both in order for it to work on OS X
+			QApplication.setWindowIcon(icon);
+			setWindowIcon(icon);
 		}
-		// Need to do both in order for it to work on OS X
-		QApplication.setWindowIcon(icon);
-		setWindowIcon(icon);
+		catch (final IOException e) {
+			// Oh well, no icon for you buddy
+		}
 		settings = new SrcSettings();
 		// Attempt unmount in case something went bad last time
 		final String lastMountPoint = settings.getLastMountpoint();
@@ -265,7 +273,13 @@ public class SrcDemoUI extends QWidget {
 
 	@SuppressWarnings("unused")
 	private void onDeactivate() {
-		exit(Main.relaunchStatusCode);
+		if (UserFSUtils.needRestartToRemount()) {
+			exit(Main.relaunchStatusCode);
+		} else {
+			unmount();
+			updateStatus();
+			selectTab(tabBeforeRender == null ? videoUi : tabBeforeRender);
+		}
 	}
 
 	@SuppressWarnings("unused")
@@ -284,6 +298,7 @@ public class SrcDemoUI extends QWidget {
 		SrcLogger.commandRegisterMountPoint(mountPoint);
 		mountedFS.mount(mountPoint, false);
 		fsLock.unlock();
+		tabBeforeRender = allTabs.currentWidget();
 		updateStatus();
 		selectTab(renderTab);
 	}

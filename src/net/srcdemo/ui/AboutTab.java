@@ -1,5 +1,7 @@
 package net.srcdemo.ui;
 
+import java.io.IOException;
+
 import net.srcdemo.Main;
 import net.srcdemo.Strings;
 
@@ -15,7 +17,6 @@ import com.trolltech.qt.gui.QDesktopServices;
 import com.trolltech.qt.gui.QHBoxLayout;
 import com.trolltech.qt.gui.QLabel;
 import com.trolltech.qt.gui.QMouseEvent;
-import com.trolltech.qt.gui.QPixmap;
 import com.trolltech.qt.gui.QPushButton;
 import com.trolltech.qt.gui.QVBoxLayout;
 import com.trolltech.qt.gui.QWidget;
@@ -61,7 +62,12 @@ public class AboutTab extends QWidget {
 					return super.event(event);
 				}
 			};
-			iconLabel.setPixmap(new QPixmap(Files.iconAbout.getAbsolutePath()));
+			try {
+				iconLabel.setPixmap(PNGPixmap.make(Files.iconAbout.getAbsolutePath()));
+			}
+			catch (final IOException e) {
+				// Oh well
+			}
 			iconLabel.setCursor(new QCursor(CursorShape.PointingHandCursor));
 			vbox.addWidget(iconLabel, 0, AlignmentFlag.AlignHCenter);
 		}

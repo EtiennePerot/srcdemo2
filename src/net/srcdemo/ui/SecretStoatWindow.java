@@ -1,5 +1,7 @@
 package net.srcdemo.ui;
 
+import java.io.IOException;
+
 import net.srcdemo.Strings;
 
 import com.trolltech.qt.core.Qt.AlignmentFlag;
@@ -13,14 +15,20 @@ import com.trolltech.qt.gui.QWidget;
 final class SecretStoatWindow extends QWidget {
 	private static final String[] labels = { Strings.lblStoat1, Strings.lblStoat2, Strings.lblStoat3, Strings.lblStoat4,
 		Strings.lblStoat5, Strings.lblStoat6, Strings.lblStoat7, Strings.lblStoat8 };
-	private final QPixmap stoatPixmap = new QPixmap(Files.secretStoatImage.getAbsolutePath());
+	private QPixmap stoatPixmap;
 
 	SecretStoatWindow() {
-		setWindowTitle(Strings.lblStoatTitle);
-		setWindowIcon(new QIcon(stoatPixmap));
-		initUI();
-		setWindowModality(WindowModality.ApplicationModal);
-		show();
+		try {
+			setWindowTitle(Strings.lblStoatTitle);
+			stoatPixmap = PNGPixmap.make(Files.secretStoatImage.getAbsolutePath());
+			setWindowIcon(new QIcon(stoatPixmap));
+			initUI();
+			setWindowModality(WindowModality.ApplicationModal);
+			show();
+		}
+		catch (final IOException e) {
+			hide();
+		}
 	}
 
 	private void initUI() {

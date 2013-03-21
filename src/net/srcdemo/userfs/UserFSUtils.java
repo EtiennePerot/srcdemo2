@@ -124,4 +124,11 @@ public final class UserFSUtils {
 		initStatus = true;
 		return true;
 	}
+
+	/**
+	 * @return Whether the application needs to be restarted in order to mount a second time. True for Dokan.
+	 */
+	public static boolean needRestartToRemount() {
+		return getOperatingSystem().equals(OperatingSystem.WIN32);
+	}
 }

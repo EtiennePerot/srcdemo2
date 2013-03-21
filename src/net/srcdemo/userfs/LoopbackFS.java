@@ -122,6 +122,7 @@ public class LoopbackFS extends UserFS {
 				return null;
 			}
 			try {
+				@SuppressWarnings("resource")
 				final FileChannel handle = new RandomAccessFile(backing, "rw").getChannel();
 				openedFiles.put(backing, handle);
 			}

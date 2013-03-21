@@ -1,6 +1,7 @@
 package net.srcdemo.ui;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -153,7 +154,12 @@ public class UpdatablePicture extends QLabel {
 			if (newPixmap != null) {
 				pixmapOriginal = newPixmap;
 			} else if (image != null) {
-				pixmapOriginal = new QPixmap(image);
+				try {
+					pixmapOriginal = PNGPixmap.make(image);
+				}
+				catch (final IOException e) {
+					pixmapOriginal = null;
+				}
 			} else if (rawPixelData != null) {
 				final int length = rawPixelData.length;
 				int width = rawWidth;

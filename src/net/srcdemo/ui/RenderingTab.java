@@ -77,6 +77,7 @@ class RenderingTab extends QWidget implements SrcDemoListener {
 				case ApplicationDeactivate:
 					onDefocus();
 					break;
+				default:
 			}
 			return super.eventFilter(obj, event);
 		}
