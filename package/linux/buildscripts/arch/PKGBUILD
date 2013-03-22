@@ -6,7 +6,7 @@ pkgdesc="Render smoother Source Engine demos (HL2/TF2/etc.) without sacrificing 
 arch=('i686' 'x86_64')
 url='https://srcdemo2.googlecode.com/'
 license=('BSD' 'Apache' 'LGPL' 'GPL')
-depends=('java-runtime' 'fuse' 'python2')
+depends=('bash' 'java-runtime' 'fuse' 'python2' 'xdg-utils')
 makedepends=('git' 'apache-ant')
 
 _gitroot='git://perot.me/srcdemo2'
