@@ -1,3 +1,5 @@
+#!/usr/bin/env python2
+
 import sys
 import os
 import re
@@ -6,6 +8,10 @@ import base64
 import tempfile
 import subprocess
 import threading
+
+if __name__ == '__main__':
+	print 'Please do not launch this file directly.'
+	sys.exit(0)
 
 def module_path():
 	if hasattr(sys, "frozen"):

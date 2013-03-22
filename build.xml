@@ -312,9 +312,6 @@
 		<copy todir="${jar.dir}">
 			<fileset dir="${launcher.dir}" includes="${launcher.source}"/>
 		</copy>
-		<chmod perm="ugo+rx" maxparallel="100">
-			<fileset dir="${jar.dir}" includes="${launcher.source}"/>
-		</chmod>
 		<mkdir dir="${linux.package.bin.dir}"/>
 		<copy todir="${linux.package.bin.dir}">
 			<fileset dir="${linux.package.bin.scripts}" includes="*"/>
