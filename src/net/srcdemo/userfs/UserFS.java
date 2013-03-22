@@ -77,6 +77,24 @@ public abstract class UserFS {
 		lockFile(fileName, byteOffset, length);
 	}
 
+	private final boolean _mount(final File mountPoint, final boolean wasBlocking) {
+		this.mountPoint = SymlinkResolver.resolveSymlinks(mountPoint);
+		if (UnconsequentialFiles.clearUnconsequentialFiles(this.mountPoint)) {
+			log("Mount", "Some unconsequential files were automatically deleted from mountpoint: " + this.mountPoint);
+		}
+		if (shouldLog()) {
+			log("Mount", "Mounting to: " + this.mountPoint);
+		}
+		final long beforeTime = System.nanoTime();
+		final boolean result = backend.userfs_mount(this, mountPoint);
+		final long time = (System.nanoTime() - beforeTime) / 1000000L;
+		if (shouldLog()) {
+			log("Mount", (wasBlocking ? "B" : "Non-b") + "locking attempt to mount at '" + this.mountPoint + "' (" + time
+				+ "ms ago) finished; resulted in " + (result ? "success" : "failure") + ".");
+		}
+		return result;
+	}
+
 	final void _moveFile(final String existingFileName, final String newFileName, final boolean replaceExisiting) {
 		if (shouldLog()) {
 			log("MoveFile", "Move file: " + existingFileName + " -> " + newFileName);
@@ -176,23 +194,12 @@ public abstract class UserFS {
 			new Thread() {
 				@Override
 				public void run() {
-					mount(mountPoint, true);
+					_mount(mountPoint, false);
 				}
 			}.start();
 			return true;
 		}
-		this.mountPoint = SymlinkResolver.resolveSymlinks(mountPoint);
-		if (UnconsequentialFiles.clearUnconsequentialFiles(this.mountPoint)) {
-			log("Mount", "Some unconsequential files were automatically deleted from mountpoint: " + this.mountPoint);
-		}
-		if (shouldLog()) {
-			log("Mount", "Mounting to: " + this.mountPoint);
-		}
-		final boolean result = backend.userfs_mount(this, mountPoint);
-		if (shouldLog()) {
-			log("Mount", "Mounting " + (result ? "succeeded" : "failed"));
-		}
-		return result;
+		return _mount(mountPoint, true);
 	}
 
 	protected abstract void moveFile(String existingFileName, String newFileName, boolean replaceExisiting);
