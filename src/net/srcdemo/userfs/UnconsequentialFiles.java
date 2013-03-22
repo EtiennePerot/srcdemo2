@@ -3,7 +3,8 @@ package net.srcdemo.userfs;
 import java.io.File;
 
 final class UnconsequentialFiles {
-	private static final String[] unconsequential = { "Thumbs.db", ".DS_STORE" };
+	private static final String[] unconsequential = { "Thumbs.db", ".DS_STORE", ".Trash", ".Trash-1000", ".xdg-volume-info",
+		".directory" };
 
 	static final boolean clearUnconsequentialFiles(final File directory) {
 		if (!directory.isDirectory()) {
