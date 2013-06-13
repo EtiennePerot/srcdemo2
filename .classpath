@@ -5,7 +5,7 @@
 	<classpathentry kind="src" path="submodules/commons-lang/src/main/java"/>
 	<classpathentry kind="src" path="lib/any/jlibs/src"/>
 	<classpathentry kind="src" path="submodules/commons-codec/src/main/java"/>
-	<classpathentry kind="src" path="submodules/fuse-jna/src"/>
+	<classpathentry kind="src" path="submodules/fuse-jna/src/main/java"/>
 	<classpathentry kind="src" path="submodules/commons-io/src/main/java"/>
 	<classpathentry kind="src" path="src-dokan">
 		<attributes>
@@ -30,12 +30,12 @@
 	<classpathentry kind="lib" path="lib/osx/qtjambi/qtjambi-util-4.7.0.jar"/>
 	<classpathentry kind="lib" path="lib/windows/qtjambi/qtjambi-4.7.1.jar"/>
 	<classpathentry kind="lib" path="lib/windows/qtjambi/qtjambi-win32-msvc2008-4.7.1.jar"/>
-	<classpathentry kind="lib" path="submodules/fuse-jna/lib/jna/jna.jar" sourcepath="submodules/fuse-jna/lib/jna/jna.src.zip"/>
 	<classpathentry kind="lib" path="lib/linux/qtjambi32/qtjambi-4.7.0.jar"/>
 	<classpathentry kind="lib" path="lib/linux/qtjambi32/qtjambi-linux32-gcc-4.7.0.jar"/>
 	<classpathentry kind="lib" path="lib/linux/qtjambi32/qtjambi-util-4.7.0.jar"/>
 	<classpathentry kind="lib" path="lib/linux/qtjambi64/qtjambi-4.7.0.jar"/>
 	<classpathentry kind="lib" path="lib/linux/qtjambi64/qtjambi-linux64-gcc-4.7.0.jar"/>
 	<classpathentry kind="lib" path="lib/linux/qtjambi64/qtjambi-util-4.7.0.jar"/>
+	<classpathentry kind="lib" path="submodules/fuse-jna/lib/jna/jna-3.5.2.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

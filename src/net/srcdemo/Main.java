@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.UnknownHostException;
+import java.nio.charset.Charset;
 
 import net.srcdemo.cmd.Arguments;
 import net.srcdemo.cmd.SrcDemoCmd;
@@ -55,7 +56,7 @@ public final class Main {
 		}
 		if (Files.versionFile.exists()) {
 			try {
-				version = FileUtils.readFileToString(Files.versionFile);
+				version = FileUtils.readFileToString(Files.versionFile, Charset.defaultCharset());
 			}
 			catch (final Exception e) {
 				// Consider the version number to be unknown
