@@ -155,7 +155,7 @@ public class LoopbackFS extends UserFS {
 		}
 		catch (final IOException e) {
 			System.err.println("Failed to obtain file attributes for file: " + backing);
-			e.printStackTrace();
+			return null;
 		}
 		if (backing.isDirectory()) {
 			return FileInfo.fromDirectory(fileName, createTime, lastAccess, lastWrite);
