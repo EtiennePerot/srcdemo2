@@ -145,8 +145,8 @@ public class LoopbackFS extends UserFS {
 	@Override
 	protected FileInfo getFileInfo(final String fileName) {
 		final File backing = getBackedFile(fileName);
-		long createTime = 0;
-		long lastAccess = 0;
+		long createTime = 0L;
+		long lastAccess = 0L;
 		final long lastWrite = backing.lastModified();
 		try {
 			final BasicFileAttributes attr = Files.readAttributes(backing.toPath(), BasicFileAttributes.class);

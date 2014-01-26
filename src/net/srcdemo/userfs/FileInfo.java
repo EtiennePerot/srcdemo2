@@ -7,18 +7,16 @@ import net.decasdev.dokan.FileAttribute;
 import net.decasdev.dokan.Win32FindData;
 
 public class FileInfo {
-	public static final long MILLISECS_1601_TO_1980 = 116444736000000000L;
-	public static final long UNIXSEC_TO_FTSEC = 10000L;
+	private static final long MILLISECS_1601_TO_1980 = 116444736000000000L;
+	private static final long UNIXSEC_TO_FTSEC = 10000L;
 
 	public static FileInfo fromDirectory(final String fileName, final long creationTime, final long lastAccessTime,
 		final long lastWriteTime) {
-		System.out.println("Path: " + fileName);
 		return new FileInfo(fileName, true, 0, creationTime, lastAccessTime, lastWriteTime);
 	}
 
 	public static FileInfo fromFile(final String fileName, final long fileSize, final long creationTime,
 		final long lastAccessTime, final long lastWriteTime) {
-		System.out.println("Path: " + fileName);
 		return new FileInfo(fileName, false, fileSize, creationTime, lastAccessTime, lastWriteTime);
 	}
 
