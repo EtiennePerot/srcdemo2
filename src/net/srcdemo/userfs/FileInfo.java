@@ -7,24 +7,40 @@ import net.decasdev.dokan.FileAttribute;
 import net.decasdev.dokan.Win32FindData;
 
 public class FileInfo {
-	public static FileInfo fromDirectory(final String fileName) {
-		return new FileInfo(fileName, true, 0);
+	private static final long MILLISECS_1601_TO_1980 = 116444736000000000L;
+	private static final long UNIXSEC_TO_FTSEC = 10000L;
+
+	public static FileInfo fromDirectory(final String fileName, final long creationTime, final long lastAccessTime,
+		final long lastWriteTime) {
+		return new FileInfo(fileName, true, 0, creationTime, lastAccessTime, lastWriteTime);
 	}
 
-	public static FileInfo fromFile(final String fileName, final long fileSize) {
-		return new FileInfo(fileName, false, fileSize);
+	public static FileInfo fromFile(final String fileName, final long fileSize, final long creationTime,
+		final long lastAccessTime, final long lastWriteTime) {
+		return new FileInfo(fileName, false, fileSize, creationTime, lastAccessTime, lastWriteTime);
+	}
+
+	public static long unixLong2Longlong(final long unixTimeMillisec) {
+		return (unixTimeMillisec * UNIXSEC_TO_FTSEC) + MILLISECS_1601_TO_1980;
 	}
 
 	private final ByHandleFileInformation byHandleInfo = new ByHandleFileInformation();
+	private final long creationTime;
 	private final String fileName;
 	private long fileSize;
 	private final int index;
 	private final boolean isDirectory;
+	private final long lastAccessTime;
+	private final long lastWriteTime;
 
-	public FileInfo(final String fileName, final boolean isDirectory, final long fileSize) {
+	public FileInfo(final String fileName, final boolean isDirectory, final long fileSize, final long creationTime,
+		final long lastAccessTime, final long lastWriteTime) {
 		this.fileName = fileName;
 		this.isDirectory = isDirectory;
 		this.fileSize = fileSize;
+		this.creationTime = creationTime;
+		this.lastAccessTime = lastAccessTime;
+		this.lastWriteTime = lastWriteTime;
 		index = fileName.hashCode();
 	}
 
@@ -59,9 +75,9 @@ public class FileInfo {
 
 	public ByHandleFileInformation toByhandleFileInformation(final int volumeSerialNumber) {
 		byHandleInfo.fileAttributes = getDokanAttributes();
-		byHandleInfo.creationTime = 0;
-		byHandleInfo.lastAccessTime = 0;
-		byHandleInfo.lastWriteTime = 0;
+		byHandleInfo.creationTime = creationTime;
+		byHandleInfo.lastAccessTime = lastAccessTime;
+		byHandleInfo.lastWriteTime = lastWriteTime;
 		byHandleInfo.volumeSerialNumber = volumeSerialNumber;
 		byHandleInfo.fileSize = fileSize;
 		byHandleInfo.numberOfLinks = 1;
@@ -71,7 +87,8 @@ public class FileInfo {
 
 	public Win32FindData toFindData() {
 		final String name = new File(fileName).getName();
-		return new Win32FindData(getDokanAttributes(), 0, 0, 0, fileSize, 0, 0, name, name);
+		return new Win32FindData(getDokanAttributes(), unixLong2Longlong(creationTime), unixLong2Longlong(lastAccessTime),
+			unixLong2Longlong(lastWriteTime), fileSize, 0, 0, name, name);
 	}
 
 	@Override

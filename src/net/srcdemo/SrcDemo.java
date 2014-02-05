@@ -49,7 +49,7 @@ public class SrcDemo implements Morticianed {
 		soundFile = getBackedFile(".wav");
 		soundFileName = soundFile.getName();
 		soundFileNameLowercase = soundFileName.toLowerCase();
-		soundFileInfo = new FileInfo(soundFileName, false, 0L);
+		soundFileInfo = new FileInfo(soundFileName, false, 0L, 0L, 0L, 0L);
 		mortician = new Mortician(this, "Checking thread for " + prefix, new Runnable() {
 			@Override
 			public void run() {
@@ -118,7 +118,7 @@ public class SrcDemo implements Morticianed {
 		if (enableFrameFileInfo) {
 			final Integer frameNumer = getFrameNumber(fileName);
 			if (frameNumer != null) {
-				return new FileInfo(fileName, false, frameSize.getDefault(frameNumer, 0L));
+				return new FileInfo(fileName, false, 0L, 0L, 0L, frameSize.getDefault(frameNumer, 0L));
 			}
 		}
 		return null;

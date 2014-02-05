@@ -6,6 +6,8 @@ import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
+import java.nio.file.Files;
+import java.nio.file.attribute.BasicFileAttributes;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -143,10 +145,22 @@ public class LoopbackFS extends UserFS {
 	@Override
 	protected FileInfo getFileInfo(final String fileName) {
 		final File backing = getBackedFile(fileName);
+		long createTime = 0L;
+		long lastAccess = 0L;
+		final long lastWrite = backing.lastModified();
+		try {
+			final BasicFileAttributes attr = Files.readAttributes(backing.toPath(), BasicFileAttributes.class);
+			createTime = attr.creationTime().toMillis();
+			lastAccess = attr.lastAccessTime().toMillis();
+		}
+		catch (final IOException e) {
+			System.err.println("Failed to obtain file attributes for file: " + backing);
+			return null;
+		}
 		if (backing.isDirectory()) {
-			return FileInfo.fromDirectory(fileName);
+			return FileInfo.fromDirectory(fileName, createTime, lastAccess, lastWrite);
 		} else if (backing.isFile()) {
-			return FileInfo.fromFile(fileName, backing.length());
+			return FileInfo.fromFile(fileName, backing.length(), createTime, lastAccess, lastWrite);
 		}
 		return null;
 	}
