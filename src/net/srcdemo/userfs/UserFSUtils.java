@@ -101,7 +101,7 @@ public final class UserFSUtils {
 		addPathToLibrary(os.getLibraryPath());
 		if (os.isWindows()) {
 			try {
-				if (Dokan.getVersion() == 600) {
+				if (Dokan.getVersion() == 600 || Dokan.getVersion() == 740) {
 					if (SrcLogger.getLogMisc()) {
 						SrcLogger.log("Starting with version = " + Dokan.getVersion() + " / Driver = "
 							+ Dokan.getDriverVersion() + ".");
