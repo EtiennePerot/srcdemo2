@@ -1,12 +1,12 @@
 [submodule "submodules/commons-io"]
 	path = submodules/commons-io
-	url = git://git.apache.org/commons-io.git
+	url = https://github.com/apache/commons-io.git
 [submodule "submodules/fuse-jna"]
 	path = submodules/fuse-jna
-	url = git://github.com/EtiennePerot/fuse-jna.git
+	url = https://github.com/EtiennePerot/fuse-jna.git
 [submodule "submodules/commons-codec"]
 	path = submodules/commons-codec
-	url = git://git.apache.org/commons-codec.git
+	url = https://github.com/apache/commons-codec.git
 [submodule "submodules/commons-lang"]
 	path = submodules/commons-lang
-	url = git://git.apache.org/commons-lang.git
+	url = https://github.com/apache/commons-lang.git
